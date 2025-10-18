@@ -2,10 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { checkWebGLSupport, getSanityColor } from '../../utils/sanityUtils';
 import { STAR_FIELD_CONFIGS, CAMERA_DISTANCE } from '../../constants/sanityConstants';
-import StarField from './StarField';
-import Orb from './Orb';
-import Glow from './Glow';
-import ParticleSystem from './ParticleSystem';
+import { vertexShader, fragmentShader, glowVertexShader, glowFragmentShader } from '../../shaders/orbShaders';
 
 interface ThreeSceneProps {
   sanity: number;
@@ -103,38 +100,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           pulseSpeed: { value: 1.0 },
           turbulence: { value: 0.0 }
         },
-        vertexShader: `
-          varying vec3 vNormal;
-          varying vec3 vPosition;
-          uniform float time;
-          uniform float turbulence;
-          
-          void main() {
-            vNormal = normalize(normalMatrix * normal);
-            vPosition = position;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 color;
-          uniform float time;
-          uniform float pulseSpeed;
-          varying vec3 vNormal;
-          varying vec3 vPosition;
-          
-          void main() {
-            vec3 viewDirection = normalize(cameraPosition - vPosition);
-            float fresnel = pow(1.0 - abs(dot(viewDirection, vNormal)), 2.5);
-            
-            float pulse = sin(time * pulseSpeed) * 0.5 + 0.5;
-            float glow = fresnel * (0.6 + pulse * 0.4);
-            
-            vec3 finalColor = color * (0.4 + glow * 0.6);
-            float alpha = 0.85 + fresnel * 0.15;
-            
-            gl_FragColor = vec4(finalColor, alpha);
-          }
-        `,
+        vertexShader,
+        fragmentShader,
         transparent: true,
         side: THREE.DoubleSide
       });
@@ -151,24 +118,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           coefficient: { value: 0.5 },
           power: { value: 3.0 }
         },
-        vertexShader: `
-          varying vec3 vNormal;
-          void main() {
-            vNormal = normalize(normalMatrix * normal);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 color;
-          uniform float coefficient;
-          uniform float power;
-          varying vec3 vNormal;
-          
-          void main() {
-            float intensity = pow(coefficient - dot(vNormal, vec3(0.0, 0.0, 1.0)), power);
-            gl_FragColor = vec4(color, intensity * 0.4);
-          }
-        `,
+        vertexShader: glowVertexShader,
+        fragmentShader: glowFragmentShader,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide
