@@ -665,3 +665,7 @@ const SanityOrb = () => {
 };
 
 export default SanityOrb;
+
+export default function SanityOrb() {
+  return <div className="w-64 h-64 bg-blue-500 rounded-full"></div>
+}
