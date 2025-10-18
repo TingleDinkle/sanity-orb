@@ -4,6 +4,8 @@ A mesmerizing 3D visualization application that represents mental state through 
 
 Oh and also, the inspirations for this project came from the idea or concept of a "Mood Ring".
 
+Initally, I was gonna make an application that scrapes the internet and gives out the general mood of it, like a mood ring would. However, that idea wasn't feasible for me monetary-wise and time wise considering i'm stil quite choppy on data handling. So I decided to learn about the frontend libs and make a truly beautiful orb out of it.
+
 ## Overview
 
 Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by particle systems, star fields, and dynamic lighting effects that respond to user input in real-time.
