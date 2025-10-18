@@ -4,9 +4,27 @@ import { SANITY_PRESETS } from '../../constants/sanityConstants';
 interface ControlPanelProps {
   sanity: number;
   onSanityChange: (value: number) => void;
+  isVisible: boolean;
+  onToggleVisibility: () => void;
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isVisible, onToggleVisibility }) => {
+  if (!isVisible) {
+    return (
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+        <button
+          onClick={onToggleVisibility}
+          className="bg-white/10 backdrop-blur-xl rounded-full p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95"
+          title="Show Controls"
+        >
+          <svg className="w-6 h-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-8 pointer-events-auto">
       <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl transition-all duration-300 hover:bg-white/[0.07]">
@@ -19,17 +37,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange }) =
               Adjust coherence parameters in real-time
             </div>
           </div>
-          <div className="flex gap-2">
-            {[75, 50, 25, 0].map((threshold) => (
-              <div 
-                key={threshold}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  sanity >= threshold 
-                    ? 'bg-white/80 scale-100' 
-                    : 'bg-white/20 scale-75'
-                }`}
-              />
-            ))}
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              {[75, 50, 25, 0].map((threshold) => (
+                <div 
+                  key={threshold}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    sanity >= threshold 
+                      ? 'bg-white/80 scale-100' 
+                      : 'bg-white/20 scale-75'
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={onToggleVisibility}
+              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
+              title="Hide Controls"
+            >
+              <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
         </div>
         
