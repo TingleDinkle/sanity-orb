@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const SanityOrb = () => {
-  const mountRef = useRef<HTMLDivElement>(null);
-  const [sanity, setSanity] = useState<number>(100);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const orbRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial> | null>(null);
-  const glowRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial> | null>(null);
-  const particlesRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>[]>([]);
-  const starsRef = useRef<THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>[] | null>(null);
+  const mountRef = useRef(null);
+  const [sanity, setSanity] = useState(100);
+  const sceneRef = useRef(null);
+  const orbRef = useRef(null);
+  const glowRef = useRef(null);
+  const particlesRef = useRef([]);
+  const starsRef = useRef(null);
   const timeRef = useRef(0);
 
-  const getSanityColor = (value: number) => {
+  const getSanityColor = (value) => {
     if (value >= 75) {
       const t = (value - 75) / 25;
       return new THREE.Color().setHSL(0.45 + t * 0.1, 0.7 - t * 0.1, 0.5 + t * 0.1);
@@ -50,7 +50,7 @@ const SanityOrb = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
 
-    const createStarField = (count: number, size: number, distance: number, speed: number) => {
+    const createStarField = (count, size, distance, speed) => {
       const geometry = new THREE.BufferGeometry();
       const vertices = [];
       const sizes = [];
@@ -283,7 +283,7 @@ const SanityOrb = () => {
     rimLight2.position.set(-4, -2, -3);
     scene.add(rimLight2);
 
-    let animationId: number;
+    let animationId;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       timeRef.current += 0.01;
@@ -310,6 +310,7 @@ const SanityOrb = () => {
         const glowScale = orbRef.current.scale.x * 1.05;
         glowRef.current.scale.set(glowScale, glowScale, glowScale);
       }
+
       particlesRef.current.forEach((particle, i) => {
         const data = particle.userData;
         
@@ -332,7 +333,7 @@ const SanityOrb = () => {
       });
 
       if (starsRef.current) {
-        starsRef.current?.forEach((field: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>, i: number) => {
+        starsRef.current.forEach((field, i) => {
           field.rotation.y += field.userData.speed;
           field.rotation.x += field.userData.speed * 0.5;
           
@@ -374,13 +375,14 @@ const SanityOrb = () => {
         p.geometry.dispose();
         p.material.dispose();
       });
-      starsRef.current?.forEach((field: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>) => {
+      starsRef.current?.forEach((field) => {
         field.geometry.dispose();
         field.material.dispose();
       });
       renderer.dispose();
     };
   }, [sanity]);
+
   useEffect(() => {
     if (orbRef.current && glowRef.current && orbRef.current.material.uniforms) {
       const targetColor = getSanityColor(sanity);
@@ -489,7 +491,7 @@ const SanityOrb = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-8">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-8 pointer-events-auto">
         <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl transition-all duration-300 hover:bg-white/[0.07]">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -515,24 +517,16 @@ const SanityOrb = () => {
           </div>
           
           <div className="relative mb-6">
-            <div 
-              className="absolute inset-0 rounded-full blur-xl opacity-50 transition-all duration-700"
-              style={{
-                background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)',
-                transform: `scaleY(${0.3 + (1 - sanity / 100) * 0.7})`
-              }}
-            />
             <input
               type="range"
               min="0"
               max="100"
               value={sanity}
-            />
-            <div 
-              className="absolute top-0 left-0 h-3 rounded-full pointer-events-none"
+              onChange={(e) => setSanity(Number(e.target.value))}
+              className="w-full h-3 bg-transparent appearance-none cursor-pointer relative z-10"
               style={{
-                width: '100%',
-                background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)'
+                background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)',
+                borderRadius: '9999px'
               }}
             />
           </div>
@@ -576,41 +570,7 @@ const SanityOrb = () => {
       </div>
 
       <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.6;
-            transform: scale(0.95);
-          }
-        }
-        
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .slider {
-          position: relative;
-        }
-        
-        .slider::-webkit-slider-thumb {
+        input[type="range"]::-webkit-slider-thumb {
           appearance: none;
           width: 24px;
           height: 24px;
@@ -622,38 +582,22 @@ const SanityOrb = () => {
           border: 2px solid rgba(255, 255, 255, 0.8);
         }
         
-        .slider::-webkit-slider-thumb:hover {
+        input[type="range"]::-webkit-slider-thumb:hover {
           transform: scale(1.25);
           box-shadow: 0 0 30px rgba(255, 255, 255, 0.9), 0 0 60px rgba(255, 255, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
-          border: 2px solid rgba(255, 255, 255, 1);
         }
         
-        .slider::-webkit-slider-thumb:active {
-          transform: scale(1.1);
-        }
-        
-        .slider::-moz-range-thumb {
+        input[type="range"]::-moz-range-thumb {
           width: 24px;
           height: 24px;
           border-radius: 50%;
           background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
           cursor: pointer;
           border: 2px solid rgba(255, 255, 255, 0.8);
-          box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(255, 255, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.3);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .slider::-moz-range-thumb:hover {
-          transform: scale(1.25);
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.9), 0 0 60px rgba(255, 255, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
-          border: 2px solid rgba(255, 255, 255, 1);
-        }
-        
-        .slider::-moz-range-thumb:active {
-          transform: scale(1.1);
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
         }
       `}</style>
-      </div>
+    </div>
   );
 };
 
