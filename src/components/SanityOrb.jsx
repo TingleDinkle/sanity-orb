@@ -15,17 +15,17 @@ const SanityOrb = () => {
 
   const getSanityColor = (value) => {
     if (value >= 75) {
-      const t = (value - 75) / 25;
-      return new THREE.Color().setHSL(0.45 + t * 0.1, 0.7 - t * 0.1, 0.5 + t * 0.1);
+      // Green (healthy)
+      return new THREE.Color(0x00ff88);
     } else if (value >= 50) {
-      const t = (value - 50) / 25;
-      return new THREE.Color().setHSL(0.35 + t * 0.1, 0.8, 0.55);
+      // Yellow (cautious)
+      return new THREE.Color(0xffdd00);
     } else if (value >= 25) {
-      const t = (value - 25) / 25;
-      return new THREE.Color().setHSL(0.15 + t * 0.2, 0.9, 0.55);
+      // Orange (warning)
+      return new THREE.Color(0xff6600);
     } else {
-      const t = value / 25;
-      return new THREE.Color().setHSL(0.0 + t * 0.15, 0.95, 0.45 + t * 0.1);
+      // Red (critical)
+      return new THREE.Color(0xff0033);
     }
   };
 
