@@ -107,4 +107,4 @@ const SanityOrb: React.FC = () => {
   );
 };
 
-export default SanityOrbNew;
+export default SanityOrb;
