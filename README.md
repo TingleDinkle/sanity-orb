@@ -1,6 +1,6 @@
 # Sanity Orb
 
-A mesmerizing 3D visualization application that represents mental state through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for mental clarity and stability.
+A mesmerizing 3D visualization application that represents mental state through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for mental clarity and stability. This project was meant to be me pushing my boundaries of what I can make with the newest technologies in the frontend game. Hope you like it!
 
 ## Overview
 
