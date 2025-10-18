@@ -660,3 +660,8 @@ const SanityOrb = () => {
           transform: scale(1.1);
         }
       `}</style>
+      </div>
+  );
+};
+
+export default SanityOrb;
