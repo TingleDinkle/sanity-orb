@@ -9,9 +9,10 @@ import ParticleSystem from './ParticleSystem';
 
 interface ThreeSceneProps {
   sanity: number;
+  isControlPanelVisible: boolean;
 }
 
-const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity }) => {
+const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -327,19 +328,23 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity }) => {
     }
   }, [sanity]);
 
-  // Color update effect
+  // Color update effect with smoother transitions
   useEffect(() => {
     if (orbRef.current && glowRef.current && orbRef.current.material.uniforms) {
       const targetColor = getSanityColor(sanity);
+      let animationId: number;
       
       const updateColors = () => {
         if (!orbRef.current || !glowRef.current) return;
         
-        orbRef.current.material.uniforms.color.value.lerp(targetColor, 0.05);
-        glowRef.current.material.uniforms.color.value.lerp(targetColor, 0.05);
+        // Smoother interpolation with easing
+        const lerpFactor = 0.08; // Increased from 0.05 for smoother transitions
+        
+        orbRef.current.material.uniforms.color.value.lerp(targetColor, lerpFactor);
+        glowRef.current.material.uniforms.color.value.lerp(targetColor, lerpFactor);
         
         particlesRef.current.forEach(particle => {
-          particle.material.color.lerp(targetColor, 0.05);
+          particle.material.color.lerp(targetColor, lerpFactor);
         });
         
         const currentColor = orbRef.current.material.uniforms.color.value;
@@ -347,14 +352,38 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity }) => {
                         Math.abs(currentColor.g - targetColor.g) + 
                         Math.abs(currentColor.b - targetColor.b);
         
-        if (distance > 0.01) {
-          requestAnimationFrame(updateColors);
+        if (distance > 0.005) { // Reduced threshold for more precise color matching
+          animationId = requestAnimationFrame(updateColors);
         }
       };
       
       updateColors();
+      
+      return () => {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      };
     }
   }, [sanity]);
+
+  // Adjust camera and orb scale when control panel is hidden
+  useEffect(() => {
+    if (cameraRef.current && orbRef.current) {
+      const camera = cameraRef.current;
+      const orb = orbRef.current;
+      
+      if (!isControlPanelVisible) {
+        // Move camera closer and adjust orb scale for better visibility
+        camera.position.z = 4.5; // Closer to orb
+        orb.scale.setScalar(1.2); // Slightly larger orb
+      } else {
+        // Reset to normal position and scale
+        camera.position.z = 6;
+        orb.scale.setScalar(1);
+      }
+    }
+  }, [isControlPanelVisible]);
 
   if (error) {
     return (
