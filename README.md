@@ -128,39 +128,9 @@ src/
 - **Warning (25-50%)**: Orange orb with increased turbulence
 - **Critical (0-25%)**: Red orb with chaotic particle behavior
 
-## Screenshots
+## Video Demo
 
-### Main Interface
-![Main Interface](screenshots/main-interface.png)
-*The Sanity Orb in its default state showing the full interface with controls*
 
-### Peak Sanity State
-![Peak State](screenshots/peak-sanity.png)
-*The orb in Peak state (100%) showing bright green colors and stable effects*
-
-### Nominal State
-![Nominal State](screenshots/nominal-state.png)
-*The orb in Nominal state (75%) with yellow-green colors and gentle animations*
-
-### Warning State
-![Warning State](screenshots/warning-state.png)
-*The orb in Warning state (40%) showing orange colors and increased turbulence*
-
-### Critical State
-![Critical State](screenshots/critical-state.png)
-*The orb in Critical state (10%) with red colors and chaotic particle behavior*
-
-### Hidden Controls View
-![Hidden Controls](screenshots/hidden-controls.png)
-*Full-screen orb view with controls hidden for unobstructed visualization*
-
-### Help Overlay
-![Help Overlay](screenshots/help-overlay.png)
-*The interactive help system showing all available keyboard shortcuts*
-
-### Mobile View
-![Mobile View](screenshots/mobile-view.png)
-*Responsive design showing how the orb adapts to smaller screens*
 
 ## Technical Details
 
@@ -193,14 +163,6 @@ The orb uses custom GLSL shaders for advanced visual effects:
 - **TypeScript**: Strict type checking enabled
 - **ESLint**: Configured for React and modern JavaScript
 - **Prettier**: Code formatting (if configured)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
 
 ## License
 
