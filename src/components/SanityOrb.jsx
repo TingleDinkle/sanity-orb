@@ -6,6 +6,8 @@ console.log('SanityOrb component loaded');
 const SanityOrb = () => {
   const mountRef = useRef(null);
   const [sanity, setSanity] = useState(100);
+  const [error, setError] = useState(null);
+  const [webglSupported, setWebglSupported] = useState(false);
   const sceneRef = useRef(null);
   const orbRef = useRef(null);
   const glowRef = useRef(null);
@@ -30,14 +32,27 @@ const SanityOrb = () => {
   };
 
   useEffect(() => {
+    // Check WebGL support first
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    
+    if (!gl) {
+      setError('WebGL is not supported in this browser. Please try using a different browser or enable WebGL.');
+      return;
+    }
+    
+    setWebglSupported(true);
+    
     if (!mountRef.current) return;
 
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+    try {
+      const mountElement = mountRef.current;
+      const scene = new THREE.Scene();
+      sceneRef.current = scene;
     
     const camera = new THREE.PerspectiveCamera(
       60,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      mountElement.clientWidth / mountElement.clientHeight,
       0.1,
       1000
     );
@@ -48,9 +63,9 @@ const SanityOrb = () => {
       alpha: true,
       powerPreference: "high-performance"
     });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.setSize(mountElement.clientWidth, mountElement.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mountRef.current.appendChild(renderer.domElement);
+    mountElement.appendChild(renderer.domElement);
 
     const createStarField = (count, size, distance, speed) => {
       const geometry = new THREE.BufferGeometry();
@@ -353,9 +368,9 @@ const SanityOrb = () => {
     animate();
 
     const handleResize = () => {
-      if (!mountRef.current) return;
-      const width = mountRef.current.clientWidth;
-      const height = mountRef.current.clientHeight;
+      if (!mountElement) return;
+      const width = mountElement.clientWidth;
+      const height = mountElement.clientHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
@@ -365,8 +380,8 @@ const SanityOrb = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountElement && renderer.domElement) {
+        mountElement.removeChild(renderer.domElement);
       }
       
       orbGeometry.dispose();
@@ -383,6 +398,10 @@ const SanityOrb = () => {
       });
       renderer.dispose();
     };
+    } catch (err) {
+      console.error('Three.js initialization error:', err);
+      setError(`Three.js error: ${err.message}`);
+    }
   }, [sanity]);
 
   useEffect(() => {
@@ -433,6 +452,36 @@ const SanityOrb = () => {
     if (sanity >= 25) return 'from-orange-500/20 to-amber-600/20';
     return 'from-red-600/20 to-rose-700/20';
   };
+
+  // Show error state if WebGL is not supported or there's an error
+  if (error) {
+    return (
+      <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center">
+        <div className="text-center text-white max-w-md mx-auto px-8">
+          <h1 className="text-3xl font-bold mb-6 text-red-400">WebGL Error</h1>
+          <p className="text-white/80 mb-6">{error}</p>
+          <div className="space-y-3 text-sm text-white/60">
+            <p>• Try using Chrome, Firefox, or Edge</p>
+            <p>• Enable hardware acceleration in your browser</p>
+            <p>• Update your graphics drivers</p>
+            <p>• Try disabling browser extensions</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while checking WebGL support
+  if (!webglSupported) {
+    return (
+      <div className="w-full h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h1 className="text-2xl font-bold mb-4">Initializing Sanity Orb...</h1>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
