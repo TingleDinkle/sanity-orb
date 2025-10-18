@@ -2,6 +2,8 @@
 
 A mesmerizing 3D visualization application that represents mental state through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for mental clarity and stability. This project was meant to be me pushing my boundaries of what I can make with the newest technologies in the frontend game. Hope you like it!
 
+Oh and also, the inspirations for this project came from the idea or concept of a "Mood Ring".
+
 ## Overview
 
 Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by particle systems, star fields, and dynamic lighting effects that respond to user input in real-time.
