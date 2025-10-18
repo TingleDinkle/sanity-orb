@@ -1,18 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const SanityOrb = () => {
-  const mountRef = useRef(null);
-  const [sanity, setSanity] = useState(100);
-  const [isHovering, setIsHovering] = useState(false);
-  const sceneRef = useRef(null);
-  const orbRef = useRef(null);
-  const glowRef = useRef(null);
-  const particlesRef = useRef([]);
-  const starsRef = useRef(null);
+  const mountRef = useRef<HTMLDivElement>(null);
+  const [sanity, setSanity] = useState<number>(100);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const orbRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial> | null>(null);
+  const glowRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial> | null>(null);
+  const particlesRef = useRef<THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>[]>([]);
+  const starsRef = useRef<THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>[] | null>(null);
   const timeRef = useRef(0);
 
-  const getSanityColor = (value) => {
+  const getSanityColor = (value: number) => {
     if (value >= 75) {
       const t = (value - 75) / 25;
       return new THREE.Color().setHSL(0.45 + t * 0.1, 0.7 - t * 0.1, 0.5 + t * 0.1);
@@ -51,7 +50,7 @@ const SanityOrb = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
 
-    const createStarField = (count, size, distance, speed) => {
+    const createStarField = (count: number, size: number, distance: number, speed: number) => {
       const geometry = new THREE.BufferGeometry();
       const vertices = [];
       const sizes = [];
@@ -284,7 +283,7 @@ const SanityOrb = () => {
     rimLight2.position.set(-4, -2, -3);
     scene.add(rimLight2);
 
-    let animationId;
+    let animationId: number;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       timeRef.current += 0.01;
@@ -306,12 +305,11 @@ const SanityOrb = () => {
         orbRef.current.scale.set(scale, scale, scale);
       }
 
-      if (glowRef.current) {
+      if (glowRef.current && orbRef.current) {
         glowRef.current.rotation.y = orbRef.current.rotation.y * 0.5;
         const glowScale = orbRef.current.scale.x * 1.05;
         glowRef.current.scale.set(glowScale, glowScale, glowScale);
       }
-
       particlesRef.current.forEach((particle, i) => {
         const data = particle.userData;
         
@@ -334,7 +332,7 @@ const SanityOrb = () => {
       });
 
       if (starsRef.current) {
-        starsRef.current.forEach((field, i) => {
+        starsRef.current?.forEach((field: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>, i: number) => {
           field.rotation.y += field.userData.speed;
           field.rotation.x += field.userData.speed * 0.5;
           
@@ -376,14 +374,13 @@ const SanityOrb = () => {
         p.geometry.dispose();
         p.material.dispose();
       });
-      starsRef.current.forEach(field => {
+      starsRef.current?.forEach((field: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>) => {
         field.geometry.dispose();
         field.material.dispose();
       });
       renderer.dispose();
     };
   }, [sanity]);
-
   useEffect(() => {
     if (orbRef.current && glowRef.current && orbRef.current.material.uniforms) {
       const targetColor = getSanityColor(sanity);
@@ -530,10 +527,6 @@ const SanityOrb = () => {
               min="0"
               max="100"
               value={sanity}
-              onChange={(e) => setSanity(Number(e.target.value))}
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              className="relative w-full h-3 bg-transparent appearance-none cursor-pointer slider z-10"
             />
             <div 
               className="absolute top-0 left-0 h-3 rounded-full pointer-events-none"
@@ -665,7 +658,3 @@ const SanityOrb = () => {
 };
 
 export default SanityOrb;
-
-export default function SanityOrb() {
-  return <div className="w-64 h-64 bg-blue-500 rounded-full"></div>
-}
