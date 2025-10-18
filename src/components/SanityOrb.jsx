@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
+console.log('SanityOrb component loaded');
+
 const SanityOrb = () => {
   const mountRef = useRef(null);
   const [sanity, setSanity] = useState(100);
@@ -397,7 +399,12 @@ const SanityOrb = () => {
           particle.material.color.lerp(targetColor, 0.05);
         });
         
-        if (orbRef.current.material.uniforms.color.value.distanceTo(targetColor) > 0.01) {
+        const currentColor = orbRef.current.material.uniforms.color.value;
+        const distance = Math.abs(currentColor.r - targetColor.r) + 
+                        Math.abs(currentColor.g - targetColor.g) + 
+                        Math.abs(currentColor.b - targetColor.b);
+        
+        if (distance > 0.01) {
           requestAnimationFrame(updateColors);
         }
       };
