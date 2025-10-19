@@ -182,5 +182,7 @@ This project is licensed under the MIT License.
 - **Vite Team** - For the fast build tool
 
 ---
+Earlier versions were released under MIT.
+All versions from October 2025 onward use the MIT License (with attribution).
 
 *Sanity Orb: Where mental state meets visual art through the power of WebGL and modern web technologies.*
