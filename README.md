@@ -182,7 +182,14 @@ This project is licensed under the MIT License.
 - **Vite Team** - For the fast build tool
 
 ---
-Earlier versions were released under MIT.
-All versions from October 2025 onward use the MIT License (with attribution).
+
+##License Notice
+
+Earlier versions of Sanity Orb were released under the standard MIT License.
+
+As of October 20, 2025 (GMT+7), all new versions of Sanity Orb and its derivatives are released under the MIT License (with attribution requirement).
+
+Please ensure that proper credit is given to the original author, Jesse Dao, in accordance with the updated license terms included in this repository.
+---
 
 *Sanity Orb: Where mental state meets visual art through the power of WebGL and modern web technologies.*
