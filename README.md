@@ -172,10 +172,9 @@ The orb uses custom GLSL shaders for advanced visual effects:
 
 ## License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the [MIT License](./LICENSE).
 
-Please ensure that proper credit is given to the original author, **Jesse Dao**, in accordance with the license terms included in this repository.
----
+Please credit the original author, **Jesse Dao**, when redistributing or modifying this software.
 
 ## Acknowledgments
 
