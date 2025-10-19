@@ -170,9 +170,14 @@ The orb uses custom GLSL shaders for advanced visual effects:
 - **ESLint**: Configured for React and modern JavaScript
 - **Prettier**: Code formatting (if configured)
 
-## License
+## License Notice
 
-This project is licensed under the MIT License.
+Earlier versions of Sanity Orb were released under the standard MIT License.
+
+As of October 20, 2025 (GMT+7), all new versions of Sanity Orb and its derivatives are released under the MIT License (with attribution requirement).
+
+Please ensure that proper credit is given to the original author, Jesse Dao, in accordance with the updated license terms included in this repository.
+---
 
 ## Acknowledgments
 
@@ -181,15 +186,6 @@ This project is licensed under the MIT License.
 - **Tailwind CSS** - For the utility-first CSS framework
 - **Vite Team** - For the fast build tool
 
----
-
-## License Notice
-
-Earlier versions of Sanity Orb were released under the standard MIT License.
-
-As of October 20, 2025 (GMT+7), all new versions of Sanity Orb and its derivatives are released under the MIT License (with attribution requirement).
-
-Please ensure that proper credit is given to the original author, Jesse Dao, in accordance with the updated license terms included in this repository.
 ---
 
 *Sanity Orb: Where mental state meets visual art through the power of WebGL and modern web technologies.*
