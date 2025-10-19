@@ -6,7 +6,7 @@ Oh and also, the inspirations for this project came from the idea or concept of 
 
 Initally, I was gonna make an application that scrapes the internet and gives out the general mood of it, like a mood ring would.
 
-THE Internet Mood Ring. However, that idea wasn't feasible for me monetary-wise and time wise considering i'm still quite choppy on data handling. So I decided to learn about the frontend libs and make a truly beautiful orb out of it.
+THE Internet Mood Ring. However, I decided to put my own spin on this, and so indeed, The Internet Sanity Orb was created.
 
 ## Overview
 
