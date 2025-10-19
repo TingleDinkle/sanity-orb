@@ -174,11 +174,6 @@ The orb uses custom GLSL shaders for advanced visual effects:
 
 This project is licensed under the **MIT License**.
 
-**License Notice**  
-Earlier versions of *Sanity Orb* were released under the standard MIT License.  
-
-As of **October 20, 2025 (GMT+7)**, all new versions of *Sanity Orb* and its derivatives are released under the **MIT License (with attribution requirement)**.  
-
 Please ensure that proper credit is given to the original author, **Jesse Dao**, in accordance with the updated license terms included in this repository.
 ---
 
