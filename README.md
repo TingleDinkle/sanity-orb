@@ -183,7 +183,7 @@ This project is licensed under the MIT License.
 
 ---
 
-##License Notice
+## License Notice
 
 Earlier versions of Sanity Orb were released under the standard MIT License.
 
