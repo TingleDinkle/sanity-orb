@@ -45,3 +45,20 @@ export const PARTICLE_COUNT = 150;
 export const ORB_RADIUS = 1.8;
 export const GLOW_RADIUS = 2.2;
 export const CAMERA_DISTANCE = 6;
+
+// Opening Animation Constants
+export const OPENING_ANIMATION_CONFIG = {
+  totalDuration: 6.0,
+  phases: {
+    glowExpand: { start: 0, duration: 1.5 },
+    particlesSwirl: { start: 1.0, duration: 3.0 },
+    colorSync: { start: 2.0, duration: 3.0 },
+    textAppear: { start: 4.5, duration: 1.0 },
+    stabilization: { start: 5.0, duration: 1.0 }
+  },
+  particleCount: 150,
+  glowScale: { initial: 0.1, max: 3.0 },
+  orbOpacity: { max: 0.6 },
+  targetColor: '#00ff88', // Calm green
+  cameraMovement: { amplitude: 0.1, speed: 0.2 }
+};

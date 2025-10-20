@@ -52,3 +52,43 @@ export interface SanityPreset {
   label: string;
   value: number;
 }
+
+// Opening Animation Types
+export interface AnimationPhase {
+  start: number;
+  duration: number;
+}
+
+export interface OpeningAnimationConfig {
+  totalDuration: number;
+  phases: {
+    glowExpand: AnimationPhase;
+    particlesSwirl: AnimationPhase;
+    colorSync: AnimationPhase;
+    textAppear: AnimationPhase;
+    stabilization: AnimationPhase;
+  };
+  particleCount: number;
+  glowScale: {
+    initial: number;
+    max: number;
+  };
+  orbOpacity: {
+    max: number;
+  };
+  targetColor: string;
+  cameraMovement: {
+    amplitude: number;
+    speed: number;
+  };
+}
+
+export interface ParticleTarget {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface OpeningAnimationProps {
+  onComplete: () => void;
+}

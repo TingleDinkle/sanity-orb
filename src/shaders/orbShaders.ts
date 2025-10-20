@@ -107,3 +107,31 @@ export const glowFragmentShader = `
     gl_FragColor = vec4(color, intensity * 0.4);
   }
 `;
+
+// Opening Animation Shaders
+export const openingGlowVertexShader = `
+  varying vec3 vNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+export const openingGlowFragmentShader = `
+  uniform vec3 color;
+  uniform float intensity;
+  uniform float saturation;
+  varying vec3 vNormal;
+  
+  vec3 saturate(vec3 rgb, float adjustment) {
+    vec3 W = vec3(0.2125, 0.7154, 0.0721);
+    vec3 intensity = vec3(dot(rgb, W));
+    return mix(intensity, rgb, adjustment);
+  }
+  
+  void main() {
+    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+    vec3 saturatedColor = saturate(color, saturation);
+    gl_FragColor = vec4(saturatedColor, fresnel * intensity);
+  }
+`;
