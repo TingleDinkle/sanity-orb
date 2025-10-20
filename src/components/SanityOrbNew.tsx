@@ -7,12 +7,13 @@ import ControlPanel from './ui/ControlPanel';
 
 const SanityOrbNew: React.FC = () => {
   const [sanity, setSanity] = useState(100);
+  const [isControlPanelVisible, setIsControlPanelVisible] = useState(true);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
       
-      <ThreeScene sanity={sanity} />
+      <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
       
       <div 
         className="absolute inset-0 pointer-events-none" 
