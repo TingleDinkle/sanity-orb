@@ -83,60 +83,99 @@ export const checkWebGLSupport = (): boolean => {
   return !!gl;
 };
 
-// Opening Animation Utilities
-export const createOpeningParticles = (count: number, scene: THREE.Scene): THREE.Mesh[] => {
-  const particles: THREE.Mesh[] = [];
+// Mind Assembly Animation Utilities
+export const createNeuralNodes = (count: number, scene: THREE.Scene): THREE.Mesh[] => {
+  const nodes: THREE.Mesh[] = [];
   
   for (let i = 0; i < count; i++) {
-    const geometry = new THREE.SphereGeometry(0.02, 8, 8);
+    const geometry = new THREE.SphereGeometry(0.04, 16, 16);
     const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(Math.random(), Math.random(), Math.random()),
+      color: new THREE.Color(0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1.0),
       transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending
+      opacity: 0,
+      emissive: new THREE.Color(0.3, 0.5, 0.8),
+      emissiveIntensity: 0
     });
     
-    const particle = new THREE.Mesh(geometry, material);
+    const node = new THREE.Mesh(geometry, material);
     
-    // Random starting position (scattered)
-    particle.position.set(
-      (Math.random() - 0.5) * 15,
-      (Math.random() - 0.5) * 15,
-      (Math.random() - 0.5) * 15
+    // Random scattered starting position
+    node.position.set(
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 20,
+      (Math.random() - 0.5) * 20
     );
     
-    particles.push(particle);
-    scene.add(particle);
+    nodes.push(node);
+    scene.add(node);
   }
   
-  return particles;
+  return nodes;
 };
 
-export const calculateParticleTargets = (count: number): Array<{x: number, y: number, z: number}> => {
+export const calculateNodeTargets = (count: number): Array<{x: number, y: number, z: number, activated: boolean, activationTime: number}> => {
   const targets = [];
   
   for (let i = 0; i < count; i++) {
-    const radius = 2.5 + Math.random() * 1.5;
+    const radius = 2.0 + Math.random() * 1.2;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.random() * Math.PI;
     
     targets.push({
       x: radius * Math.sin(phi) * Math.cos(theta),
       y: radius * Math.sin(phi) * Math.sin(theta),
-      z: radius * Math.cos(phi)
+      z: radius * Math.cos(phi),
+      activated: false,
+      activationTime: Math.random() * 2.0
     });
   }
   
   return targets;
 };
 
-export const createOpeningGlow = (scene: THREE.Scene): THREE.Mesh => {
-  const glowGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+export const createConnection = (node1: THREE.Mesh, node2: THREE.Mesh, color: THREE.Color, scene: THREE.Scene) => {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(6);
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  
+  const material = new THREE.LineBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending
+  });
+  
+  const line = new THREE.Line(geometry, material);
+  scene.add(line);
+  
+  return {
+    line,
+    node1,
+    node2,
+    pulsePhase: Math.random() * Math.PI * 2
+  };
+};
+
+export const createMindCore = (scene: THREE.Scene): THREE.Mesh => {
+  const coreGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+  const coreMaterial = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0.4, 0.7, 1.0),
+    transparent: true,
+    opacity: 0,
+    emissive: new THREE.Color(0.4, 0.7, 1.0),
+    emissiveIntensity: 0
+  });
+  const core = new THREE.Mesh(coreGeometry, coreMaterial);
+  scene.add(core);
+  return core;
+};
+
+export const createMindGlow = (scene: THREE.Scene): THREE.Mesh => {
+  const glowGeometry = new THREE.SphereGeometry(3.5, 64, 64);
   const glowMaterial = new THREE.ShaderMaterial({
     uniforms: {
-      color: { value: new THREE.Color(1, 1, 1) } as THREE.IUniform,
-      intensity: { value: 0.0 } as THREE.IUniform,
-      saturation: { value: 2.0 } as THREE.IUniform
+      color: { value: new THREE.Color(0.3, 0.6, 1.0) } as THREE.IUniform,
+      intensity: { value: 0.0 } as THREE.IUniform
     },
     vertexShader: `
       varying vec3 vNormal;
@@ -148,35 +187,26 @@ export const createOpeningGlow = (scene: THREE.Scene): THREE.Mesh => {
     fragmentShader: `
       uniform vec3 color;
       uniform float intensity;
-      uniform float saturation;
       varying vec3 vNormal;
       
-      vec3 saturate(vec3 rgb, float adjustment) {
-        vec3 W = vec3(0.2125, 0.7154, 0.0721);
-        vec3 intensity = vec3(dot(rgb, W));
-        return mix(intensity, rgb, adjustment);
-      }
-      
       void main() {
-        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
-        vec3 saturatedColor = saturate(color, saturation);
-        gl_FragColor = vec4(saturatedColor, fresnel * intensity);
+        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
+        gl_FragColor = vec4(color, fresnel * intensity);
       }
     `,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide
   });
-
   const glow = new THREE.Mesh(glowGeometry, glowMaterial);
   scene.add(glow);
   return glow;
 };
 
-export const createOpeningOrb = (scene: THREE.Scene): THREE.Mesh => {
+export const createMindOrb = (scene: THREE.Scene): THREE.Mesh => {
   const orbGeometry = new THREE.SphereGeometry(1.8, 64, 64);
   const orbMaterial = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(0.5, 0.5, 0.5),
+    color: new THREE.Color(0.0, 1.0, 0.53),
     transparent: true,
     opacity: 0,
     blending: THREE.AdditiveBlending

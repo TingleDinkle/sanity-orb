@@ -1,11 +1,11 @@
 import React from 'react';
 
-interface OpeningAnimationTextProps {
+interface MindAssemblyTextProps {
   visible: boolean;
   opacity: number;
 }
 
-const OpeningAnimationText: React.FC<OpeningAnimationTextProps> = ({ visible, opacity }) => {
+const MindAssemblyText: React.FC<MindAssemblyTextProps> = ({ visible, opacity }) => {
   if (!visible) return null;
 
   return (
@@ -15,14 +15,14 @@ const OpeningAnimationText: React.FC<OpeningAnimationTextProps> = ({ visible, op
     >
       <div className="text-center">
         <h1 className="text-6xl font-extralight text-white tracking-wider mb-4">
-          Sanity
+          Mind
         </h1>
         <p className="text-2xl font-light text-white/60 tracking-wide">
-          reassembled
+          assembled
         </p>
       </div>
     </div>
   );
 };
 
-export default OpeningAnimationText;
+export default MindAssemblyText;

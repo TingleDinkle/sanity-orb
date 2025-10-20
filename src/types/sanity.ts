@@ -53,29 +53,29 @@ export interface SanityPreset {
   value: number;
 }
 
-// Opening Animation Types
+// Mind Assembly Animation Types
 export interface AnimationPhase {
   start: number;
   duration: number;
 }
 
-export interface OpeningAnimationConfig {
+export interface MindAssemblyConfig {
   totalDuration: number;
   phases: {
-    glowExpand: AnimationPhase;
-    particlesSwirl: AnimationPhase;
-    colorSync: AnimationPhase;
-    textAppear: AnimationPhase;
-    stabilization: AnimationPhase;
+    coreAwaken: AnimationPhase;
+    nodesConverge: AnimationPhase;
+    networkForm: AnimationPhase;
+    convergence: AnimationPhase;
+    textStabilization: AnimationPhase;
+    finalState: AnimationPhase;
   };
-  particleCount: number;
-  glowScale: {
+  nodeCount: number;
+  coreScale: {
     initial: number;
     max: number;
   };
-  orbOpacity: {
-    max: number;
-  };
+  glowRadius: number;
+  orbRadius: number;
   targetColor: string;
   cameraMovement: {
     amplitude: number;
@@ -83,12 +83,22 @@ export interface OpeningAnimationConfig {
   };
 }
 
-export interface ParticleTarget {
+export interface NodeTarget {
   x: number;
   y: number;
   z: number;
+  activated: boolean;
+  activationTime: number;
 }
 
-export interface OpeningAnimationProps {
+export interface NeuralConnection {
+  line: THREE.Line;
+  node1: THREE.Mesh;
+  node2: THREE.Mesh;
+  pulsePhase: number;
+}
+
+export interface MindAssemblyProps {
   onComplete: () => void;
+  onTextUpdate?: (time: number) => void;
 }

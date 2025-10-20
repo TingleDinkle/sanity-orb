@@ -3,14 +3,27 @@ import SanityOrb from "./components/SanityOrb";
 import OpeningAnimation from "./components/animations/OpeningAnimation";
 
 export default function App() {
-  const [showOpening, setShowOpening] = useState(true);
+  const [overlayVisible, setOverlayVisible] = useState(true);
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
+
+  const handleOpeningComplete = () => {
+    // Start crossfade: keep animation mounted while fading out
+    setOverlayOpacity(0);
+    // After fade-out completes, unmount the animation overlay
+    setTimeout(() => setOverlayVisible(false), 750);
+  };
 
   return (
-    <div className="w-full h-screen">
-      {showOpening ? (
-        <OpeningAnimation onComplete={() => setShowOpening(false)} />
-      ) : (
-        <SanityOrb />
+    <div className="relative w-full h-screen overflow-hidden">
+      <SanityOrb />
+
+      {overlayVisible && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ opacity: overlayOpacity, transition: "opacity 700ms ease" }}
+        >
+          <OpeningAnimation onComplete={handleOpeningComplete} />
+        </div>
       )}
     </div>
   );
