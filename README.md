@@ -12,7 +12,7 @@ As Anthony Po beautifully expressed:
 
 > "The Internet can feel so negative sometimes, like there's just infinite drama videos and just slop. But sometimes people kind of just want something stupid, fun and wholesome and that's like, a comforting thought, I guess."
 
-This quote perfectly captured what I wanted to create. Something that acknowledges the chaos of the internet while providing a moment of pure, wholesome fun. Instead of just analyzing the internet's mood, I decided to put my own creative spin on it and created **The Internet Sanity Orb** - a digital consciousness that you can interact with, calm down, or watch spiral into beautiful chaos.
+This quote perfectly captured what I wanted to create. Something that acknowledges the chaos of the internet while providing a moment of pure, wholesome fun. Instead of just analyzing the internet's mood, I decided to put my own creative spin on it and created **The Internet Sanity Orb** , a digital consciousness that you can interact with, calm down, or watch spiral into beautiful chaos.
 
 The orb represents the internet's collective mental state, and through your interactions, you become a digital therapist of sorts, helping to stabilize or embrace the beautiful madness of our connected world.
 
