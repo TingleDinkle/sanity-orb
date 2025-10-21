@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MindAssemblyScene from '../three/MindAssemblyScene';
 import MindAssemblyText from '../ui/MindAssemblyText';
 import { MIND_ASSEMBLY_CONFIG } from '../../constants/sanityConstants';
@@ -30,7 +30,7 @@ const OpeningAnimation: React.FC<OpeningAnimationProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 will-change-transform will-change-opacity">
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 will-change-transform will-change-opacity z-50">
       <MindAssemblyScene onComplete={onComplete} onTextUpdate={handleAnimationUpdate} />
       <MindAssemblyText visible={textVisible} opacity={textOpacity} />
     </div>
