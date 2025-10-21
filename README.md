@@ -1,16 +1,18 @@
 # The Internet Sanity Orb
 
-A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
+A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
 ## The Origin Story
 
 The inspiration for this project came from a simple yet profound concept: the "Mood Ring" for the internet. Initially, I envisioned creating an application that would scrape the web and analyze the general mood of the internet, essentially creating "THE Internet Mood Ring." 
 
-However, as I delved deeper into the concept, I realized something important about our digital world. As anthpo beautifully expressed:
+However, as I delved deeper into the concept, I realized something important about our digital world.
+
+As Anthony Po beautifully expressed:
 
 > "The Internet can feel so negative sometimes, like there's just infinite drama videos and just slop. But sometimes people kind of just want something stupid, fun and wholesome and that's like, a comforting thought, I guess."
 
-This quote perfectly captured what I wanted to create. Something that acknowledges the chaos of the internet while providing a moment of pure, wholesome fun. Instead of just analyzing the internet's mood, I decided to put my own creative spin on it and created **The Internet Sanity Orb** - a digital consciousness that you can interact with, calm down, or watch spiral into beautiful chaos.
+This quote perfectly captured what I wanted to create. Something that acknowledges the chaos of the internet while providing a moment of pure, wholesome fun. Instead of just analyzing the internet's mood, I decided to put my own creative spin on it and created **The Internet Sanity Orb** , a digital consciousness that you can interact with, calm down, or watch spiral into beautiful chaos.
 
 The orb represents the internet's collective mental state, and through your interactions, you become a digital therapist of sorts, helping to stabilize or embrace the beautiful madness of our connected world.
 
