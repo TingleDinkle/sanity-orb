@@ -7,6 +7,7 @@ import ControlPanel from './ui/ControlPanel';
 import HelpOverlay from './ui/HelpOverlay';
 import FunnyMessages from './ui/FunnyMessages';
 import AudioControls from './ui/AudioControls';
+import RestoreComponentsMenu from './ui/RestoreComponentsMenu';
 import { audioManager } from '../utils/audioManager';
 
 const SanityOrb: React.FC = () => {
@@ -129,6 +130,15 @@ const SanityOrb: React.FC = () => {
           onHide={() => setShowSystemIndicators(false)}
         />
       )}
+      
+      <RestoreComponentsMenu
+        showStatusPanel={showStatusPanel}
+        showCoherenceIndex={showCoherenceIndex}
+        showSystemIndicators={showSystemIndicators}
+        onRestoreStatusPanel={() => setShowStatusPanel(true)}
+        onRestoreCoherenceIndex={() => setShowCoherenceIndex(true)}
+        onRestoreSystemIndicators={() => setShowSystemIndicators(true)}
+      />
       
       <ControlPanel 
         sanity={sanity} 

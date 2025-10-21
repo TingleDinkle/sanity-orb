@@ -5,9 +5,11 @@ class AudioManager {
     drone: Tone.Synth | null;
     pad: Tone.PolySynth | null;
     bright: Tone.PolySynth | null;
+    ambient: Tone.PolySynth | null;
   };
   private lfo: Tone.LFO | null;
   private reverb: Tone.Reverb | null;
+  private filter: Tone.Filter | null;
   private currentRange: string | null;
   private isInitialized: boolean;
   private isMuted: boolean;
@@ -17,9 +19,11 @@ class AudioManager {
       drone: null,
       pad: null,
       bright: null,
+      ambient: null,
     };
     this.lfo = null;
     this.reverb = null;
+    this.filter = null;
     this.currentRange = null;
     this.isInitialized = false;
     this.isMuted = false;
@@ -33,9 +37,16 @@ class AudioManager {
       
       // Create reverb for all synths
       this.reverb = new Tone.Reverb({
-        decay: 3,
-        wet: 0.3
+        decay: 4,
+        wet: 0.4
       }).toDestination();
+
+      // Create filter for ambient sounds
+      this.filter = new Tone.Filter({
+        frequency: 800,
+        type: 'lowpass',
+        rolloff: -24
+      }).connect(this.reverb);
 
       // LOW RANGE (0-20): Dark, ominous drone
       this.synths.drone = new Tone.Synth({
@@ -74,19 +85,19 @@ class AudioManager {
         volume: -18
       }).connect(this.reverb);
 
-      // HIGH RANGE (80-100): Bright harmonic tones
-      this.synths.bright = new Tone.PolySynth(Tone.Synth, {
+      // HIGH RANGE (80-100): Ambient harmonic atmosphere
+      this.synths.ambient = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
-          type: 'triangle'
+          type: 'sine'
         },
         envelope: {
-          attack: 0.5,
-          decay: 0.8,
-          sustain: 0.7,
-          release: 2
+          attack: 3,
+          decay: 2,
+          sustain: 0.8,
+          release: 5
         },
-        volume: -15
-      }).connect(this.reverb);
+        volume: -20
+      }).connect(this.filter);
 
       this.isInitialized = true;
     } catch (error) {
@@ -174,29 +185,40 @@ class AudioManager {
   }
 
   private playHighRange() {
-    // Bright harmonic tones with pulsing rhythm
-    if (this.synths.bright && this.reverb) {
-      this.reverb.wet.value = 0.5; // More reverb for high range
+    // Ambient harmonic atmosphere with gentle floating tones
+    if (this.synths.ambient && this.filter) {
+      this.filter.frequency.value = 1200; // Gentle high-pass for clarity
       
-      const melody = ['C4', 'E4', 'G4', 'B4', 'D5'];
-      let index = 0;
+      // Create gentle, overlapping ambient chords
+      const ambientChords = [
+        ['C4', 'E4', 'G4', 'B4'],
+        ['D4', 'F4', 'A4', 'C5'],
+        ['E4', 'G4', 'B4', 'D5'],
+        ['A3', 'C4', 'E4', 'G4']
+      ];
       
-      const playNote = () => {
+      let chordIndex = 0;
+      
+      const playAmbientChord = () => {
         if (this.currentRange !== 'high') return;
-        if (this.synths.bright) {
-          this.synths.bright.triggerAttackRelease(melody[index], '8n');
-          index = (index + 1) % melody.length;
+        if (this.synths.ambient) {
+          // Long, overlapping notes for ambient feel
+          this.synths.ambient.triggerAttackRelease(ambientChords[chordIndex], '2n');
+          chordIndex = (chordIndex + 1) % ambientChords.length;
         }
       };
       
-      playNote();
+      // Initial chord
+      playAmbientChord();
+      
+      // Slower, more spaced out chords for ambient feel
       const interval = setInterval(() => {
         if (this.currentRange !== 'high') {
           clearInterval(interval);
           return;
         }
-        playNote();
-      }, 600); // Pulsing rhythm
+        playAmbientChord();
+      }, 4000); // 4 seconds between chords for gentle ambience
     }
   }
 
@@ -207,14 +229,17 @@ class AudioManager {
     if (this.synths.pad) {
       this.synths.pad.releaseAll();
     }
-    if (this.synths.bright) {
-      this.synths.bright.releaseAll();
+    if (this.synths.ambient) {
+      this.synths.ambient.releaseAll();
     }
     if (this.lfo) {
       this.lfo.stop();
     }
     if (this.reverb) {
-      this.reverb.wet.value = 0.3; // Reset reverb
+      this.reverb.wet.value = 0.4;
+    }
+    if (this.filter) {
+      this.filter.frequency.value = 800;
     }
   }
 
@@ -240,6 +265,7 @@ class AudioManager {
     
     if (this.lfo) this.lfo.dispose();
     if (this.reverb) this.reverb.dispose();
+    if (this.filter) this.filter.dispose();
     
     this.isInitialized = false;
   }
