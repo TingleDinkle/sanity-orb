@@ -6,7 +6,7 @@ A mesmerizing 3D visualization that represents the collective digital consciousn
 
 The inspiration for this project came from a simple yet profound concept: the "Mood Ring" for the internet. Initially, I envisioned creating an application that would scrape the web and analyze the general mood of the internet, essentially creating "THE Internet Mood Ring." 
 
-However, as I delved deeper into the concept, I realized something important about our digital world. As anthpo beautifully expressed:
+However, as I delved deeper into the concept, I realized something important about our digital world. As Anthony Po beautifully expressed:
 
 > "The Internet can feel so negative sometimes, like there's just infinite drama videos and just slop. But sometimes people kind of just want something stupid, fun and wholesome and that's like, a comforting thought, I guess."
 
