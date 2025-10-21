@@ -6,10 +6,54 @@ import SystemIndicators from './ui/SystemIndicators';
 import ControlPanel from './ui/ControlPanel';
 import HelpOverlay from './ui/HelpOverlay';
 import FunnyMessages from './ui/FunnyMessages';
+import AudioControls from './ui/AudioControls';
+import { audioManager } from '../utils/audioManager';
 
 const SanityOrb: React.FC = () => {
   const [sanity, setSanity] = useState(100);
   const [isControlPanelVisible, setIsControlPanelVisible] = useState(true);
+  const [audioInitialized, setAudioInitialized] = useState(false);
+  const [showStatusPanel, setShowStatusPanel] = useState(true);
+  const [showCoherenceIndex, setShowCoherenceIndex] = useState(true);
+  const [showSystemIndicators, setShowSystemIndicators] = useState(true);
+
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const initAudio = async () => {
+      if (!audioInitialized) {
+        await audioManager.initialize();
+        setAudioInitialized(true);
+      }
+    };
+
+    const handleFirstInteraction = () => {
+      initAudio();
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
+    };
+  }, [audioInitialized]);
+
+  // Update audio based on sanity level
+  useEffect(() => {
+    if (audioInitialized) {
+      audioManager.updateSanity(sanity);
+    }
+  }, [sanity, audioInitialized]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      audioManager.dispose();
+    };
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -65,17 +109,37 @@ const SanityOrb: React.FC = () => {
         }} 
       />
 
-      <StatusPanel sanity={sanity} />
-      <CoherenceIndex sanity={sanity} />
-      <SystemIndicators sanity={sanity} />
+      {showStatusPanel && (
+        <StatusPanel 
+          sanity={sanity} 
+          onHide={() => setShowStatusPanel(false)}
+        />
+      )}
+      
+      {showCoherenceIndex && (
+        <CoherenceIndex 
+          sanity={sanity}
+          onHide={() => setShowCoherenceIndex(false)}
+        />
+      )}
+      
+      {showSystemIndicators && (
+        <SystemIndicators 
+          sanity={sanity}
+          onHide={() => setShowSystemIndicators(false)}
+        />
+      )}
+      
       <ControlPanel 
         sanity={sanity} 
         onSanityChange={setSanity}
         isVisible={isControlPanelVisible}
         onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
       />
+      
       <HelpOverlay />
       <FunnyMessages sanity={sanity} />
+      <AudioControls />
 
       <style>{`
         input[type="range"]::-webkit-slider-thumb {
