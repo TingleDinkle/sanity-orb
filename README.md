@@ -1,6 +1,6 @@
 # The Internet Sanity Orb
 
-A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
+A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
 ## The Origin Story
 
