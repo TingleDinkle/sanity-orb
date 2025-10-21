@@ -4,7 +4,7 @@ A mesmerizing 3D visualization that represents the collective digital consciousn
 
 ## The Origin Story
 
-The inspiration for this project came from a simple yet profound concept: the "Mood Ring" for the internet. Initially, I envisioned creating an application that would scrape the web and analyze the general mood of the internet - essentially creating "THE Internet Mood Ring." 
+The inspiration for this project came from a simple yet profound concept: the "Mood Ring" for the internet. Initially, I envisioned creating an application that would scrape the web and analyze the general mood of the internet, essentially creating "THE Internet Mood Ring." 
 
 However, as I delved deeper into the concept, I realized something important about our digital world. As anthpo beautifully expressed:
 
