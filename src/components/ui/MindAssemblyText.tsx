@@ -15,10 +15,10 @@ const MindAssemblyText: React.FC<MindAssemblyTextProps> = ({ visible, opacity })
     >
       <div className="text-center">
         <h1 className="text-6xl font-extralight text-white tracking-wider mb-4">
-          Mind
+          Internet Sanity Orb
         </h1>
         <p className="text-2xl font-light text-white/60 tracking-wide">
-          assembled
+          digital consciousness initialized
         </p>
       </div>
     </div>

@@ -8,17 +8,17 @@ export const SANITY_COLORS: SanityColors = {
 };
 
 export const SANITY_LABELS: SanityLabels = {
-  coherent: 'Coherent',
-  stable: 'Stable',
-  fractured: 'Fractured',
-  chaotic: 'Chaotic'
+  coherent: 'Digital Harmony',
+  stable: 'Network Stable',
+  fractured: 'Data Fragmented',
+  chaotic: 'Digital Chaos'
 };
 
 export const SANITY_DESCRIPTIONS: SanityDescriptions = {
-  coherent: 'All systems harmonized · Neural pathways aligned',
-  stable: 'Minor fluctuations detected · Maintaining stability',
-  fractured: 'Significant instability present · Pattern degradation',
-  chaotic: 'Critical coherence failure · Reality breakdown imminent'
+  coherent: 'Digital consciousness perfectly aligned · All data streams flowing harmoniously',
+  stable: 'Network stability maintained · Minor digital fluctuations detected',
+  fractured: 'Data integrity compromised · Network fragmentation detected · "Have you tried turning it off and on again?"',
+  chaotic: 'Critical digital breakdown · Internet consciousness destabilized · "Error 404: Sanity not found" · "The internet is having a bad day"'
 };
 
 export const SANITY_GRADIENTS: SanityGradients = {
@@ -36,12 +36,12 @@ export const STAR_FIELD_CONFIGS: StarFieldConfig[] = [
 
 export const SANITY_PRESETS: SanityPreset[] = [
   { label: 'Peak', value: 100 },
-  { label: 'Nominal', value: 75 },
-  { label: 'Warning', value: 40 },
+  { label: 'Nominal', value: 50 },
+  { label: 'Warning', value: 25 },
   { label: 'Critical', value: 10 }
 ];
 
-export const PARTICLE_COUNT = 150;
+export const PARTICLE_COUNT = 120;
 export const ORB_RADIUS = 1.8;
 export const GLOW_RADIUS = 2.2;
 export const CAMERA_DISTANCE = 6;

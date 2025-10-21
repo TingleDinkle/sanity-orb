@@ -5,6 +5,7 @@ import CoherenceIndex from './ui/CoherenceIndex';
 import SystemIndicators from './ui/SystemIndicators';
 import ControlPanel from './ui/ControlPanel';
 import HelpOverlay from './ui/HelpOverlay';
+import FunnyMessages from './ui/FunnyMessages';
 
 const SanityOrb: React.FC = () => {
   const [sanity, setSanity] = useState(100);
@@ -21,13 +22,13 @@ const SanityOrb: React.FC = () => {
           setSanity(100);
           break;
         case '2':
-          setSanity(75);
-          break;
-        case '3':
           setSanity(50);
           break;
-        case '4':
+        case '3':
           setSanity(25);
+          break;
+        case '4':
+          setSanity(10);
           break;
         case '5':
           setSanity(10);
@@ -74,6 +75,7 @@ const SanityOrb: React.FC = () => {
         onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
       />
       <HelpOverlay />
+      <FunnyMessages sanity={sanity} />
 
       <style>{`
         input[type="range"]::-webkit-slider-thumb {

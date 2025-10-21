@@ -34,7 +34,7 @@ const HelpOverlay: React.FC = () => {
     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center pointer-events-auto z-50">
       <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-2xl font-light">Controls</h2>
+          <h2 className="text-white text-2xl font-light">Internet Sanity Orb Controls</h2>
           <button
             onClick={() => setIsVisible(false)}
             className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
@@ -55,13 +55,12 @@ const HelpOverlay: React.FC = () => {
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-sm">Sanity Presets</span>
+            <span className="text-sm">Coherence Presets</span>
             <div className="flex gap-1">
               <kbd className="px-2 py-1 bg-white/10 rounded text-xs">1</kbd>
               <kbd className="px-2 py-1 bg-white/10 rounded text-xs">2</kbd>
               <kbd className="px-2 py-1 bg-white/10 rounded text-xs">3</kbd>
               <kbd className="px-2 py-1 bg-white/10 rounded text-xs">4</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">5</kbd>
             </div>
           </div>
           
@@ -81,7 +80,7 @@ const HelpOverlay: React.FC = () => {
         
         <div className="mt-6 pt-4 border-t border-white/10">
           <p className="text-white/50 text-xs text-center">
-            Use the slider or keyboard shortcuts to adjust sanity levels
+            Use the slider or keyboard shortcuts to adjust digital consciousness coherence levels
           </p>
         </div>
       </div>

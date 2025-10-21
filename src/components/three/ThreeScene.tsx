@@ -46,10 +46,15 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       const renderer = new THREE.WebGLRenderer({ 
         antialias: true, 
         alpha: true,
-        powerPreference: "high-performance"
+        powerPreference: "high-performance",
+        logarithmicDepthBuffer: true,
+        precision: "highp"
       });
       renderer.setSize(mountElement.clientWidth, mountElement.clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.2;
       mountElement.appendChild(renderer.domElement);
       rendererRef.current = renderer;
 
@@ -91,12 +96,12 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       });
       starsRef.current = starFields;
 
-      // Create orb
-      const orbGeometry = new THREE.SphereGeometry(1.8, 128, 128);
+      // Create orb - optimized geometry for better performance
+      const orbGeometry = new THREE.SphereGeometry(1.8, 96, 96);
       const orbMaterial = new THREE.ShaderMaterial({
         uniforms: {
           time: { value: 0 },
-          color: { value: new THREE.Color(0x00ff00) },
+          color: { value: new THREE.Color(0x00ff88) }, // Brighter green for better visibility
           pulseSpeed: { value: 1.0 },
           turbulence: { value: 0.0 }
         },
@@ -110,11 +115,11 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       orbRef.current = orb;
       scene.add(orb);
 
-      // Create glow
-      const glowGeometry = new THREE.SphereGeometry(2.2, 64, 64);
+      // Create glow - optimized geometry
+      const glowGeometry = new THREE.SphereGeometry(2.2, 48, 48);
       const glowMaterial = new THREE.ShaderMaterial({
         uniforms: {
-          color: { value: new THREE.Color(0x00ff00) },
+          color: { value: new THREE.Color(0x00ff88) }, // Brighter green for better visibility
           coefficient: { value: 0.5 },
           power: { value: 3.0 }
         },
@@ -129,10 +134,10 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       glowRef.current = glow;
       scene.add(glow);
 
-      // Create particles
+      // Create particles - optimized count and geometry
       const particles: THREE.Mesh[] = [];
-      for (let i = 0; i < 150; i++) {
-        const geometry = new THREE.SphereGeometry(0.02, 8, 8);
+      for (let i = 0; i < 120; i++) {
+        const geometry = new THREE.SphereGeometry(0.02, 6, 6);
         const material = new THREE.MeshBasicMaterial({
           color: 0xffffff,
           transparent: true,
@@ -176,43 +181,55 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       rimLight2.position.set(-4, -2, -3);
       scene.add(rimLight2);
 
-      // Animation loop
+      // Animation loop - optimized for performance
       let animationId: number;
-      const animate = () => {
+      let lastTime = 0;
+      const animate = (currentTime: number) => {
         animationId = requestAnimationFrame(animate);
-        timeRef.current += 0.01;
+        
+        const deltaTime = (currentTime - lastTime) * 0.001; // Convert to seconds
+        lastTime = currentTime;
+        
+        timeRef.current += deltaTime * 2; // Much slower, more controlled speed
         const t = timeRef.current;
+
+        // Pre-calculate common values
+        const chaos = 1 - sanity / 100;
+        const chaosFactor = chaos * 0.8;
+        const pulseSpeed = 0.8 + chaos * 1.2;
 
         if (orbRef.current && orbRef.current.material.uniforms) {
           orbRef.current.material.uniforms.time.value = t;
-          orbRef.current.material.uniforms.pulseSpeed.value = 0.8 + (1 - sanity / 100) * 1.2;
-          orbRef.current.material.uniforms.turbulence.value = (1 - sanity / 100) * 0.8;
+          orbRef.current.material.uniforms.pulseSpeed.value = pulseSpeed;
+          orbRef.current.material.uniforms.turbulence.value = chaosFactor;
           
-          orbRef.current.rotation.y += 0.002;
-          orbRef.current.rotation.x = Math.sin(t * 0.3) * 0.08;
-          orbRef.current.rotation.z = Math.cos(t * 0.4) * 0.05;
+          // Slower, more controlled rotation based on sanity
+          const rotationSpeed = 0.3 + chaos * 0.7; // Slower base speed, increases with chaos
+          orbRef.current.rotation.y += deltaTime * rotationSpeed;
+          orbRef.current.rotation.x = Math.sin(t * 0.2) * 0.05; // Slower oscillation
+          orbRef.current.rotation.z = Math.cos(t * 0.25) * 0.03; // Slower oscillation
           
-          const chaos = 1 - sanity / 100;
-          const basePulse = Math.sin(t * (0.8 + chaos * 1.2)) * 0.03;
-          const microPulse = Math.sin(t * 4) * 0.01 * chaos;
+          const basePulse = Math.sin(t * pulseSpeed * 0.5) * 0.02; // Slower pulse
+          const microPulse = Math.sin(t * 2) * 0.005 * chaos; // Much slower micro pulse
           const scale = 1 + basePulse + microPulse;
-          orbRef.current.scale.set(scale, scale, scale);
+          orbRef.current.scale.setScalar(scale);
         }
 
         if (glowRef.current && orbRef.current) {
           glowRef.current.rotation.y = orbRef.current.rotation.y * 0.5;
           const glowScale = orbRef.current.scale.x * 1.05;
-          glowRef.current.scale.set(glowScale, glowScale, glowScale);
+          glowRef.current.scale.setScalar(glowScale);
         }
 
+        // Optimized particle updates - much slower and more controlled
         particlesRef.current.forEach((particle, i) => {
           const data = particle.userData;
           
-          data.theta += data.orbitSpeed;
-          data.phi += data.verticalSpeed * Math.sin(t + i);
+          // Much slower orbit speeds
+          data.theta += data.orbitSpeed * deltaTime * 200;
+          data.phi += data.verticalSpeed * Math.sin(t + i) * deltaTime * 200;
           
-          const chaos = 1 - sanity / 100;
-          const wobble = Math.sin(t * data.speed + i) * 0.3 * chaos;
+          const wobble = Math.sin(t * data.speed * 0.3 + i) * 0.2 * chaos; // Slower wobble
           const radius = data.radius + wobble;
           
           particle.position.x = radius * Math.sin(data.phi) * Math.cos(data.theta);
@@ -222,25 +239,28 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           const distanceFromCenter = particle.position.length();
           particle.material.opacity = 0.3 + (1 - distanceFromCenter / 5) * 0.5;
           
-          particle.rotation.x += 0.02;
-          particle.rotation.y += 0.03;
+          // Much slower rotation
+          particle.rotation.x += deltaTime * 5;
+          particle.rotation.y += deltaTime * 7;
         });
 
+        // Optimized star field updates - much slower
         starsRef.current.forEach((field, i) => {
-          field.rotation.y += field.userData.speed;
-          field.rotation.x += field.userData.speed * 0.5;
+          field.rotation.y += field.userData.speed * deltaTime * 200;
+          field.rotation.x += field.userData.speed * 0.5 * deltaTime * 200;
           
-          const breathe = Math.sin(t * 0.5 + i) * 0.1 + 1;
+          const breathe = Math.sin(t * 0.3 + i) * 0.1 + 1; // Slower breathing
           field.material.opacity = 0.4 + breathe * 0.2;
         });
 
-        camera.position.x = Math.sin(t * 0.1) * 0.3;
-        camera.position.y = Math.cos(t * 0.15) * 0.2;
+        // Smooth camera movement - much slower
+        camera.position.x = Math.sin(t * 0.05) * 0.2; // Slower and smaller movement
+        camera.position.y = Math.cos(t * 0.07) * 0.15; // Slower and smaller movement
         camera.lookAt(0, 0, 0);
 
         renderer.render(scene, camera);
       };
-      animate();
+      animate(0);
 
       const handleResize = () => {
         if (!mountElement || !camera || !renderer) return;

@@ -31,15 +31,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
         <div className="flex items-center justify-between mb-6">
           <div>
             <span className="text-white/60 text-sm tracking-wide font-light">
-              Sanity Modulation Interface
+              Internet Sanity Orb Control Interface
             </span>
             <div className="text-white/40 text-xs mt-1 tracking-wider">
-              Adjust coherence parameters in real-time
+              Modulate digital consciousness coherence levels
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex gap-2">
-              {[75, 50, 25, 0].map((threshold) => (
+              {[50, 25, 10, 0].map((threshold) => (
                 <div 
                   key={threshold}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
@@ -75,37 +75,59 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
               borderRadius: '9999px'
             }}
           />
+          {/* Enhanced visual indicator */}
+          <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none">
+            <div 
+              className="w-1 h-8 bg-white/60 rounded-full transition-all duration-200"
+              style={{ 
+                left: `${sanity}%`,
+                transform: 'translateX(-50%)',
+                boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
+              }}
+            />
+          </div>
         </div>
         
         <div className="flex justify-between text-xs text-white/40 tracking-wider">
           <div className="flex flex-col items-start">
-            <span className="font-light">Critical</span>
+            <span className="font-light">Digital Chaos</span>
             <span className="text-xs text-white/30 mt-0.5">0-25%</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-light">Unstable</span>
+            <span className="font-light">Network Instability</span>
             <span className="text-xs text-white/30 mt-0.5">25-50%</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-light">Normal</span>
+            <span className="font-light">Stable Connection</span>
             <span className="text-xs text-white/30 mt-0.5">50-75%</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="font-light">Optimal</span>
+            <span className="font-light">Optimal Flow</span>
             <span className="text-xs text-white/30 mt-0.5">75-100%</span>
           </div>
         </div>
 
         <div className="flex gap-2 mt-6 pt-6 border-t border-white/10">
-          {SANITY_PRESETS.map(preset => (
-            <button
-              key={preset.value}
-              onClick={() => onSanityChange(preset.value)}
-              className="flex-1 py-2 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white/60 hover:text-white/90 text-xs tracking-wider transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              {preset.label}
-            </button>
-          ))}
+          {SANITY_PRESETS.map(preset => {
+            const isActive = sanity === preset.value;
+            const isNearby = Math.abs(sanity - preset.value) <= 5;
+            
+            return (
+              <button
+                key={preset.value}
+                onClick={() => onSanityChange(preset.value)}
+                className={`flex-1 py-2 px-4 rounded-xl text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 ${
+                  isActive 
+                    ? 'bg-white/20 text-white border border-white/30 shadow-lg' 
+                    : isNearby
+                    ? 'bg-white/10 text-white/80 border border-white/20 hover:bg-white/15'
+                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white/80'
+                }`}
+              >
+                {preset.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
