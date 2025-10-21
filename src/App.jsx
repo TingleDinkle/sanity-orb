@@ -3,8 +3,8 @@ import SanityOrb from "./components/SanityOrb";
 import OpeningAnimation from "./components/animations/OpeningAnimation";
 
 export default function App() {
-  const [overlayVisible, setOverlayVisible] = useState(true);
-  const [overlayOpacity, setOverlayOpacity] = useState(1);
+  const [overlayVisible, setOverlayVisible] = useState(false); // Skip opening animation for debugging
+  const [overlayOpacity, setOverlayOpacity] = useState(0);
 
   const handleOpeningComplete = () => {
     // Start crossfade: keep animation mounted while fading out

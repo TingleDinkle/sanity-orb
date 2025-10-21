@@ -1,16 +1,22 @@
-# Sanity Orb
+# The Internet Sanity Orb
 
-A mesmerizing 3D visualization application that represents mental state through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for mental clarity and stability. This project was meant to be me pushing my boundaries of what I can make with the newest technologies in the frontend game. Hope you like it!
+A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level" - a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
-Oh and also, the inspirations for this project came from the idea or concept of a "Mood Ring".
+## The Origin Story
 
-Initally, I was gonna make an application that scrapes the internet and gives out the general mood of it, like a mood ring would.
+The inspiration for this project came from a simple yet profound concept: the "Mood Ring" for the internet. Initially, I envisioned creating an application that would scrape the web and analyze the general mood of the internet - essentially creating "THE Internet Mood Ring." 
 
-THE Internet Mood Ring. However, I decided to put my own spin on this, and so indeed, The Internet Sanity Orb was created.
+However, as I delved deeper into the concept, I realized something important about our digital world. As anthpo beautifully expressed:
+
+> "The Internet can feel so negative sometimes, like there's just infinite drama videos and just slop. But sometimes people kind of just want something stupid, fun and wholesome and that's like, a comforting thought, I guess."
+
+This quote perfectly captured what I wanted to create - something that acknowledges the chaos of the internet while providing a moment of pure, wholesome fun. Instead of just analyzing the internet's mood, I decided to put my own creative spin on it and created **The Internet Sanity Orb** - a digital consciousness that you can interact with, calm down, or watch spiral into beautiful chaos.
+
+The orb represents the internet's collective mental state, and through your interactions, you become a digital therapist of sorts, helping to stabilize or embrace the beautiful madness of our connected world.
 
 ## Overview
 
-Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by particle systems, star fields, and dynamic lighting effects that respond to user input in real-time.
+The Internet Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by particle systems, star fields, and dynamic lighting effects that respond to user input in real-time. Experience the internet's digital consciousness through this mesmerizing visualization.
 
 ## Technologies Used
 
@@ -49,15 +55,18 @@ Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D g
 - **Dynamic Lighting** - Ambient, key, and rim lights for dramatic depth
 
 ### Interactive Controls
-- **Sanity Slider** - Smooth range input for adjusting mental state visualization
-- **Preset Buttons** - Quick access to Peak, Nominal, Warning, and Critical states
+- **Digital Consciousness Slider** - Smooth range input for adjusting the internet's mental state visualization
+- **Preset Buttons** - Quick access to Peak, Nominal, Warning, and Critical digital states
+- **Draggable UI** - Move status panels around to customize your interface
 - **Panel Toggle** - Hide/show control panel for unobstructed orb viewing
 - **Keyboard Shortcuts** - Full keyboard control system
+- **Funny Messages** - Minecraft-style popup messages that appear when digital consciousness is unstable
 
 ### Color System
-- **Smooth Transitions** - 8-step color interpolation between sanity levels
+- **Smooth Transitions** - 8-step color interpolation between digital consciousness levels
 - **Real-time Updates** - All effects change color simultaneously
-- **Visual Feedback** - UI elements reflect current sanity state
+- **Visual Feedback** - UI elements reflect current digital consciousness state
+- **Dynamic Themes** - Colors shift from green (harmony) to red (chaos) based on internet stability
 
 ### User Experience
 - **Responsive Design** - Works on all screen sizes
@@ -118,21 +127,22 @@ src/
 ## Usage
 
 ### Basic Controls
-- **Mouse**: Use the slider to adjust sanity level (0-100%)
+- **Mouse**: Use the slider to adjust digital consciousness level (0-100%)
 - **Preset Buttons**: Click Peak, Nominal, Warning, or Critical for quick states
+- **Draggable UI**: Click and drag any status panel to move it around
 - **Panel Toggle**: Click the down arrow to hide/show controls
 
 ### Keyboard Shortcuts
 - **H** or **Space**: Toggle control panel visibility
-- **1-5**: Quick sanity presets (100%, 75%, 50%, 25%, 10%)
-- **Arrow Keys**: Fine adjust sanity by 5% increments
+- **1-4**: Quick digital consciousness presets (100%, 50%, 25%, 10%)
+- **Arrow Keys**: Fine adjust digital consciousness by 5% increments
 - **?**: Show/hide help overlay
 
 ### Visual States
-- **Peak (75-100%)**: Bright green orb with stable particles
-- **Nominal (50-75%)**: Yellow-green orb with gentle movement
-- **Warning (25-50%)**: Orange orb with increased turbulence
-- **Critical (0-25%)**: Red orb with chaotic particle behavior
+- **Digital Harmony (75-100%)**: Bright green orb with stable particles representing perfect internet harmony
+- **Network Stable (50-75%)**: Yellow-green orb with gentle movement showing stable digital consciousness
+- **Data Fragmented (25-50%)**: Orange orb with increased turbulence indicating network instability
+- **Digital Chaos (0-25%)**: Red orb with chaotic particle behavior and funny error messages
 
 ## Video Demo
 
@@ -185,4 +195,4 @@ Please credit the original author, **Jesse Dao**, when redistributing or modifyi
 
 ---
 
-*Sanity Orb: Where mental state meets visual art through the power of WebGL and modern web technologies.*
+*The Internet Sanity Orb: Where digital consciousness meets visual art through the power of WebGL and modern web technologies.*
