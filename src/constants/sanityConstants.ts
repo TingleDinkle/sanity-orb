@@ -46,21 +46,21 @@ export const ORB_RADIUS = 1.8;
 export const GLOW_RADIUS = 2.2;
 export const CAMERA_DISTANCE = 6;
 
-// Mind Assembly Animation Constants
+// Mind Assembly Animation Constants - Optimized for smoother transitions
 export const MIND_ASSEMBLY_CONFIG = {
-  totalDuration: 8.0,
+  totalDuration: 7.5, // Reduced from 8.0s
   phases: {
     coreAwaken: { start: 0, duration: 1.5 },
     nodesConverge: { start: 1.0, duration: 3.5 },
     networkForm: { start: 2.5, duration: 3.0 },
     convergence: { start: 4.5, duration: 2.0 },
-    textStabilization: { start: 6.0, duration: 1.5 },
-    finalState: { start: 7.5, duration: 0.5 }
+    textStabilization: { start: 5.8, duration: 1.2 }, // Start earlier, shorter duration
+    finalState: { start: 7.0, duration: 0.5 } // Start earlier
   },
   nodeCount: 80,
   coreScale: { initial: 0.5, max: 1.0 },
   glowRadius: 3.5,
   orbRadius: 1.8,
-  targetColor: '#00ff88', // Calm green
+  targetColor: '#00ff88',
   cameraMovement: { amplitude: 0.3, speed: 0.15 }
 };

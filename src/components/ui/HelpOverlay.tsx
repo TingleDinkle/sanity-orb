@@ -4,6 +4,31 @@ interface HelpOverlayProps {
   onVisibilityChange?: (visible: boolean) => void;
 }
 
+// Add smooth animation styles
+const animationStyles = `
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes zoom-in {
+    from {
+      transform: scale(0.95);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  
+  .animate-in {
+    animation: fade-in 0.3s ease-out, zoom-in 0.3s ease-out;
+  }
+`;
+
 const HelpOverlay: React.FC<HelpOverlayProps> = ({ onVisibilityChange }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -54,60 +79,63 @@ const HelpOverlay: React.FC<HelpOverlayProps> = ({ onVisibilityChange }) => {
   }
 
   return (
-    <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center pointer-events-auto z-[9999]">
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4 animate-in fade-in zoom-in duration-300">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-2xl font-light">Internet Sanity Orb Controls</h2>
-          <button
-            onClick={handleClose}
-            className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
-          >
-            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div className="space-y-4 text-white/80">
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Hide/Show Controls</span>
-            <div className="flex gap-1">
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">H</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">Space</kbd>
+    <>
+      <style>{animationStyles}</style>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center pointer-events-auto z-[9999]">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4 animate-in">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-white text-2xl font-light">Internet Sanity Orb Controls</h2>
+            <button
+              onClick={handleClose}
+              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
+            >
+              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="space-y-4 text-white/80">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Hide/Show Controls</span>
+              <div className="flex gap-1">
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">H</kbd>
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">Space</kbd>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Coherence Presets</span>
+              <div className="flex gap-1">
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">1</kbd>
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">2</kbd>
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">3</kbd>
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">4</kbd>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Fine Adjust</span>
+              <div className="flex gap-1">
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">↑</kbd>
+                <kbd className="px-2 py-1 bg-white/10 rounded text-xs">↓</kbd>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Show Help</span>
+              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">?</kbd>
             </div>
           </div>
           
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Coherence Presets</span>
-            <div className="flex gap-1">
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">1</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">2</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">3</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">4</kbd>
-            </div>
+          <div className="mt-6 pt-4 border-t border-white/10">
+            <p className="text-white/50 text-xs text-center">
+              Use the slider or keyboard shortcuts to adjust digital consciousness coherence levels
+            </p>
           </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Fine Adjust</span>
-            <div className="flex gap-1">
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">↑</kbd>
-              <kbd className="px-2 py-1 bg-white/10 rounded text-xs">↓</kbd>
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm">Show Help</span>
-            <kbd className="px-2 py-1 bg-white/10 rounded text-xs">?</kbd>
-          </div>
-        </div>
-        
-        <div className="mt-6 pt-4 border-t border-white/10">
-          <p className="text-white/50 text-xs text-center">
-            Use the slider or keyboard shortcuts to adjust digital consciousness coherence levels
-          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
