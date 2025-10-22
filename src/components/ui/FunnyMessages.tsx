@@ -112,24 +112,14 @@ const FUNNY_MESSAGES = [
   "Network reality breaking down"
 ];
 
-const getMessageColors = (sanity: number) => {
-  if (sanity < 25) {
-    return {
-      bg: 'from-red-600/40 to-red-700/30',
-      border: 'border-red-500/50',
-      accent: 'bg-red-500/70',
-      text: 'text-red-100',
-      pulse: 'bg-red-500/15'
-    };
-  } else {
-    return {
-      bg: 'from-orange-500/30 to-orange-600/20',
-      border: 'border-orange-400/40',
-      accent: 'bg-orange-400/60',
-      text: 'text-orange-100',
-      pulse: 'bg-orange-400/10'
-    };
-  }
+const getMessageColors = () => {
+  return {
+    bg: 'from-orange-500/30 to-orange-600/20',
+    border: 'border-orange-400/40',
+    accent: 'bg-orange-400/60',
+    text: 'text-orange-100',
+    pulse: 'bg-orange-400/10'
+  };
 };
 
 interface Message {
@@ -162,7 +152,8 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
   }, [messages]);
 
   useEffect(() => {
-    if (sanity < 50) {
+    // Only show messages in WARNING range (25-50)
+    if (sanity >= 25 && sanity < 50) {
       let timeoutId: NodeJS.Timeout;
       
       const showMessage = () => {
@@ -211,7 +202,7 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
           ));
         }, 50);
         
-        // Animate out after 2 seconds (reduced from 3)
+        // Animate out after 2 seconds
         setTimeout(() => {
           setMessages(prev => prev.map(msg => 
             msg.id === newMessage.id 
@@ -223,10 +214,10 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
           setTimeout(() => {
             setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
           }, 500);
-        }, 2000); // Reduced from 3000ms to 2000ms
+        }, 2000);
         
-        // Schedule next message based on sanity level - MUCH less frequent
-        const nextDelay = Math.max(8000, sanity * 200); // 8-20 seconds between messages
+        // Schedule next message - 8-12 seconds between messages
+        const nextDelay = 8000 + Math.random() * 4000;
         timeoutId = setTimeout(showMessage, nextDelay);
       };
       
@@ -239,14 +230,15 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
         }
       };
     } else {
-      // Clear all messages when sanity is high
+      // Clear all messages when not in warning range
       setMessages([]);
     }
   }, [sanity, messageId]);
 
-  if (sanity >= 50) return null;
+  // Only show messages in WARNING range (25-50)
+  if (sanity < 25 || sanity >= 50) return null;
 
-  const colors = getMessageColors(sanity);
+  const colors = getMessageColors();
 
   return (
     <div className="absolute inset-0 pointer-events-none z-40">
@@ -260,7 +252,7 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
             transform: `translate(calc(-50% + ${message.x}px), calc(-50% + ${message.y + message.floatOffset}px)) rotate(${message.rotation}rad)`,
             opacity: message.opacity,
             scale: message.scale,
-            filter: sanity < 25 ? 'drop-shadow(0 0 15px rgba(255, 0, 0, 0.4))' : 'drop-shadow(0 0 10px rgba(255, 165, 0, 0.3))',
+            filter: 'drop-shadow(0 0 10px rgba(255, 165, 0, 0.3))',
           }}
         >
           <div className={`bg-gradient-to-br ${colors.bg} backdrop-blur-xl rounded-lg px-3 py-2 border-2 ${colors.border} shadow-2xl max-w-xs relative`}>

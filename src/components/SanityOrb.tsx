@@ -18,6 +18,27 @@ const SanityOrb: React.FC = () => {
   const [showCoherenceIndex, setShowCoherenceIndex] = useState(true);
   const [showSystemIndicators, setShowSystemIndicators] = useState(true);
   const [isHelpVisible, setIsHelpVisible] = useState(false);
+  const [shakeIntensity, setShakeIntensity] = useState(0);
+
+  // Screen shake effect for critical level
+  useEffect(() => {
+    if (sanity < 25) {
+      // Increase shake intensity as sanity decreases
+      const intensity = (25 - sanity) / 25; // 0 to 1
+      setShakeIntensity(intensity * 8); // Max 8px shake
+      
+      const shakeInterval = setInterval(() => {
+        setShakeIntensity(prev => {
+          // Random shake with current intensity
+          return (Math.random() - 0.5) * 2 * ((25 - sanity) / 25) * 8;
+        });
+      }, 50); // Update shake every 50ms
+      
+      return () => clearInterval(shakeInterval);
+    } else {
+      setShakeIntensity(0);
+    }
+  }, [sanity]);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -104,8 +125,25 @@ const SanityOrb: React.FC = () => {
   }, [isControlPanelVisible, isHelpVisible]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
+    <div 
+      className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950"
+      style={{
+        transform: `translate(${shakeIntensity * (Math.random() - 0.5) * 2}px, ${shakeIntensity * (Math.random() - 0.5) * 2}px)`,
+        transition: 'transform 0.05s ease-out'
+      }}
+    >
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+      
+      {/* Critical level ominous overlay */}
+      {sanity < 25 && (
+        <div 
+          className="absolute inset-0 pointer-events-none z-30"
+          style={{
+            background: `radial-gradient(circle at center, transparent 20%, rgba(139, 0, 0, ${(25 - sanity) / 25 * 0.3}) 100%)`,
+            animation: 'pulse 2s ease-in-out infinite'
+          }}
+        />
+      )}
       
       {/* Apply blur to scene when help is visible */}
       <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
@@ -158,6 +196,7 @@ const SanityOrb: React.FC = () => {
           onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
         />
         
+        {/* Funny messages only show in warning range (25-50) */}
         <FunnyMessages sanity={sanity} />
       </div>
 
@@ -195,6 +234,11 @@ const SanityOrb: React.FC = () => {
           cursor: pointer;
           border: 2px solid rgba(255, 255, 255, 0.8);
           box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
         }
       `}</style>
     </div>
