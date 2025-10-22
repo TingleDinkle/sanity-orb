@@ -9,6 +9,7 @@ import FunnyMessages from './ui/FunnyMessages';
 import AudioControls from './ui/AudioControls';
 import RestoreComponentsMenu from './ui/RestoreComponentsMenu';
 import { audioManager } from '../utils/audioManager';
+import { api } from '../services/api';
 
 const SanityOrb: React.FC = () => {
   const [sanity, setSanity] = useState(100);
@@ -19,6 +20,10 @@ const SanityOrb: React.FC = () => {
   const [showSystemIndicators, setShowSystemIndicators] = useState(true);
   const [isHelpVisible, setIsHelpVisible] = useState(false);
   const [shakeIntensity, setShakeIntensity] = useState(0);
+  
+  // Backend integration state
+  const [globalMood, setGlobalMood] = useState<number | null>(null);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
 
   // Screen shake effect for critical level
   useEffect(() => {
@@ -77,6 +82,75 @@ const SanityOrb: React.FC = () => {
       audioManager.dispose();
     };
   }, []);
+
+  // Check backend health on mount
+  useEffect(() => {
+    const checkBackend = async () => {
+      const health = await api.checkHealth();
+      setIsBackendConnected(health.healthy);
+      
+      if (!health.healthy) {
+        console.warn('Backend not available - running in offline mode');
+      }
+    };
+    
+    checkBackend();
+  }, []);
+
+  // Save sanity snapshots periodically (for global mood tracking)
+  useEffect(() => {
+    if (!isBackendConnected) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await api.saveSnapshot(sanity);
+      } catch (error) {
+        console.error('Failed to save snapshot:', error);
+      }
+    }, 30000); // Every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [sanity, isBackendConnected]);
+
+  // Fetch global mood periodically
+  useEffect(() => {
+    if (!isBackendConnected) return;
+
+    const fetchGlobalMood = async () => {
+      try {
+        const response = await api.getCurrentMood();
+        if (response.success) {
+          setGlobalMood(response.currentMood);
+        }
+      } catch (error) {
+        console.error('Failed to fetch global mood:', error);
+      }
+    };
+
+    fetchGlobalMood();
+    const interval = setInterval(fetchGlobalMood, 60000); // Every minute
+
+    return () => clearInterval(interval);
+  }, [isBackendConnected]);
+
+  // Save session when user changes sanity significantly
+  useEffect(() => {
+    if (!isBackendConnected) return;
+
+    const saveSession = async () => {
+      try {
+        await api.saveSession(sanity, {
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error('Failed to save session:', error);
+      }
+    };
+
+    // Debounce saves to avoid too many API calls
+    const timeoutId = setTimeout(saveSession, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [sanity, isBackendConnected]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -199,6 +273,21 @@ const SanityOrb: React.FC = () => {
         {/* Funny messages only show in warning range (25-50) */}
         <FunnyMessages sanity={sanity} />
       </div>
+
+      {/* Global Mood Indicator - shows when backend is connected */}
+      {globalMood !== null && isBackendConnected && (
+        <div className={`absolute top-20 left-4 bg-white/5 backdrop-blur-xl rounded-xl px-4 py-2 border border-white/10 pointer-events-auto z-50 transition-all duration-300 ${isHelpVisible ? 'blur-sm opacity-0' : ''}`}>
+          <div className="text-white/40 text-xs uppercase tracking-wider mb-1">
+            Global Internet Mood
+          </div>
+          <div className="text-white text-2xl font-light">
+            {globalMood}%
+          </div>
+          <div className="text-white/30 text-xs mt-1">
+            Collective consciousness
+          </div>
+        </div>
+      )}
 
       {/* Audio controls - blur when help is visible but keep visible */}
       <div className={`transition-all duration-300 ${isHelpVisible ? 'blur-sm' : ''}`}>
