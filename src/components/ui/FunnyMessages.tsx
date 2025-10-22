@@ -49,7 +49,7 @@ const FUNNY_MESSAGES = [
   "The code is self-documenting",
   "It's a known issue",
   "Works as intended",
-  "have you tried sudo pacman -S brain",
+  "Have you tried sudo pacman -S brain?",
   
   // System Messages
   "Please hold while we reboot reality",
