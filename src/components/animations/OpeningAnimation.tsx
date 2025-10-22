@@ -12,31 +12,34 @@ const OpeningAnimation: React.FC<OpeningAnimationProps> = ({ onComplete }) => {
   const [textOpacity, setTextOpacity] = useState(0);
 
   const handleAnimationUpdate = (time: number) => {
-    // Phase 5: Text appears (5.8-7.0s) - Earlier and smoother
+    // Phase 5: Text appears (6.0-6.8s) - Quick fade in
     if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start && 
-        time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration) {
+        time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 0.8) {
       if (!textVisible) {
         setTextVisible(true);
       }
-      const textProgress = (time - MIND_ASSEMBLY_CONFIG.phases.textStabilization.start) / MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration;
-      // Smoother ease-in with cubic easing
-      const smoothOpacity = textProgress < 0.5 
-        ? 4 * textProgress * textProgress * textProgress 
-        : 1 - Math.pow(-2 * textProgress + 2, 3) / 2;
+      const textProgress = (time - MIND_ASSEMBLY_CONFIG.phases.textStabilization.start) / 0.8;
+      // Quick smooth fade in
+      const smoothOpacity = textProgress * textProgress;
       setTextOpacity(smoothOpacity);
     }
 
-    // Phase 6: Fade out text (7.0-7.5s) - Earlier start
-    if (time >= MIND_ASSEMBLY_CONFIG.phases.finalState.start) {
-      const finalProgress = (time - MIND_ASSEMBLY_CONFIG.phases.finalState.start) / MIND_ASSEMBLY_CONFIG.phases.finalState.duration;
-      // Smooth fade out with ease-out
-      const fadeOut = 1 - (finalProgress * finalProgress);
+    // Phase 6: Text at full opacity (6.8-7.3s) - Brief hold
+    if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 0.8 && 
+        time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 1.3) {
+      setTextOpacity(1);
+    }
+
+    // Phase 7: Text fades out with overlay (7.3s+) - Fade with everything else
+    if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 1.3) {
+      const fadeProgress = (time - (MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 1.3)) / 0.7;
+      const fadeOut = Math.max(0, 1 - (fadeProgress * fadeProgress));
       setTextOpacity(fadeOut);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 will-change-transform will-change-opacity z-50">
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 will-change-opacity z-50">
       <MindAssemblyScene onComplete={onComplete} onTextUpdate={handleAnimationUpdate} />
       <MindAssemblyText visible={textVisible} opacity={textOpacity} />
     </div>

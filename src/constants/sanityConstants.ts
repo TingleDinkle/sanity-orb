@@ -46,17 +46,17 @@ export const ORB_RADIUS = 1.8;
 export const GLOW_RADIUS = 2.2;
 export const CAMERA_DISTANCE = 6;
 
-// Mind Assembly Animation Constants - Optimized for smoother transitions
+
 export const MIND_ASSEMBLY_CONFIG = {
-  totalDuration: 10.0, // Extended for loading animation
+  totalDuration: 8.0, // Shorter total duration
   phases: {
     coreAwaken: { start: 0, duration: 1.5 },
     nodesConverge: { start: 1.0, duration: 3.5 },
-    networkForm: { start: 2.5, duration: 3.5 }, // Extended to fully form network
-    loadingAnimation: { start: 6.0, duration: 2.0 }, // New loading phase - longer and smoother
-    convergence: { start: 8.0, duration: 1.2 }, // Faster convergence
-    textStabilization: { start: 9.0, duration: 0.8 }, // Text appears
-    finalState: { start: 9.8, duration: 0.2 } // Quick fade
+    networkForm: { start: 2.5, duration: 3.0 }, // Shorter network formation
+    loadingAnimation: { start: 5.0, duration: 1.0 }, // Shorter breathing
+    convergence: { start: 5.5, duration: 1.0 }, // Orb convergence
+    textStabilization: { start: 6.0, duration: 1.5 }, // Text appears and fades
+    finalState: { start: 7.0, duration: 1.0 } // Brief final state before transition
   },
   nodeCount: 80,
   coreScale: { initial: 0.5, max: 1.0 },

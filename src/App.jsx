@@ -8,39 +8,43 @@ export default function App() {
   const [mainAppOpacity, setMainAppOpacity] = useState(0);
 
   const handleOpeningComplete = () => {
-    // Start fading in main app immediately
+    // Start fading in main app immediately when animation completes
     setMainAppOpacity(1);
     
-    // Start fading out animation overlay with slight delay for smoother crossfade
+    // Start fading out overlay with a slight overlap
     setTimeout(() => {
       setOverlayOpacity(0);
-    }, 100);
+    }, 400); // Short delay for smooth crossfade
     
-    // Remove animation overlay after fade completes
+    // Remove overlay from DOM after fade completes
     setTimeout(() => {
       setOverlayVisible(false);
-    }, 900); // 100ms delay + 800ms fade = 900ms total
+    }, 2400); // 400 + 2000 = 2400ms total
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
       {/* Main app - fades in smoothly */}
       <div 
+        className="absolute inset-0"
         style={{ 
-          opacity: mainAppOpacity, 
-          transition: "opacity 800ms ease-in-out" 
+          opacity: mainAppOpacity,
+          transition: "opacity 2000ms cubic-bezier(0.4, 0.0, 0.2, 1)",
+          willChange: "opacity"
         }}
       >
         <SanityOrb />
       </div>
 
-      {/* Opening animation overlay - fades out smoothly */}
+      {/* Opening animation overlay - fades out with crossfade */}
       {overlayVisible && (
         <div
-          className="absolute inset-0 pointer-events-none z-50"
+          className="absolute inset-0 z-50"
           style={{ 
-            opacity: overlayOpacity, 
-            transition: "opacity 800ms ease-in-out" 
+            opacity: overlayOpacity,
+            transition: "opacity 2000ms cubic-bezier(0.4, 0.0, 0.2, 1)",
+            pointerEvents: "none",
+            willChange: "opacity"
           }}
         >
           <OpeningAnimation onComplete={handleOpeningComplete} />

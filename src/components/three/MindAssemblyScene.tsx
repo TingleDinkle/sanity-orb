@@ -314,40 +314,73 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         }
       }
 
-      // Phase 6: Text and stabilization (6.0-7.5s)
+      // Phase 6: Text and stabilization (6.0-7.0s) - FASTER fade out of nodes/connections
       if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start && 
           time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration) {
         
-        // Fade out connections
+        const phase6Progress = (time - MIND_ASSEMBLY_CONFIG.phases.textStabilization.start) / MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration;
+        
+        // Fade out connections QUICKLY
         connectionsRef.current.forEach(conn => {
           const material = conn.line.material as THREE.LineBasicMaterial;
-          material.opacity *= 0.96;
+          material.opacity *= 0.90; // Faster fade (was 0.96)
         });
         
-        // Fade out nodes
+        // Fade out nodes QUICKLY
         nodesRef.current.forEach(node => {
           const material = node.material as THREE.MeshBasicMaterial;
-          material.opacity *= 0.97;
+          material.opacity *= 0.88; // Faster fade (was 0.97)
         });
         
-        // Fade out core
+        // Fade out core QUICKLY
         if (coreRef.current) {
           const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
-          coreMaterial.opacity *= 0.96;
+          coreMaterial.opacity *= 0.90; // Faster fade (was 0.96)
+        }
+        
+        // Orb becomes more prominent as nodes fade
+        if (orbRef.current) {
+          const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
+          orbMaterial.opacity = phase6Progress * 0.8; // Orb fades in as nodes fade out
         }
       }
 
-      // Phase 7: Final state (7.5-8.0s)
+      // Phase 7: Final state (7.0-8.0s) - Everything except orb should be invisible
       if (time >= MIND_ASSEMBLY_CONFIG.phases.finalState.start) {
         const finalProgress = (time - MIND_ASSEMBLY_CONFIG.phases.finalState.start) / MIND_ASSEMBLY_CONFIG.phases.finalState.duration;
         
-        // Smooth orb rotation
+        // Ensure nodes/connections/core are completely gone
+        connectionsRef.current.forEach(conn => {
+          const material = conn.line.material as THREE.LineBasicMaterial;
+          material.opacity = 0;
+        });
+        
+        nodesRef.current.forEach(node => {
+          const material = node.material as THREE.MeshBasicMaterial;
+          material.opacity = 0;
+        });
+        
+        if (coreRef.current) {
+          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          coreMaterial.opacity = 0;
+        }
+        
+        // Only orb remains, gentle rotation
         if (orbRef.current) {
           orbRef.current.rotation.y += 0.005;
           
           // Gentle pulsing
           const pulse = Math.sin(time * 2) * 0.02;
           orbRef.current.scale.setScalar(1 + pulse);
+          
+          // Keep orb visible
+          const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
+          orbMaterial.opacity = 0.8;
+        }
+        
+        // Glow stays with orb
+        if (glowRef.current && glowRef.current.material.uniforms) {
+          glowRef.current.material.uniforms.intensity.value = 0.4;
         }
       }
 
