@@ -39,7 +39,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
           </div>
           <div className="flex items-center gap-3">
             <div className="flex gap-2">
-              {[50, 25, 11, 0].map((threshold) => (
+              {[51, 26, 11, 0].map((threshold) => (
                 <div 
                   key={threshold}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
