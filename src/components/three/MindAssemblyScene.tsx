@@ -201,7 +201,76 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         });
       }
 
-      // Phase 4: Convergence to unity (4.5-6.5s)
+      // Phase 4: Loading Animation (5.5-7.0s) - Network breathes and pulses
+      if (time >= MIND_ASSEMBLY_CONFIG.phases.loadingAnimation.start && 
+          time < MIND_ASSEMBLY_CONFIG.phases.loadingAnimation.start + MIND_ASSEMBLY_CONFIG.phases.loadingAnimation.duration) {
+        const loadingProgress = (time - MIND_ASSEMBLY_CONFIG.phases.loadingAnimation.start) / MIND_ASSEMBLY_CONFIG.phases.loadingAnimation.duration;
+        
+        // Breathing pulse effect - network expands and contracts
+        const breathingCycle = Math.sin(time * 4) * 0.5 + 0.5; // Fast breathing
+        const expansionFactor = 1 + breathingCycle * 0.15; // Expand up to 15%
+        
+        nodesRef.current.forEach((node, i) => {
+          const target = nodeTargetsRef.current[i];
+          const targetPos = new THREE.Vector3(target.x, target.y, target.z);
+          
+          // Apply breathing expansion from center
+          const expandedPos = targetPos.multiplyScalar(expansionFactor);
+          node.position.copy(expandedPos);
+          
+          // Pulsing node brightness
+          const material = node.material as THREE.MeshBasicMaterial;
+          material.emissiveIntensity = 1.0 + breathingCycle * 1.5;
+          
+          // Slight rotation for dynamic feel
+          node.rotation.x += 0.02;
+          node.rotation.y += 0.025;
+        });
+        
+        // Connection brightness pulses in sync
+        connectionsRef.current.forEach((conn) => {
+          const { line, node1, node2, pulsePhase } = conn;
+          
+          // Update line positions with breathing
+          const positions = line.geometry.attributes.position.array as Float32Array;
+          positions[0] = node1.position.x;
+          positions[1] = node1.position.y;
+          positions[2] = node1.position.z;
+          positions[3] = node2.position.x;
+          positions[4] = node2.position.y;
+          positions[5] = node2.position.z;
+          line.geometry.attributes.position.needsUpdate = true;
+          
+          // Synchronized pulsing with slight phase offset
+          const pulse = Math.sin(time * 4 + pulsePhase * 0.5) * 0.5 + 0.5;
+          const material = line.material as THREE.LineBasicMaterial;
+          material.opacity = 0.3 + pulse * 0.4;
+          
+          // Energy waves traveling through connections
+          const wavePosition = (time * 3 + pulsePhase) % 1;
+          if (wavePosition < 0.1) {
+            material.opacity = Math.min(1.0, material.opacity + 0.3);
+          }
+        });
+        
+        // Core pulses with the breathing
+        if (coreRef.current) {
+          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          coreMaterial.emissiveIntensity = 2.0 + breathingCycle * 1.5;
+          coreRef.current.scale.setScalar(1.0 + breathingCycle * 0.2);
+        }
+        
+        // Glow intensifies with breathing
+        if (glowRef.current && glowRef.current.material.uniforms) {
+          glowRef.current.material.uniforms.intensity.value = 0.3 + breathingCycle * 0.3;
+        }
+        
+        // Subtle camera zoom in/out with breathing
+        const cameraBreathing = Math.sin(time * 4) * 0.1;
+        camera.position.z = 8 + cameraBreathing;
+      }
+
+      // Phase 5: Convergence to unity (4.5-6.5s)
       if (time >= MIND_ASSEMBLY_CONFIG.phases.convergence.start && 
           time < MIND_ASSEMBLY_CONFIG.phases.convergence.start + MIND_ASSEMBLY_CONFIG.phases.convergence.duration) {
         const phase4Progress = (time - MIND_ASSEMBLY_CONFIG.phases.convergence.start) / MIND_ASSEMBLY_CONFIG.phases.convergence.duration;
@@ -245,7 +314,7 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         }
       }
 
-      // Phase 5: Text and stabilization (6.0-7.5s)
+      // Phase 6: Text and stabilization (6.0-7.5s)
       if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start && 
           time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration) {
         
@@ -268,7 +337,7 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         }
       }
 
-      // Phase 6: Final state (7.5-8.0s)
+      // Phase 7: Final state (7.5-8.0s)
       if (time >= MIND_ASSEMBLY_CONFIG.phases.finalState.start) {
         const finalProgress = (time - MIND_ASSEMBLY_CONFIG.phases.finalState.start) / MIND_ASSEMBLY_CONFIG.phases.finalState.duration;
         
