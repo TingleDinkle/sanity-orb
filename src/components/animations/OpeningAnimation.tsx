@@ -12,20 +12,26 @@ const OpeningAnimation: React.FC<OpeningAnimationProps> = ({ onComplete }) => {
   const [textOpacity, setTextOpacity] = useState(0);
 
   const handleAnimationUpdate = (time: number) => {
-    // Phase 5: Text appears (6.0-7.5s)
+    // Phase 5: Text appears (5.8-7.0s) - Earlier and smoother
     if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start && 
         time < MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration) {
       if (!textVisible) {
         setTextVisible(true);
       }
       const textProgress = (time - MIND_ASSEMBLY_CONFIG.phases.textStabilization.start) / MIND_ASSEMBLY_CONFIG.phases.textStabilization.duration;
-      setTextOpacity(Math.pow(textProgress, 2));
+      // Smoother ease-in with cubic easing
+      const smoothOpacity = textProgress < 0.5 
+        ? 4 * textProgress * textProgress * textProgress 
+        : 1 - Math.pow(-2 * textProgress + 2, 3) / 2;
+      setTextOpacity(smoothOpacity);
     }
 
-    // Phase 6: Fade out text (7.5-8.0s)
+    // Phase 6: Fade out text (7.0-7.5s) - Earlier start
     if (time >= MIND_ASSEMBLY_CONFIG.phases.finalState.start) {
       const finalProgress = (time - MIND_ASSEMBLY_CONFIG.phases.finalState.start) / MIND_ASSEMBLY_CONFIG.phases.finalState.duration;
-      setTextOpacity(1 - finalProgress);
+      // Smooth fade out with ease-out
+      const fadeOut = 1 - (finalProgress * finalProgress);
+      setTextOpacity(fadeOut);
     }
   };
 
