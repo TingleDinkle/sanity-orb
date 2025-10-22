@@ -17,6 +17,7 @@ const SanityOrb: React.FC = () => {
   const [showStatusPanel, setShowStatusPanel] = useState(true);
   const [showCoherenceIndex, setShowCoherenceIndex] = useState(true);
   const [showSystemIndicators, setShowSystemIndicators] = useState(true);
+  const [isHelpVisible, setIsHelpVisible] = useState(false);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -59,6 +60,11 @@ const SanityOrb: React.FC = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
+      // Don't handle shortcuts if help is visible (except for ? key which is handled by HelpOverlay)
+      if (isHelpVisible && event.key !== '?' && event.key !== '/') {
+        return;
+      }
+
       switch (event.key.toLowerCase()) {
         case 'h':
           setIsControlPanelVisible(!isControlPanelVisible);
@@ -95,13 +101,16 @@ const SanityOrb: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isControlPanelVisible]);
+  }, [isControlPanelVisible, isHelpVisible]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
       
-      <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
+      {/* Apply blur to scene when help is visible */}
+      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
+        <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
+      </div>
       
       <div 
         className="absolute inset-0 pointer-events-none" 
@@ -110,46 +119,55 @@ const SanityOrb: React.FC = () => {
         }} 
       />
 
-      {showStatusPanel && (
-        <StatusPanel 
+      {/* UI Components - blur and hide status panel when help is visible */}
+      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm opacity-0 pointer-events-none' : ''}`}>
+        {showStatusPanel && (
+          <StatusPanel 
+            sanity={sanity} 
+            onHide={() => setShowStatusPanel(false)}
+          />
+        )}
+        
+        {showCoherenceIndex && (
+          <CoherenceIndex 
+            sanity={sanity}
+            onHide={() => setShowCoherenceIndex(false)}
+          />
+        )}
+        
+        {showSystemIndicators && (
+          <SystemIndicators 
+            sanity={sanity}
+            onHide={() => setShowSystemIndicators(false)}
+          />
+        )}
+        
+        <RestoreComponentsMenu
+          showStatusPanel={showStatusPanel}
+          showCoherenceIndex={showCoherenceIndex}
+          showSystemIndicators={showSystemIndicators}
+          onRestoreStatusPanel={() => setShowStatusPanel(true)}
+          onRestoreCoherenceIndex={() => setShowCoherenceIndex(true)}
+          onRestoreSystemIndicators={() => setShowSystemIndicators(true)}
+        />
+        
+        <ControlPanel 
           sanity={sanity} 
-          onHide={() => setShowStatusPanel(false)}
+          onSanityChange={setSanity}
+          isVisible={isControlPanelVisible}
+          onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
         />
-      )}
+        
+        <FunnyMessages sanity={sanity} />
+      </div>
+
+      {/* Audio controls - blur when help is visible but keep visible */}
+      <div className={`transition-all duration-300 ${isHelpVisible ? 'blur-sm' : ''}`}>
+        <AudioControls />
+      </div>
       
-      {showCoherenceIndex && (
-        <CoherenceIndex 
-          sanity={sanity}
-          onHide={() => setShowCoherenceIndex(false)}
-        />
-      )}
-      
-      {showSystemIndicators && (
-        <SystemIndicators 
-          sanity={sanity}
-          onHide={() => setShowSystemIndicators(false)}
-        />
-      )}
-      
-      <RestoreComponentsMenu
-        showStatusPanel={showStatusPanel}
-        showCoherenceIndex={showCoherenceIndex}
-        showSystemIndicators={showSystemIndicators}
-        onRestoreStatusPanel={() => setShowStatusPanel(true)}
-        onRestoreCoherenceIndex={() => setShowCoherenceIndex(true)}
-        onRestoreSystemIndicators={() => setShowSystemIndicators(true)}
-      />
-      
-      <ControlPanel 
-        sanity={sanity} 
-        onSanityChange={setSanity}
-        isVisible={isControlPanelVisible}
-        onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
-      />
-      
-      <HelpOverlay />
-      <FunnyMessages sanity={sanity} />
-      <AudioControls />
+      {/* Help overlay - always on top, no blur */}
+      <HelpOverlay onVisibilityChange={setIsHelpVisible} />
 
       <style>{`
         input[type="range"]::-webkit-slider-thumb {
