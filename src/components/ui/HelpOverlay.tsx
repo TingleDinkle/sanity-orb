@@ -1,24 +1,47 @@
 import React, { useState, useEffect } from 'react';
 
-const HelpOverlay: React.FC = () => {
+interface HelpOverlayProps {
+  onVisibilityChange?: (visible: boolean) => void;
+}
+
+const HelpOverlay: React.FC<HelpOverlayProps> = ({ onVisibilityChange }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === '?' || event.key === '/') {
-        setIsVisible(!isVisible);
+        const newVisibility = !isVisible;
+        setIsVisible(newVisibility);
+        if (onVisibilityChange) {
+          onVisibilityChange(newVisibility);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [isVisible]);
+  }, [isVisible, onVisibilityChange]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    if (onVisibilityChange) {
+      onVisibilityChange(false);
+    }
+  };
+
+  const handleToggle = () => {
+    const newVisibility = !isVisible;
+    setIsVisible(newVisibility);
+    if (onVisibilityChange) {
+      onVisibilityChange(newVisibility);
+    }
+  };
 
   if (!isVisible) {
     return (
-      <div className="absolute top-4 right-4 pointer-events-auto">
+      <div className="absolute top-4 right-4 pointer-events-auto z-40">
         <button
-          onClick={() => setIsVisible(true)}
+          onClick={handleToggle}
           className="bg-white/5 backdrop-blur-xl rounded-full p-3 border border-white/10 shadow-2xl transition-all duration-300 hover:bg-white/10 hover:scale-110 active:scale-95"
           title="Show Help (Press ?)"
         >
@@ -31,12 +54,12 @@ const HelpOverlay: React.FC = () => {
   }
 
   return (
-    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center pointer-events-auto z-50">
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4">
+    <div className="absolute inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center pointer-events-auto z-[9999]">
+      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4 animate-in fade-in zoom-in duration-300">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-white text-2xl font-light">Internet Sanity Orb Controls</h2>
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={handleClose}
             className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
           >
             <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
