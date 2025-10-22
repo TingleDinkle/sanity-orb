@@ -48,14 +48,15 @@ export const CAMERA_DISTANCE = 6;
 
 // Mind Assembly Animation Constants - Optimized for smoother transitions
 export const MIND_ASSEMBLY_CONFIG = {
-  totalDuration: 7.5, // Reduced from 8.0s
+  totalDuration: 10.0, // Extended for loading animation
   phases: {
     coreAwaken: { start: 0, duration: 1.5 },
     nodesConverge: { start: 1.0, duration: 3.5 },
-    networkForm: { start: 2.5, duration: 3.0 },
-    convergence: { start: 4.5, duration: 2.0 },
-    textStabilization: { start: 5.8, duration: 1.2 }, // Start earlier, shorter duration
-    finalState: { start: 7.0, duration: 0.5 } // Start earlier
+    networkForm: { start: 2.5, duration: 3.5 }, // Extended to fully form network
+    loadingAnimation: { start: 6.0, duration: 2.0 }, // New loading phase - longer and smoother
+    convergence: { start: 8.0, duration: 1.2 }, // Faster convergence
+    textStabilization: { start: 9.0, duration: 0.8 }, // Text appears
+    finalState: { start: 9.8, duration: 0.2 } // Quick fade
   },
   nodeCount: 80,
   coreScale: { initial: 0.5, max: 1.0 },
