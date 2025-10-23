@@ -187,8 +187,8 @@ const startServer = async () => {
     await initDatabase();
     
     app.listen(PORT, () => {
-      console.log(`🚀 Sanity Orb Backend running on port ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+      console.log(` Sanity Orb Backend running on port ${PORT}`);
+      console.log(` Health check: http://localhost:${PORT}/api/health`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
