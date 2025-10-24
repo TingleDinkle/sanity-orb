@@ -219,7 +219,9 @@ backend/
 
 ## Video Demo
 
-https://www.youtube.com/watch?v=77-n_cblU28
+https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype Demo)
+
+[ULTRA POLISHED PRODUCT YOUTUBE DEMO TEMPLATE] (not done)
 
 ## Technical Details
 
