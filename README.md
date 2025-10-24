@@ -42,10 +42,19 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **PostCSS 8.5.6** - CSS processing and optimization
 - **Autoprefixer 10.4.21** - Automatic vendor prefixing
 
+### Backend Infrastructure
+- **Node.js** - JavaScript runtime environment
+- **Express.js 4.18.2** - Web application framework for RESTful API
+- **PostgreSQL** - Relational database system
+- **pg 8.11.3** - Node.js PostgreSQL client with connection pooling
+- **CORS 2.8.5** - Cross-Origin Resource Sharing middleware
+- **dotenv 16.3.1** - Environment variable management
+
 ### Development Tools
 - **ESLint 9.36.0** - Code linting and style enforcement
 - **TypeScript Compiler** - Type checking and compilation
 - **Vite Dev Server** - Hot module replacement and fast development
+- **Nodemon 3.0.1** - Automatic server restart on file changes
 
 ### Build & Deployment
 - **Vite Build** - Production build optimization
@@ -120,9 +129,16 @@ src/
 │   └── audioManager.ts             # Audio system manager
 ├── shaders/
 │   └── orbShaders.ts               # GLSL shader code
+├── services/
+│   └── api.ts                      # Backend API service
 ├── App.jsx                         # Root application component
 ├── main.jsx                        # Application entry point
 └── index.css                       # Global styles
+
+backend/
+├── server.js                       # Express server and API endpoints
+├── package.json                    # Backend dependencies
+└── .env                            # Environment configuration
 ```
 
 ## Installation & Setup
@@ -133,17 +149,39 @@ src/
    cd sanity-orb
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Start development server**
+3. **Install backend dependencies**
    ```bash
+   cd backend
+   npm install
+   cd ..
+   ```
+
+4. **Configure environment variables**
+   ```bash
+   # Frontend (.env)
+   VITE_API_URL=http://localhost:3001/api
+   
+   # Backend (backend/.env)
+   PORT=3001
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/sanity_orb
+   ```
+
+5. **Start development servers**
+   ```bash
+   # Terminal 1 - Frontend
+   npm run dev
+   
+   # Terminal 2 - Backend
+   cd backend
    npm run dev
    ```
 
-4. **Build for production**
+6. **Build for production**
    ```bash
    npm run build
    ```
@@ -186,6 +224,14 @@ The audio system uses Tone.js to create three distinct soundscapes:
 - **Low Sanity (0-20%)**: Sustained bass drone with LFO modulation and occasional detuned hums
 - **Mid Sanity (20-60%)**: Soft polyphonic pads playing gentle chord progressions
 - **High Sanity (60-100%)**: Ambient harmonic chords with filtered high-frequency tones
+
+### Backend API
+The Express.js backend provides RESTful endpoints for data persistence:
+- **POST /api/sessions**: Save user sanity sessions
+- **GET /api/sessions/:userId**: Retrieve user session history
+- **GET /api/stats/global**: Get global sanity statistics
+- **POST /api/snapshots**: Save real-time sanity snapshots
+- **GET /api/mood/current**: Get current internet mood average
 
 ### Screen Shake Implementation
 Critical sanity levels (0-25%) trigger dynamic screen shake:
