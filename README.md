@@ -6,6 +6,7 @@
 ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.18-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
+
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
@@ -220,7 +221,9 @@ backend/
 
 ## Video Demo
 
-https://www.youtube.com/watch?v=77-n_cblU28
+https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype)
+
+(template i left here for final demo)
 
 ## Technical Details
 
