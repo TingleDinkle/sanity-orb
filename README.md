@@ -201,7 +201,6 @@ backend/
 ### Basic Controls
 - **Mouse**: Use the slider to adjust digital consciousness level (0-100%)
 - **Preset Buttons**: Click Peak, Nominal, Warning, or Critical for quick states
-- **Draggable UI**: Click and drag any status panel to move it around
 - **Panel Toggle**: Click the down arrow to hide/show controls
 - **Audio Control**: Click speaker icon to mute/unmute soundscapes
 
