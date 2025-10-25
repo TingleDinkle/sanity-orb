@@ -84,7 +84,6 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 ### Interactive Controls
 - **Digital Consciousness Slider** - Smooth range input for adjusting the internet's mental state visualization
 - **Preset Buttons** - Quick access to Peak, Nominal, Warning, and Critical digital states
-- **Draggable UI** - Move status panels around to customize your interface
 - **Panel Toggle** - Hide/show control panel for unobstructed orb viewing
 - **Keyboard Shortcuts** - Full keyboard control system
 - **Audio Controls** - Mute/unmute button for soundscape management
