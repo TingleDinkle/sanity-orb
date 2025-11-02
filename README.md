@@ -1,5 +1,15 @@
 # The Internet Sanity Orb
 
+![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js-0.180.0-000000?style=for-the-badge&logo=three.js&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.18-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
+
 A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
 ## The Origin Story
@@ -42,10 +52,19 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **PostCSS 8.5.6** - CSS processing and optimization
 - **Autoprefixer 10.4.21** - Automatic vendor prefixing
 
+### Backend Infrastructure
+- **Node.js** - JavaScript runtime environment
+- **Express.js 4.18.2** - Web application framework for RESTful API
+- **PostgreSQL** - Relational database system
+- **pg 8.11.3** - Node.js PostgreSQL client with connection pooling
+- **CORS 2.8.5** - Cross-Origin Resource Sharing middleware
+- **dotenv 16.3.1** - Environment variable management
+
 ### Development Tools
 - **ESLint 9.36.0** - Code linting and style enforcement
 - **TypeScript Compiler** - Type checking and compilation
 - **Vite Dev Server** - Hot module replacement and fast development
+- **Nodemon 3.0.1** - Automatic server restart on file changes
 
 ### Build & Deployment
 - **Vite Build** - Production build optimization
@@ -65,7 +84,6 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 ### Interactive Controls
 - **Digital Consciousness Slider** - Smooth range input for adjusting the internet's mental state visualization
 - **Preset Buttons** - Quick access to Peak, Nominal, Warning, and Critical digital states
-- **Draggable UI** - Move status panels around to customize your interface
 - **Panel Toggle** - Hide/show control panel for unobstructed orb viewing
 - **Keyboard Shortcuts** - Full keyboard control system
 - **Audio Controls** - Mute/unmute button for soundscape management
@@ -120,9 +138,16 @@ src/
 │   └── audioManager.ts             # Audio system manager
 ├── shaders/
 │   └── orbShaders.ts               # GLSL shader code
+├── services/
+│   └── api.ts                      # Backend API service
 ├── App.jsx                         # Root application component
 ├── main.jsx                        # Application entry point
 └── index.css                       # Global styles
+
+backend/
+├── server.js                       # Express server and API endpoints
+├── package.json                    # Backend dependencies
+└── .env                            # Environment configuration
 ```
 
 ## Installation & Setup
@@ -133,17 +158,39 @@ src/
    cd sanity-orb
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Start development server**
+3. **Install backend dependencies**
    ```bash
+   cd backend
+   npm install
+   cd ..
+   ```
+
+4. **Configure environment variables**
+   ```bash
+   # Frontend (.env)
+   VITE_API_URL=http://localhost:3001/api
+   
+   # Backend (backend/.env)
+   PORT=3001
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/sanity_orb
+   ```
+
+5. **Start development servers**
+   ```bash
+   # Terminal 1 - Frontend
+   npm run dev
+   
+   # Terminal 2 - Backend
+   cd backend
    npm run dev
    ```
 
-4. **Build for production**
+6. **Build for production**
    ```bash
    npm run build
    ```
@@ -153,7 +200,6 @@ src/
 ### Basic Controls
 - **Mouse**: Use the slider to adjust digital consciousness level (0-100%)
 - **Preset Buttons**: Click Peak, Nominal, Warning, or Critical for quick states
-- **Draggable UI**: Click and drag any status panel to move it around
 - **Panel Toggle**: Click the down arrow to hide/show controls
 - **Audio Control**: Click speaker icon to mute/unmute soundscapes
 
@@ -171,7 +217,9 @@ src/
 
 ## Video Demo
 
-https://www.youtube.com/watch?v=77-n_cblU28
+https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype Demo)
+
+[ULTRA POLISHED PRODUCT YOUTUBE DEMO TEMPLATE] (not done)
 
 ## Technical Details
 
@@ -186,6 +234,14 @@ The audio system uses Tone.js to create three distinct soundscapes:
 - **Low Sanity (0-20%)**: Sustained bass drone with LFO modulation and occasional detuned hums
 - **Mid Sanity (20-60%)**: Soft polyphonic pads playing gentle chord progressions
 - **High Sanity (60-100%)**: Ambient harmonic chords with filtered high-frequency tones
+
+### Backend API
+The Express.js backend provides RESTful endpoints for data persistence:
+- **POST /api/sessions**: Save user sanity sessions
+- **GET /api/sessions/:userId**: Retrieve user session history
+- **GET /api/stats/global**: Get global sanity statistics
+- **POST /api/snapshots**: Save real-time sanity snapshots
+- **GET /api/mood/current**: Get current internet mood average
 
 ### Screen Shake Implementation
 Critical sanity levels (0-25%) trigger dynamic screen shake:
