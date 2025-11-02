@@ -13,6 +13,7 @@ class AudioManager {
   private currentRange: string | null;
   private isInitialized: boolean;
   private isMuted: boolean;
+  private intervals: NodeJS.Timeout[];
 
   constructor() {
     this.synths = {
@@ -27,6 +28,7 @@ class AudioManager {
     this.currentRange = null;
     this.isInitialized = false;
     this.isMuted = false;
+    this.intervals = [];
   }
 
   async initialize() {
@@ -35,20 +37,17 @@ class AudioManager {
     try {
       await Tone.start();
       
-      // Create reverb for all synths
       this.reverb = new Tone.Reverb({
         decay: 4,
         wet: 0.4
       }).toDestination();
 
-      // Create filter for ambient sounds
       this.filter = new Tone.Filter({
         frequency: 800,
         type: 'lowpass',
         rolloff: -24
       }).connect(this.reverb);
 
-      // LOW RANGE (0-20): Dark, ominous drone
       this.synths.drone = new Tone.Synth({
         oscillator: {
           type: 'sawtooth',
@@ -63,7 +62,6 @@ class AudioManager {
         volume: -12
       }).connect(this.reverb);
 
-      // Add slow modulation LFO
       this.lfo = new Tone.LFO({
         frequency: 0.1,
         min: -20,
@@ -71,7 +69,6 @@ class AudioManager {
       });
       this.lfo.connect(this.synths.drone.detune);
 
-      // MID RANGE (40-60): Soft ambient pads
       this.synths.pad = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
           type: 'sine'
@@ -85,7 +82,6 @@ class AudioManager {
         volume: -18
       }).connect(this.reverb);
 
-      // HIGH RANGE (80-100): Ambient harmonic atmosphere
       this.synths.ambient = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
           type: 'sine'
@@ -110,7 +106,6 @@ class AudioManager {
 
     const range = this.getSanityRange(sanity);
     
-    // Only update if range changed
     if (range === this.currentRange) return;
     
     this.stopAll();
@@ -136,12 +131,10 @@ class AudioManager {
   }
 
   private playLowRange() {
-    // Low bass drone with detuned hums
     if (this.synths.drone && this.lfo) {
       this.synths.drone.triggerAttack('C1');
       this.lfo.start();
       
-      // Add occasional detuned hums
       const interval = setInterval(() => {
         if (this.currentRange !== 'low') {
           clearInterval(interval);
@@ -151,11 +144,12 @@ class AudioManager {
           this.synths.drone.triggerAttackRelease('G1', '4n', undefined, 0.3);
         }
       }, 8000);
+      
+      this.intervals.push(interval);
     }
   }
 
   private playMidRange() {
-    // Soft pads with airy synth
     if (this.synths.pad) {
       const chords = [
         ['C3', 'E3', 'G3'],
@@ -181,15 +175,15 @@ class AudioManager {
         }
         playChord();
       }, 3000);
+      
+      this.intervals.push(interval);
     }
   }
 
   private playHighRange() {
-    // Ambient harmonic atmosphere with gentle floating tones
     if (this.synths.ambient && this.filter) {
-      this.filter.frequency.value = 1200; // Gentle high-pass for clarity
+      this.filter.frequency.value = 1200;
       
-      // Create gentle, overlapping ambient chords
       const ambientChords = [
         ['C4', 'E4', 'G4', 'B4'],
         ['D4', 'F4', 'A4', 'C5'],
@@ -202,27 +196,29 @@ class AudioManager {
       const playAmbientChord = () => {
         if (this.currentRange !== 'high') return;
         if (this.synths.ambient) {
-          // Long, overlapping notes for ambient feel
           this.synths.ambient.triggerAttackRelease(ambientChords[chordIndex], '2n');
           chordIndex = (chordIndex + 1) % ambientChords.length;
         }
       };
       
-      // Initial chord
       playAmbientChord();
       
-      // Slower, more spaced out chords for ambient feel
       const interval = setInterval(() => {
         if (this.currentRange !== 'high') {
           clearInterval(interval);
           return;
         }
         playAmbientChord();
-      }, 4000); // 4 seconds between chords for gentle ambience
+      }, 4000);
+      
+      this.intervals.push(interval);
     }
   }
 
   private stopAll() {
+    this.intervals.forEach(id => clearInterval(id));
+    this.intervals = [];
+    
     if (this.synths.drone) {
       this.synths.drone.triggerRelease();
     }
