@@ -96,7 +96,6 @@ const FUNNY_MESSAGES = [
   "Did you try the magic smoke?",
   "Have you tried sacrificing a goat?",
   "Is it plugged into the internet?",
-  "Have you tried turning it off and on again? (But harder)",
   "Did you check if it's a leap year?",
   
   // System Status Messages
