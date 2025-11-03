@@ -10,7 +10,7 @@ const CoherenceIndex: React.FC<CoherenceIndexProps> = ({ sanity, onHide }) => {
     <div 
       className="absolute pointer-events-auto"
       style={{
-        right: '32px',
+        left: '32px',
         bottom: '32px',
         zIndex: 1000
       }}
