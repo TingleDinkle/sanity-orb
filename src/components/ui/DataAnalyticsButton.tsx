@@ -1,11 +1,16 @@
 import React from 'react';
 
-const DataAnalyticsButton = ({ onClick, isConnected }) => {
+interface DataAnalyticsButtonProps {
+  onClick: () => void;
+  isConnected: boolean;
+}
+
+const DataAnalyticsButton: React.FC<DataAnalyticsButtonProps> = ({ onClick, isConnected }) => {
   return (
     <div className="absolute bottom-8 right-8 pointer-events-auto z-50">
       <button
         onClick={onClick}
-        className="group relative bg-gradient-to-br from-blue-500/20 to-purple-600/20 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:scale-110 hover:from-blue-500/30 hover:to-purple-600/30 active:scale-95"
+        className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/20 active:scale-95"
         title="Open Data Analytics"
       >
         {/* Connection Status Indicator */}
@@ -18,9 +23,6 @@ const DataAnalyticsButton = ({ onClick, isConnected }) => {
           <svg className="w-6 h-6 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          
-          {/* Pulse Animation */}
-          <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-ping" />
         </div>
 
         {/* Tooltip */}

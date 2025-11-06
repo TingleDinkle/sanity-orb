@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { api } from '../services/api';
+import { api } from "../../services/api";
 
 const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -134,7 +134,7 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-3">
+            <div className="bg-white/10 rounded-xl p-3 border border-white/20">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
@@ -182,7 +182,7 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === tab
-                  ? 'bg-white/10 text-white border-t border-l border-r border-white/20'
+                  ? 'bg-white/20 text-white border-t border-l border-r border-white/30'
                   : 'text-white/50 hover:text-white/80 hover:bg-white/5'
               }`}
             >
@@ -351,12 +351,12 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
                 <div className="space-y-6">
                   {data.predictions ? (
                     <>
-                      <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-xl rounded-xl p-6 border border-white/20">
+                      <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
                         <h3 className="text-white text-lg font-light mb-4 flex items-center gap-2">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                           </svg>
-                          AI Trend Predictions
+                          Trend Predictions
                         </h3>
                         <div className="grid grid-cols-2 gap-6">
                           <div>
@@ -386,7 +386,7 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
                                   <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-white/80">
                                     ⚠️ Declining trend detected - Consider taking a break
                                   </div>
-                                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-white/80">
+                                  <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
                                     💡 Try resetting to optimal levels more frequently
                                   </div>
                                 </>
@@ -396,7 +396,7 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
                                   <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-white/80">
                                     ✅ Great! Your sanity levels are improving
                                   </div>
-                                  <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-white/80">
+                                  <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
                                     🎯 Keep maintaining current patterns
                                   </div>
                                 </>
