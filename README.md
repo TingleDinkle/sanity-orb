@@ -8,6 +8,9 @@
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-2.1.3-FF6600?style=for-the-badge)
 ![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
 
 A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
@@ -60,6 +63,14 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **CORS 2.8.5** - Cross-Origin Resource Sharing middleware
 - **dotenv 16.3.1** - Environment variable management
 
+### Machine Learning & AI
+- **Python 3.8+** - Programming language for ML infrastructure
+- **Flask 3.0.0** - Lightweight web framework for ML API
+- **XGBoost 2.1.3** - Gradient boosting framework for predictive models
+- **NumPy 2.2.1** - Numerical computing and array operations
+- **Pandas 2.2.3** - Data manipulation and analysis
+- **Scikit-learn 1.6.1** - Machine learning utilities and metrics
+
 ### Development Tools
 - **ESLint 9.36.0** - Code linting and style enforcement
 - **TypeScript Compiler** - Type checking and compilation
@@ -101,6 +112,13 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Smooth Transitions** - 8-step color interpolation between digital consciousness levels
 - **Real-time Updates** - All effects change color simultaneously
 - **Dynamic Themes** - Colors shift from green (harmony) to red (chaos) based on internet stability
+
+### AI-Powered Analytics
+- **Data Analytics Dashboard** - Comprehensive visualization of sanity metrics and trends
+- **XGBoost Predictions** - Machine learning models for trend forecasting
+- **Session Analysis** - Historical session tracking with predictive insights
+- **Trend Detection** - AI-powered pattern recognition for sanity fluctuations
+- **Smart Recommendations** - Context-aware suggestions based on current state
 
 ### User Experience
 - **Opening Animation** - Cinematic mind assembly sequence on startup
@@ -148,6 +166,13 @@ backend/
 ├── server.js                       # Express server and API endpoints
 ├── package.json                    # Backend dependencies
 └── .env                            # Environment configuration
+
+ml-model/
+├── ml_api.py                       # Flask ML API server
+├── xgboost_models.py              # XGBoost model training
+├── data_generator.py              # Synthetic data generation
+├── requirements.txt               # Python dependencies
+└── trained_models/                # Trained ML models
 ```
 
 ## Installation & Setup
@@ -170,23 +195,43 @@ backend/
    cd ..
    ```
 
-4. **Configure environment variables**
+4. **Install Python dependencies and train ML models**
+   ```bash
+   cd ml-model
+   pip install -r requirements.txt
+   python data_generator.py
+   python xgboost_models.py
+   cd ..
+   ```
+
+5. **Configure environment variables**
    ```bash
    # Frontend (.env)
    VITE_API_URL=http://localhost:3001/api
+   VITE_ML_API_URL=http://localhost:5001/api
    
    # Backend (backend/.env)
    PORT=3001
+   ML_API_URL=http://localhost:5001/api
    DATABASE_URL=postgresql://postgres:password@localhost:5432/sanity_orb
    ```
 
-5. **Start development servers**
+6. **Start all services** (Automated - Windows)
    ```bash
-   # Terminal 1 - Frontend
-   npm run dev
+   start-all.bat
+   ```
+   
+   Or manually start each service:
+   ```bash
+   # Terminal 1 - ML API
+   cd ml-model
+   python ml_api.py
    
    # Terminal 2 - Backend
    cd backend
+   npm start
+   
+   # Terminal 3 - Frontend
    npm run dev
    ```
 
