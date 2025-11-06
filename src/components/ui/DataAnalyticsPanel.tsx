@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { api } from "../../services/api";
+import { api, mlAPI } from "../../services/api";
 
 const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -11,6 +11,8 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
     moodHistory: [],
     predictions: null
   });
+  const [mlPredictions, setMlPredictions] = useState(null);
+  const [mlAvailable, setMlAvailable] = useState(false);
 
   // Fetch all analytics data
   useEffect(() => {

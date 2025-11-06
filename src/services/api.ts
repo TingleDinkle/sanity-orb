@@ -2,6 +2,7 @@
 // API service for connecting to Sanity Orb backend
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const ML_API_BASE_URL = import.meta.env.VITE_ML_API_URL || 'http://localhost:5001/api';
 
 interface SessionData {
   sanityLevel: number;
@@ -139,8 +140,150 @@ class SanityOrbAPI {
   }
 }
 
-// Export singleton instance
+// ============================================
+// ML API (XGBoost Models)
+// ============================================
+
+interface MLPredictionResponse {
+  success: boolean;
+  prediction?: number;
+  next_value?: number;
+  confidence?: number;
+  trend?: string;
+  slope?: number;
+  category?: string;
+  error?: string;
+}
+
+interface MLAdvancedResponse {
+  success: boolean;
+  results?: {
+    session_prediction?: number;
+    trend_prediction?: {
+      next_value: number;
+      confidence: number;
+      trend: string;
+      slope: number;
+    };
+    classification?: {
+      category: string;
+      confidence: number;
+    };
+  };
+  recommendations?: Array<{
+    type: string;
+    message: string;
+    priority: string;
+  }>;
+  error?: string;
+}
+
+class SanityOrbMLAPI {
+  private baseURL: string;
+
+  constructor() {
+    this.baseURL = ML_API_BASE_URL;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('ML API request failed:', error);
+      return { success: false, error: String(error) } as T;
+    }
+  }
+
+  async checkHealth() {
+    try {
+      const response = await this.request('/health', { method: 'GET' });
+      return response;
+    } catch (error) {
+      return { healthy: false, error };
+    }
+  }
+
+  async predictSession(data: {
+    hour: number;
+    day_of_week: number;
+    session_duration: number;
+    interactions: number;
+    prev_sanity_1: number;
+    prev_sanity_2: number;
+    prev_sanity_3: number;
+    stress_level: number;
+    mood_factor: number;
+  }): Promise<MLPredictionResponse> {
+    return this.request('/predict/session', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async predictTrend(history: number[]): Promise<MLPredictionResponse> {
+    return this.request('/predict/trend', {
+      method: 'POST',
+      body: JSON.stringify({ history }),
+    });
+  }
+
+  async classifySanity(data: {
+    current_sanity: number;
+    session_count: number;
+    avg_duration: number;
+    interaction_rate: number;
+    consistency: number;
+  }): Promise<MLPredictionResponse> {
+    return this.request('/predict/classify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async advancedPrediction(data: {
+    current_sanity: number;
+    history: number[];
+    session_data: {
+      hour: number;
+      day_of_week: number;
+      session_duration: number;
+      interactions: number;
+      stress_level: number;
+      mood_factor: number;
+    };
+    user_stats: {
+      session_count: number;
+      avg_duration: number;
+      interaction_rate: number;
+      consistency: number;
+    };
+  }): Promise<MLAdvancedResponse> {
+    return this.request('/predict/advanced', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getModelsInfo() {
+    return this.request('/models/info', { method: 'GET' });
+  }
+}
+
+// Export singleton instances
 export const api = new SanityOrbAPI();
+export const mlAPI = new SanityOrbMLAPI();
 
 // Hook for React components
 export const useSanityAPI = () => {
@@ -152,5 +295,17 @@ export const useSanityAPI = () => {
     getCurrentMood: api.getCurrentMood.bind(api),
     checkHealth: api.checkHealth.bind(api),
     getUserId: api.getUserIdForSharing.bind(api),
+  };
+};
+
+// Hook for ML API
+export const useMLAPI = () => {
+  return {
+    checkHealth: mlAPI.checkHealth.bind(mlAPI),
+    predictSession: mlAPI.predictSession.bind(mlAPI),
+    predictTrend: mlAPI.predictTrend.bind(mlAPI),
+    classifySanity: mlAPI.classifySanity.bind(mlAPI),
+    advancedPrediction: mlAPI.advancedPrediction.bind(mlAPI),
+    getModelsInfo: mlAPI.getModelsInfo.bind(mlAPI),
   };
 };
