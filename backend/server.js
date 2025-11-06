@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const ML_API_URL = process.env.ML_API_URL || 'http://localhost:5001/api';
 
 const storage = {
   sessions: [],
@@ -144,6 +146,123 @@ app.get('/api/mood/current', (req, res) => {
     res.status(500).json({ error: 'Failed to fetch mood' });
   }
 });
+
+// ============================================
+// ML API INTEGRATION - Proxy endpoints
+// ============================================
+
+// Helper function to call ML API
+async function callMLAPI(endpoint, method = 'GET', body = null) {
+  try {
+    const options = {
+      method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    if (body) options.body = JSON.stringify(body);
+    
+    const response = await fetch(`${ML_API_URL}${endpoint}`, options);
+    return await response.json();
+  } catch (error) {
+    console.error('ML API error:', error);
+    return { success: false, error: 'ML API unavailable' };
+  }
+}
+
+// Get AI predictions for user
+app.post('/api/ml/predict/advanced', async (req, res) => {
+  try {
+    const { userId, currentSanity } = req.body;
+    
+    // Get user history
+    const sessions = storage.getUserSessions(userId, 20);
+    
+    if (sessions.length < 5) {
+      return res.json({
+        success: false,
+        error: 'Not enough session data for predictions (need at least 5 sessions)'
+      });
+    }
+    
+    // Prepare ML request
+    const history = sessions.slice(0, 10).reverse().map(s => s.sanity_level);
+    const now = new Date();
+    
+    const mlRequest = {
+      current_sanity: currentSanity,
+      history: history,
+      session_data: {
+        hour: now.getHours(),
+        day_of_week: now.getDay(),
+        session_duration: 15.0,
+        interactions: sessions.length,
+        stress_level: currentSanity < 50 ? 100 - currentSanity : 50,
+        mood_factor: currentSanity / 20
+      },
+      user_stats: {
+        session_count: sessions.length,
+        avg_duration: 15.0,
+        interaction_rate: sessions.length / Math.max(1, sessions.length / 10),
+        consistency: calculateConsistency(history)
+      }
+    };
+    
+    // Call ML API
+    const prediction = await callMLAPI('/predict/advanced', 'POST', mlRequest);
+    res.json(prediction);
+    
+  } catch (error) {
+    console.error('Error getting ML predictions:', error);
+    res.status(500).json({ success: false, error: 'Failed to get predictions' });
+  }
+});
+
+// Predict trend
+app.post('/api/ml/predict/trend', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const sessions = storage.getUserSessions(userId, 10);
+    
+    if (sessions.length < 5) {
+      return res.json({
+        success: false,
+        error: 'Need at least 5 sessions for trend prediction'
+      });
+    }
+    
+    const history = sessions.reverse().map(s => s.sanity_level);
+    const prediction = await callMLAPI('/predict/trend', 'POST', { history });
+    res.json(prediction);
+    
+  } catch (error) {
+    console.error('Error predicting trend:', error);
+    res.status(500).json({ success: false, error: 'Failed to predict trend' });
+  }
+});
+
+// Check ML API health
+app.get('/api/ml/health', async (req, res) => {
+  try {
+    const health = await callMLAPI('/health');
+    res.json(health);
+  } catch (error) {
+    res.json({ status: 'unavailable', error: error.message });
+  }
+});
+
+// Helper function to calculate consistency
+function calculateConsistency(history) {
+  if (history.length < 2) return 100;
+  
+  let totalDiff = 0;
+  for (let i = 1; i < history.length; i++) {
+    totalDiff += Math.abs(history[i] - history[i-1]);
+  }
+  
+  const avgDiff = totalDiff / (history.length - 1);
+  const consistency = Math.max(0, 100 - avgDiff);
+  
+  return consistency;
+}
 
 app.listen(PORT, () => {
   console.log(`🌐 Sanity Orb Backend running on port ${PORT}`);

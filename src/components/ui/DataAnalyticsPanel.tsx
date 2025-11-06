@@ -18,8 +18,9 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
   useEffect(() => {
     if (isVisible) {
       fetchAnalyticsData();
+      fetchMLPredictions();
     }
-  }, [isVisible]);
+  }, [isVisible, currentSanity]);
 
   const fetchAnalyticsData = async () => {
     setLoading(true);
@@ -42,6 +43,28 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
       console.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch ML predictions from backend
+  const fetchMLPredictions = async () => {
+    try {
+      // Check if ML API is available through backend
+      const mlHealth = await api.checkMLHealth();
+      setMlAvailable(mlHealth.healthy || false);
+
+      if (mlHealth.healthy) {
+        // Get advanced ML predictions
+        const predictions = await api.getMLPredictions(currentSanity);
+        
+        if (predictions.success) {
+          setMlPredictions(predictions);
+          console.log('ML Predictions:', predictions);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch ML predictions:', error);
+      setMlAvailable(false);
     }
   };
 

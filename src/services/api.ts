@@ -138,6 +138,38 @@ class SanityOrbAPI {
   getUserIdForSharing(): string {
     return this.userId;
   }
+
+  // ============================================
+  // ML PREDICTIONS (via Backend)
+  // ============================================
+
+  async getMLPredictions(currentSanity: number) {
+    return this.request('/ml/predict/advanced', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId: this.userId,
+        currentSanity
+      }),
+    });
+  }
+
+  async getMLTrend() {
+    return this.request('/ml/predict/trend', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId: this.userId
+      }),
+    });
+  }
+
+  async checkMLHealth() {
+    try {
+      const response = await this.request('/ml/health', { method: 'GET' });
+      return { healthy: true, data: response };
+    } catch (error) {
+      return { healthy: false, error };
+    }
+  }
 }
 
 // ============================================
