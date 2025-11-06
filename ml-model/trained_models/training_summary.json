@@ -1,0 +1,84 @@
+{
+  "training_date": "2025-11-06T20:50:32.586709",
+  "models_trained": 3,
+  "session_predictor": {
+    "model_type": "XGBoost Regressor",
+    "task": "Session Sanity Prediction",
+    "trained_date": "2025-11-06T20:50:31.072149",
+    "n_samples": 5000,
+    "features": [
+      "hour",
+      "day_of_week",
+      "session_duration",
+      "interactions",
+      "prev_sanity_1",
+      "prev_sanity_2",
+      "prev_sanity_3",
+      "avg_prev_sanity",
+      "stress_level",
+      "mood_factor"
+    ],
+    "metrics": {
+      "train_rmse": 0.6970924921420005,
+      "test_rmse": 5.958827810006996,
+      "train_mae": 0.5003938531984969,
+      "test_mae": 4.723060399656148
+    },
+    "feature_importance": {
+      "mood_factor": 0.4895991086959839,
+      "avg_prev_sanity": 0.15935778617858887,
+      "stress_level": 0.14383333921432495,
+      "hour": 0.05905165895819664,
+      "day_of_week": 0.02933374047279358,
+      "session_duration": 0.027977872639894485,
+      "prev_sanity_1": 0.025977270677685738,
+      "prev_sanity_3": 0.02496567741036415,
+      "prev_sanity_2": 0.02494511380791664,
+      "interactions": 0.014958391897380352
+    }
+  },
+  "trend_predictor": {
+    "model_type": "XGBoost Regressor (Dual)",
+    "task": "Trend Prediction",
+    "trained_date": "2025-11-06T20:50:31.966735",
+    "n_samples": 5000,
+    "features": [
+      "mean",
+      "std",
+      "min",
+      "max",
+      "range",
+      "slope",
+      "last_3_avg",
+      "first_3_avg",
+      "volatility"
+    ],
+    "metrics": {
+      "value_rmse": 2.2017327636140975,
+      "confidence_rmse": 0.10803298077596638
+    }
+  },
+  "classifier": {
+    "model_type": "XGBoost Classifier",
+    "task": "Sanity Level Classification",
+    "trained_date": "2025-11-06T20:50:32.584702",
+    "n_samples": 5000,
+    "features": [
+      "current_sanity",
+      "session_count",
+      "avg_duration",
+      "interaction_rate",
+      "consistency"
+    ],
+    "classes": [
+      "Critical",
+      "Unstable",
+      "Stable",
+      "Optimal"
+    ],
+    "metrics": {
+      "train_accuracy": 1.0,
+      "test_accuracy": 0.996
+    }
+  }
+}

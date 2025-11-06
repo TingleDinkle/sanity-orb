@@ -25,7 +25,12 @@ models = {
 
 def load_models():
     """Load all trained XGBoost models"""
-    models_dir = 'trained_models'
+    import os
+    # Handle both running from root and from ml-model directory
+    if os.path.exists('ml-model/trained_models'):
+        models_dir = 'ml-model/trained_models'
+    else:
+        models_dir = 'trained_models'
     
     try:
         # Load session predictor

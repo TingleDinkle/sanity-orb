@@ -1,0 +1,21 @@
+{
+  "model_type": "XGBoost Regressor (Dual)",
+  "task": "Trend Prediction",
+  "trained_date": "2025-11-06T20:50:31.966735",
+  "n_samples": 5000,
+  "features": [
+    "mean",
+    "std",
+    "min",
+    "max",
+    "range",
+    "slope",
+    "last_3_avg",
+    "first_3_avg",
+    "volatility"
+  ],
+  "metrics": {
+    "value_rmse": 2.2017327636140975,
+    "confidence_rmse": 0.10803298077596638
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "generation_date": "2025-11-06T20:50:10.155869",
+  "total_samples": 5000,
+  "session_data": {
+    "samples": 5000,
+    "features": [
+      "timestamp",
+      "hour",
+      "day_of_week",
+      "session_duration",
+      "interactions",
+      "prev_sanity_1",
+      "prev_sanity_2",
+      "prev_sanity_3",
+      "avg_prev_sanity",
+      "stress_level",
+      "mood_factor",
+      "current_sanity"
+    ],
+    "sanity_range": [
+      0.0,
+      90.0998944317351
+    ],
+    "avg_sanity": 35.58376746821621
+  },
+  "trend_data": {
+    "samples": 5000,
+    "features": [
+      "mean",
+      "std",
+      "min",
+      "max",
+      "range",
+      "slope",
+      "last_3_avg",
+      "first_3_avg",
+      "volatility",
+      "next_value",
+      "confidence"
+    ],
+    "avg_confidence": 90.36294880477172
+  },
+  "classification_data": {
+    "samples": 5000,
+    "features": [
+      "current_sanity",
+      "session_count",
+      "avg_duration",
+      "interaction_rate",
+      "consistency",
+      "category"
+    ],
+    "category_distribution": {
+      "2": 1309,
+      "3": 1243,
+      "1": 1235,
+      "0": 1213
+    }
+  }
+}

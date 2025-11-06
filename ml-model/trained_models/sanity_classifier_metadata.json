@@ -1,0 +1,23 @@
+{
+  "model_type": "XGBoost Classifier",
+  "task": "Sanity Level Classification",
+  "trained_date": "2025-11-06T20:50:32.584702",
+  "n_samples": 5000,
+  "features": [
+    "current_sanity",
+    "session_count",
+    "avg_duration",
+    "interaction_rate",
+    "consistency"
+  ],
+  "classes": [
+    "Critical",
+    "Unstable",
+    "Stable",
+    "Optimal"
+  ],
+  "metrics": {
+    "train_accuracy": 1.0,
+    "test_accuracy": 0.996
+  }
+}
