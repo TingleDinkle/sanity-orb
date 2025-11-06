@@ -9,6 +9,8 @@ import FunnyMessages from './ui/FunnyMessages';
 import AudioControls from './ui/AudioControls';
 import RestoreComponentsMenu from './ui/RestoreComponentsMenu';
 import { audioManager } from '../utils/audioManager';
+import DataAnalyticsPanel from './ui/DataAnalyticsPanel';
+import DataAnalyticsButton from './ui/DataAnalyticsButton';
 import { api } from '../services/api';
 
 const SanityOrb: React.FC = () => {
@@ -20,6 +22,7 @@ const SanityOrb: React.FC = () => {
   const [showSystemIndicators, setShowSystemIndicators] = useState(true);
   const [isHelpVisible, setIsHelpVisible] = useState(false);
   const [shakeIntensity, setShakeIntensity] = useState(0);
+  const [showDataAnalytics, setShowDataAnalytics] = useState(false);
   
   // Backend integration state
   const [globalMood, setGlobalMood] = useState<number | null>(null);
@@ -330,6 +333,23 @@ const SanityOrb: React.FC = () => {
           50% { opacity: 0.7; }
         }
       `}</style>
+
+      {/* Data Analytics Button - visible when help is not shown */}
+    {!isHelpVisible && (
+      <div className={`transition-all duration-300 ${isHelpVisible ? 'blur-sm' : ''}`}>
+        <DataAnalyticsButton 
+          onClick={() => setShowDataAnalytics(true)}
+          isConnected={isBackendConnected}
+        />
+      </div>
+    )}
+
+    {/* Data Analytics Panel - always on top, no blur */}
+    <DataAnalyticsPanel 
+      isVisible={showDataAnalytics}
+      onClose={() => setShowDataAnalytics(false)}
+      currentSanity={sanity}
+    />
     </div>
   );
 };
