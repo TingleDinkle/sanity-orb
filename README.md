@@ -222,11 +222,6 @@ cd ..
 
 ### Alternative Startup Methods
 
-**PowerShell Script:**
-```bash
-powershell -ExecutionPolicy Bypass -File start-all.ps1
-```
-
 **Manual Services:**
 ```bash
 # Terminal 1: ML API
