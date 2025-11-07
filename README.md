@@ -294,7 +294,7 @@ ml-model/
 
 5. **Database Setup**
    - Railway provides PostgreSQL automatically
-   - Run migrations: `railway run npm run db:init`
+   - Run migrations: `railway run npm run db:init` (uses Sequelize to create tables)
 
 6. **Internal Networking**
    - Services communicate via Railway's internal DNS
