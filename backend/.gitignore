@@ -1,0 +1,38 @@
+node_modules
+.env
+*.log
+
+# 🔒 SECURITY - Never commit these files
+config/secure-config.enc
+*.enc
+
+# Environment files with real credentials
+.env.local
+.env.development
+.env.production
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# SSL/TLS certificates and keys
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+
+# API keys and secrets
+secrets.json
+keys.json
+credentials.json
+
+# Backup files with sensitive data
+*backup*.sql
+*dump*.sql
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

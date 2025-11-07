@@ -240,6 +240,78 @@ ml-model/
    npm run build
    ```
 
+## Deployment
+
+### Vercel (Frontend)
+
+1. **Connect Repository**
+   - Import your GitHub repository to Vercel
+   - Vercel will automatically detect the `vercel.json` configuration
+
+2. **Environment Variables**
+   Set these in Vercel dashboard (Project Settings > Environment Variables):
+   ```
+   VITE_API_URL=https://your-railway-backend-url.railway.app/api
+   VITE_ML_API_URL=https://your-railway-ml-url.railway.app/api
+   ```
+
+3. **Deploy**
+   - Vercel will build and deploy automatically on git push
+   - Your frontend will be available at `https://sanity-orb.vercel.app`
+
+### Railway (Backend + ML + Database)
+
+1. **Create Railway Project**
+   ```bash
+   railway login
+   railway init
+   ```
+
+2. **Deploy Services**
+   Railway will auto-detect the services from the `railway.json` files:
+   - **Backend**: `backend/` directory
+   - **ML Service**: `ml-model/` directory
+   - **Database**: PostgreSQL (added automatically)
+
+3. ** Security Setup - Generate Production Secrets**
+   ```bash
+   # Generate secure random strings (64+ chars for JWT, 32+ for encryption key)
+   openssl rand -base64 64  # For JWT_SECRET
+   openssl rand -base64 32  # For CONFIG_ENCRYPTION_KEY
+   ```
+
+4. **Environment Variables**
+   Set these in Railway dashboard for the backend service:
+   ```
+   NODE_ENV=production
+   DATABASE_URL=${{ RAILWAY_DATABASE_URL }}
+   JWT_SECRET=[your-generated-64-char-jwt-secret]
+   CONFIG_ENCRYPTION_KEY=[your-generated-32-char-encryption-key]
+   FRONTEND_URL=https://sanity-orb.vercel.app
+   ```
+
+5. **Database Setup**
+   - Railway provides PostgreSQL automatically
+   - Run migrations: `railway run npm run db:init`
+
+6. **Internal Networking**
+   - Services communicate via Railway's internal DNS
+   - Backend reaches ML service at: `http://sanity-orb-ml.railway.internal:5001/api`
+
+### Deployment Checklist
+
+- [ ] **ML Models**: Ensure `ml-model/trained_models/` contains trained XGBoost models
+- [ ] **Environment Variables**: Set all required variables in both platforms
+- [ ] **CORS**: Update `ALLOWED_ORIGINS` in Railway with your Vercel domain
+- [ ] **Database**: Run initial migrations after Railway database is created
+- [ ] **Testing**: Test all endpoints after deployment
+
+### Production URLs
+
+After deployment, update your environment variables:
+- **Vercel**: Set `VITE_API_URL` and `VITE_ML_API_URL` to Railway service URLs
+- **Railway**: Set `ALLOWED_ORIGINS` to your Vercel domain
+
 ## Usage
 
 ### Basic Controls

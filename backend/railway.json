@@ -1,0 +1,22 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install"
+  },
+  "deploy": {
+    "startCommand": "npm start",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001",
+    "DATABASE_URL": "${{ RAILWAY_DATABASE_URL }}",
+    "ML_API_URL": "http://sanity-orb-ml.railway.internal:5001/api",
+    "JWT_SECRET": "${{ JWT_SECRET }}",
+    "CONFIG_ENCRYPTION_KEY": "${{ CONFIG_ENCRYPTION_KEY }}",
+    "ALLOWED_ORIGINS": "${{ FRONTEND_URL }},https://sanity-orb.vercel.app"
+  }
+}
