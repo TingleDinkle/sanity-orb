@@ -38,8 +38,11 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, etc.)
+    // Allow requests with no origin (mobile apps, direct file access, etc.)
     if (!origin) return callback(null, true);
+
+    // Allow file:// protocol for local development
+    if (origin.startsWith('file://')) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
