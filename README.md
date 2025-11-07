@@ -168,7 +168,7 @@ backend/
 └── .env                            # Environment configuration
 
 ml-model/
-├── ml_api.py                       # Flask ML API server
+├── ml_api.py                      # Flask ML API server
 ├── xgboost_models.py              # XGBoost model training
 ├── data_generator.py              # Synthetic data generation
 ├── requirements.txt               # Python dependencies
