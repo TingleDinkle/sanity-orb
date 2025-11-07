@@ -13,10 +13,10 @@
   "env": {
     "NODE_ENV": "production",
     "PORT": "3001",
-    "DATABASE_URL": "postgresql://postgres:RFQhAPmxuOqtyULZhXPFcGTtKSxoqGBZ@tramway.proxy.rlwy.net:15491/railway",
+    "DATABASE_URL": "${DATABASE_URL}",
     "ML_API_URL": "http://sanity-orb-ml.railway.internal:5001/api",
-    "JWT_SECRET": "4AyVhpGdL7EpZDFxZG5/JOYaqQIROMJmL+pC/zCKtYWNDkjfe3oExarW1EPebCfTTeh5QDsJIFN3bpgRTBWCYg==",
-    "CONFIG_ENCRYPTION_KEY": "AlaLB/YUDduNO17p/IRcH39B26Bzipa1SDnxpxjHFQQ=",
-    "ALLOWED_ORIGINS": "https://sanity-orb.vercel.app"
+    "JWT_SECRET": "${JWT_SECRET}",
+    "CONFIG_ENCRYPTION_KEY": "${CONFIG_ENCRYPTION_KEY}",
+    "ALLOWED_ORIGINS": "${ALLOWED_ORIGINS}"
   }
 }

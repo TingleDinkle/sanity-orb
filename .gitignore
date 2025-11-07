@@ -36,6 +36,11 @@ backend/.env.local
 backend/.env.development
 backend/.env.production
 
+# Railway deployment configuration (contains sensitive data)
+railway.json
+backend/railway.json
+ml-model/railway.json
+
 # Encrypted configuration files
 backend/config/secure-config.enc
 config/secure-config.enc

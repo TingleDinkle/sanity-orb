@@ -46,14 +46,24 @@ check_docker() {
 deploy_local() {
     log_info "Starting local deployment with Docker Compose..."
 
-    # Check if .env files exist
-    if [ ! -f "backend/.env" ]; then
-        log_warning "backend/.env not found. Creating from template..."
-        cp backend/.env.example backend/.env 2>/dev/null || log_warning "No .env.example found"
+    # Check if .env file exists
+    if [ ! -f ".env" ]; then
+        log_warning ".env not found. Creating from template..."
+        cp .env.example .env 2>/dev/null || log_warning "No .env.example found"
     fi
 
-    # Build and start services
-    log_info "Building and starting services..."
+    # Check if backend/.env exists
+    if [ ! -f "backend/.env" ]; then
+        log_warning "backend/.env not found. Creating from template..."
+        cp backend/.env.example backend/.env 2>/dev/null || log_warning "No backend/.env.example found"
+    fi
+
+    # First, run ML model training if needed
+    log_info "Checking and training ML models if needed..."
+    docker-compose --profile setup up ml-trainer
+
+    # Build and start all services
+    log_info "Building and starting all services..."
     docker-compose up --build -d
 
     # Wait for services to be healthy
@@ -69,6 +79,15 @@ deploy_local() {
     log_info "  • Backend:  http://localhost:3001"
     log_info "  • ML API:   http://localhost:5001"
     log_info "  • Database: localhost:5432"
+    log_info ""
+    log_info "Opening application in browser..."
+    if command -v xdg-open &> /dev/null; then
+        xdg-open http://localhost:5173
+    elif command -v open &> /dev/null; then
+        open http://localhost:5173
+    elif command -v start &> /dev/null; then
+        start http://localhost:5173
+    fi
 }
 
 # Deploy to Railway
