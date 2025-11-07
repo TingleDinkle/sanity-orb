@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, Suspense, lazy } from "react";
 import SanityOrb from "./components/SanityOrb";
-import OpeningAnimation from "./components/animations/OpeningAnimation";
+
+// Lazy load the opening animation since it's only used once during initial load
+const OpeningAnimation = lazy(() => import("./components/animations/OpeningAnimation"));
 
 export default function App() {
   const [overlayVisible, setOverlayVisible] = useState(true);
@@ -40,14 +42,16 @@ export default function App() {
       {overlayVisible && (
         <div
           className="absolute inset-0 z-50"
-          style={{ 
+          style={{
             opacity: overlayOpacity,
             transition: "opacity 2000ms cubic-bezier(0.4, 0.0, 0.2, 1)",
             pointerEvents: "none",
             willChange: "opacity"
           }}
         >
-          <OpeningAnimation onComplete={handleOpeningComplete} />
+          <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />}>
+            <OpeningAnimation onComplete={handleOpeningComplete} />
+          </Suspense>
         </div>
       )}
     </div>

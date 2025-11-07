@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import ThreeScene from './three/ThreeScene';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import StatusPanel from './ui/StatusPanel';
 import CoherenceIndex from './ui/CoherenceIndex';
 import SystemIndicators from './ui/SystemIndicators';
@@ -9,9 +8,12 @@ import FunnyMessages from './ui/FunnyMessages';
 import AudioControls from './ui/AudioControls';
 import RestoreComponentsMenu from './ui/RestoreComponentsMenu';
 import { audioManager } from '../utils/audioManager';
-import DataAnalyticsPanel from './ui/DataAnalyticsPanel';
 import DataAnalyticsButton from './ui/DataAnalyticsButton';
 import { api } from '../services/api';
+
+// Lazy load heavy components
+const ThreeScene = lazy(() => import('./three/ThreeScene'));
+const DataAnalyticsPanel = lazy(() => import('./ui/DataAnalyticsPanel'));
 
 const SanityOrb: React.FC = () => {
   const [sanity, setSanity] = useState(100);
@@ -224,7 +226,9 @@ const SanityOrb: React.FC = () => {
       
       {/* Apply blur to scene when help is visible */}
       <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
-        <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
+        <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />}>
+          <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
+        </Suspense>
       </div>
       
       <div 
@@ -345,11 +349,15 @@ const SanityOrb: React.FC = () => {
     )}
 
     {/* Data Analytics Panel - always on top, no blur */}
-    <DataAnalyticsPanel 
-      isVisible={showDataAnalytics}
-      onClose={() => setShowDataAnalytics(false)}
-      currentSanity={sanity}
-    />
+    <Suspense fallback={<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[10000]">
+      <div className="text-white/60">Loading analytics...</div>
+    </div>}>
+      <DataAnalyticsPanel
+        isVisible={showDataAnalytics}
+        onClose={() => setShowDataAnalytics(false)}
+        currentSanity={sanity}
+      />
+    </Suspense>
     </div>
   );
 };
