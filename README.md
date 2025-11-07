@@ -254,6 +254,7 @@ ml-model/
    VITE_API_URL=https://your-railway-backend-url.railway.app/api
    VITE_ML_API_URL=https://your-railway-ml-url.railway.app/api
    ```
+   **Note:** Environment variables must be set in the Vercel dashboard, not in the `vercel.json` file.
 
 3. **Deploy**
    - Vercel will build and deploy automatically on git push
