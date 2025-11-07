@@ -7,7 +7,22 @@ echo .
 REM Change to the script's directory so it works when double-clicked
 cd /d "%~dp0"
 echo Working directory: %CD%
-echo .
+echo Script location: %~dp0
+echo.
+
+REM Check if we're in the right directory
+if exist "package.json" (
+    echo ✓ Found package.json - in correct directory
+) else (
+    echo ✗ ERROR: package.json not found!
+    echo Current directory: %CD%
+    echo Script directory: %~dp0
+    echo.
+    echo Please make sure this script is in the sanity-orb project root folder.
+    pause
+    exit /b 1
+)
+echo.
 
 echo [1/4] Starting ML API Server (Python/Flask on port 5001)...
 start "ML API Server" cmd /k "cd ml-model && python ml_api.py"
