@@ -6,12 +6,12 @@
 ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.18-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Recharts](https://img.shields.io/badge/Recharts-3.3.0-2298BD?style=for-the-badge&logo=recharts&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-24.9.0-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Sequelize](https://img.shields.io/badge/Sequelize-6.37.7-52B0E7?style=for-the-badge&logo=sequelize&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12.3-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)
 ![XGBoost](https://img.shields.io/badge/XGBoost-2.0.3-FF6600?style=for-the-badge)
 ![NumPy](https://img.shields.io/badge/NumPy-1.26.0-013243?style=for-the-badge&logo=numpy&logoColor=white)
@@ -190,82 +190,70 @@ ml-model/
 └── trained_models/                # Trained ML models
 ```
 
-## Installation & Setup
+## Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd sanity-orb
-   ```
+### Prerequisites
+- **Node.js 24.9.0+** and **npm**
+- **Python 3.12.3+** and **pip**
+- **PostgreSQL 18** (automatically set up)
 
-2. **Install frontend dependencies**
-   ```bash
-   npm install
-   ```
+### One-Command Setup (Recommended)
+```bash
+# Clone and setup everything automatically
+git clone <repository-url>
+cd sanity-orb
 
-3. **Install backend dependencies**
-   ```bash
-   cd backend
-   npm install
-   cd ..
-   ```
+# Install all dependencies
+npm install
+cd backend && npm install && cd ..
+cd ml-model && pip install -r requirements.txt && cd ..
 
-4. **Install Python dependencies and train ML models**
-   ```bash
-   cd ml-model
-   pip install -r requirements.txt
-   python data_generator.py
-   python xgboost_models.py
-   cd ..
-   ```
+# Train ML models (one-time setup)
+cd ml-model
+python data_generator.py
+python xgboost_models.py
+cd ..
 
-5. **Configure environment variables**
-   ```bash
-   # Frontend (.env)
-   VITE_API_URL=http://localhost:3001/api
-   VITE_ML_API_URL=http://localhost:5001/api
-   
-   # Backend (backend/.env)
-   PORT=3001
-   ML_API_URL=http://localhost:5001/api
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/sanity_orb
-   ```
+# Start all services
+./start-all-simple.bat
+```
 
-6. **Choose your deployment method:**
+**That's it!** Your Sanity Orb will be running at http://localhost:5173
 
-   **Option 1: Docker Compose (Recommended)**
-   ```bash
-   # One-command deployment with database
-   ./deploy.sh local
+### Alternative Startup Methods
 
-   # Or manually:
-   docker-compose up --build
-   ```
+**PowerShell Script:**
+```bash
+powershell -ExecutionPolicy Bypass -File start-all.ps1
+```
 
-   **Option 2: Windows Batch Script**
-   ```bash
-   # Automated Windows deployment
-   start-all.bat
-   ```
+**Manual Services:**
+```bash
+# Terminal 1: ML API
+cd ml-model && python ml_api.py
 
-   **Option 3: Manual Services**
-   ```bash
-   # Terminal 1 - ML API
-   cd ml-model
-   python ml_api.py
+# Terminal 2: Backend
+cd backend && npm start
 
-   # Terminal 2 - Backend
-   cd backend
-   npm start
+# Terminal 3: Frontend
+npm run dev
+```
 
-   # Terminal 3 - Frontend
-   npm run dev
-   ```
+**Docker (when Docker Desktop is running):**
+```bash
+docker-compose -f config/docker/docker-compose.yml up --build
+```
 
-6. **Build for production**
-   ```bash
-   npm run build
-   ```
+### Service URLs
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3001/api/health
+- **ML API**: http://localhost:5001/api/health
+- **Database**: PostgreSQL on localhost:5432
+
+### Production Build
+```bash
+npm run build
+```
 
 ## Deployment
 
