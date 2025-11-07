@@ -2,6 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": null,
-  "installCommand": "npm install",
-  "devDependencies": true
+  "installCommand": "npm install --include=dev"
 }
