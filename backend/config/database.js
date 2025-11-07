@@ -10,11 +10,12 @@ const secureCfg = secureConfig.loadSecureConfig();
 
 // Build database URL with decrypted credentials
 const buildDatabaseUrl = () => {
-  const baseUrl = process.env.DATABASE_URL;
+  // Check for Railway's environment variable first, then fallback to DATABASE_URL
+  const baseUrl = process.env.RAILWAY_DATABASE_URL || process.env.DATABASE_URL;
 
-  // Check if DATABASE_URL is set
+  // Check if database URL is set
   if (!baseUrl) {
-    throw new Error('DATABASE_URL environment variable is not set. Please configure your database connection.');
+    throw new Error('Database URL not found. Please set RAILWAY_DATABASE_URL (Railway) or DATABASE_URL (local) environment variable.');
   }
 
   // Replace encrypted placeholders with actual decrypted values
