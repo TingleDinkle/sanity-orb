@@ -60,11 +60,11 @@ deploy_local() {
 
     # First, run ML model training if needed
     log_info "Checking and training ML models if needed..."
-    docker-compose --profile setup up ml-trainer
+    docker-compose --profile setup -f config/docker/docker-compose.yml up ml-trainer
 
     # Build and start all services
     log_info "Building and starting all services..."
-    docker-compose up --build -d
+    docker-compose -f config/docker/docker-compose.yml up --build -d
 
     # Wait for services to be healthy
     log_info "Waiting for services to be healthy..."
@@ -162,7 +162,7 @@ check_services_health() {
 # Stop local services
 stop_local() {
     log_info "Stopping local services..."
-    docker-compose down
+    docker-compose -f config/docker/docker-compose.yml down
     log_success "Services stopped"
 }
 
