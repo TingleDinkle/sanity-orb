@@ -2,7 +2,12 @@
 echo ========================================
 echo  SANITY ORB - Simple Startup Script
 echo ========================================
-echo.
+echo .
+
+REM Change to the script's directory so it works when double-clicked
+cd /d "%~dp0"
+echo Working directory: %CD%
+echo .
 
 echo [1/4] Starting ML API Server (Python/Flask on port 5001)...
 start "ML API Server" cmd /k "cd ml-model && python ml_api.py"

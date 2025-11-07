@@ -1,7 +1,13 @@
 # Sanity Orb - Start All Services (PowerShell Version)
+# This script changes to its own directory so it works when double-clicked
+
+Set-Location $PSScriptRoot
+
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host " SANITY ORB - Starting All Services" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Working directory: $(Get-Location)" -ForegroundColor Yellow
 Write-Host ""
 
 # Function to test database connection
