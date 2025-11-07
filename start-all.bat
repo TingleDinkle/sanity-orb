@@ -7,27 +7,19 @@ echo.
 REM Check if PostgreSQL is running (basic check)
 echo [0/5] Checking database connectivity...
 cd backend
-node -e "
-const { testConnection } = await import('./config/database.js');
-const connected = await testConnection();
-if (!connected) {
-  console.log('Database connection failed!');
-  console.log('Make sure PostgreSQL is running and DATABASE_URL is configured in backend/.env');
-  process.exit(1);
-}
-console.log('Database connection successful!');
-"
+npm run db:test >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
     echo DATABASE CONNECTION FAILED!
     echo Please ensure:
     echo    • PostgreSQL is installed and running
-    echo    • Database 'sanity_orb' exists
+    echo    • Database 'sanity_orb_db' exists
     echo    • backend/.env has correct DATABASE_URL
     echo.
     pause
     exit /b 1
 )
+echo Database connection successful!
 cd ..
 echo.
 
