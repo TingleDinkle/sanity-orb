@@ -282,14 +282,15 @@ ml-model/
    ```
 
 4. **Environment Variables**
-   Set these in Railway dashboard for the backend service:
+   Railway will automatically provide `RAILWAY_DATABASE_URL` for the PostgreSQL database.
+   Set these additional variables in Railway dashboard for the backend service:
    ```
    NODE_ENV=production
-   DATABASE_URL=${{ RAILWAY_DATABASE_URL }}
    JWT_SECRET=[your-generated-64-char-jwt-secret]
    CONFIG_ENCRYPTION_KEY=[your-generated-32-char-encryption-key]
    FRONTEND_URL=https://sanity-orb.vercel.app
    ```
+   **Note:** `DATABASE_URL` is automatically set by Railway as `RAILWAY_DATABASE_URL`.
 
 5. **Database Setup**
    - Railway provides PostgreSQL automatically

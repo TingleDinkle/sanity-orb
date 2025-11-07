@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 import secureConfig from './secure-config.js';
@@ -9,7 +10,12 @@ const secureCfg = secureConfig.loadSecureConfig();
 
 // Build database URL with decrypted credentials
 const buildDatabaseUrl = () => {
-  const baseUrl = process.env.DATABASE_URL || 'postgresql://postgres:Traumerei362@localhost:5432/sanity_orb';
+  const baseUrl = process.env.DATABASE_URL;
+
+  // Check if DATABASE_URL is set
+  if (!baseUrl) {
+    throw new Error('DATABASE_URL environment variable is not set. Please configure your database connection.');
+  }
 
   // Replace encrypted placeholders with actual decrypted values
   let finalUrl = baseUrl;
