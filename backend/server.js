@@ -5,6 +5,8 @@ import fetch from 'node-fetch';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { body, param, validationResult } from 'express-validator';
+import DatabaseStorage from './services/databaseStorage.js';
+import { testConnection } from './config/database.js';
 
 dotenv.config();
 
@@ -118,55 +120,26 @@ const validateSanityLevel = (value) => {
   return num;
 };
 
-const storage = {
-  sessions: [],
-  snapshots: [],
-  
-  addSession(data) {
-    const session = {
-      id: this.sessions.length + 1,
-      user_id: data.userId || 'anonymous',
-      sanity_level: data.sanityLevel,
-      preferences: data.preferences,
-      created_at: new Date().toISOString()
-    };
-    this.sessions.push(session);
-    if (this.sessions.length > 1000) this.sessions = this.sessions.slice(-1000);
-    return session;
-  },
-  
-  addSnapshot(sanityLevel, timestamp) {
-    this.snapshots.push({
-      id: this.snapshots.length + 1,
-      sanity_level: sanityLevel,
-      timestamp: timestamp || new Date().toISOString()
-    });
-    if (this.snapshots.length > 100) this.snapshots = this.snapshots.slice(-100);
-  },
-  
-  getRecentSessions(count = 100) {
-    return this.sessions.slice(-count);
-  },
-  
-  getUserSessions(userId, limit = 50) {
-    return this.sessions
-      .filter(s => s.user_id === userId)
-      .slice(-limit)
-      .reverse();
-  },
-  
-  getRecentSnapshots(minutes = 5) {
-    const cutoff = new Date(Date.now() - minutes * 60 * 1000);
-    return this.snapshots.filter(s => new Date(s.timestamp) > cutoff);
-  }
-};
+// Initialize database storage
+const storage = new DatabaseStorage();
 
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
-    timestamp: new Date().toISOString(),
-    database: 'in-memory'
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    // Test database connection
+    const dbConnected = await testConnection();
+
+    res.json({
+      status: dbConnected ? 'healthy' : 'degraded',
+      timestamp: new Date().toISOString(),
+      database: dbConnected ? 'postgresql' : 'disconnected'
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'unhealthy',
+      error: 'Database connection failed',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 app.post('/api/sessions',
@@ -182,16 +155,18 @@ app.post('/api/sessions',
     body('preferences').optional().isObject().withMessage('Preferences must be an object')
   ],
   handleValidationErrors,
-  (req, res) => {
+  async (req, res) => {
     try {
       // Sanitize input data
       const sanitizedData = {
         sanityLevel: Number(req.body.sanityLevel),
         userId: sanitizeUserId(req.body.userId),
-        preferences: req.body.preferences || {}
+        preferences: req.body.preferences || {},
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
       };
 
-      const session = storage.addSession(sanitizedData);
+      const session = await storage.addSession(sanitizedData);
       res.json({ success: true, session });
     } catch (error) {
       console.error('Error saving session:', error);
@@ -199,45 +174,28 @@ app.post('/api/sessions',
     }
   });
 
-app.get('/api/stats/global', (req, res) => {
+app.get('/api/stats/global', async (req, res) => {
   try {
-    const recent = storage.getRecentSessions();
-    
-    if (recent.length === 0) {
-      return res.json({
-        success: true,
-        stats: { average_sanity: 50, lowest_sanity: 0, highest_sanity: 100, total_sessions: 0, unique_users: 0 }
-      });
-    }
-    
-    const levels = recent.map(s => s.sanity_level);
-    const uniqueUsers = new Set(recent.map(s => s.user_id)).size;
-    
-    res.json({ 
-      success: true, 
-      stats: {
-        average_sanity: levels.reduce((a, b) => a + b, 0) / levels.length,
-        lowest_sanity: Math.min(...levels),
-        highest_sanity: Math.max(...levels),
-        total_sessions: recent.length,
-        unique_users: uniqueUsers
-      },
+    const stats = await storage.getGlobalStats();
+    res.json({
+      success: true,
+      stats,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('Error fetching stats:', error);
-    res.status(500).json({ error: 'Failed to fetch statistics' });
+    res.status(500).json({ success: false, error: 'Failed to fetch statistics' });
   }
 });
 
-app.get('/api/sessions/:userId', (req, res) => {
+app.get('/api/sessions/:userId', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
-    const sessions = storage.getUserSessions(req.params.userId, limit);
+    const sessions = await storage.getUserSessions(req.params.userId, limit);
     res.json({ success: true, sessions });
   } catch (error) {
     console.error('Error fetching sessions:', error);
-    res.status(500).json({ error: 'Failed to fetch sessions' });
+    res.status(500).json({ success: false, error: 'Failed to fetch sessions' });
   }
 });
 
@@ -253,15 +211,16 @@ app.post('/api/snapshots',
     body('timestamp').optional().isISO8601().withMessage('Timestamp must be a valid ISO date')
   ],
   handleValidationErrors,
-  (req, res) => {
+  async (req, res) => {
     try {
       // Sanitize input data
       const sanitizedData = {
         sanityLevel: Number(req.body.sanityLevel),
-        timestamp: req.body.timestamp || new Date().toISOString()
+        timestamp: req.body.timestamp || new Date().toISOString(),
+        ipAddress: req.ip
       };
 
-      storage.addSnapshot(sanitizedData.sanityLevel, sanitizedData.timestamp);
+      await storage.addSnapshot(sanitizedData.sanityLevel, sanitizedData.timestamp, sanitizedData.ipAddress);
       res.json({ success: true });
     } catch (error) {
       console.error('Error saving snapshot:', error);
@@ -269,25 +228,25 @@ app.post('/api/snapshots',
     }
   });
 
-app.get('/api/mood/current', (req, res) => {
+app.get('/api/mood/current', async (req, res) => {
   try {
-    const recent = storage.getRecentSnapshots(5);
-    
+    const recent = await storage.getRecentSnapshots(5);
+
     if (recent.length === 0) {
       return res.json({ success: true, currentMood: 50, sampleSize: 0, timestamp: new Date().toISOString() });
     }
-    
+
     const avgMood = recent.reduce((sum, s) => sum + s.sanity_level, 0) / recent.length;
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       currentMood: Math.round(avgMood),
       sampleSize: recent.length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error('Error fetching mood:', error);
-    res.status(500).json({ error: 'Failed to fetch mood' });
+    res.status(500).json({ success: false, error: 'Failed to fetch mood' });
   }
 });
 
@@ -463,10 +422,18 @@ app.use((error, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🌐 Sanity Orb Backend running on port ${PORT}`);
   console.log(`✓ Health check: http://localhost:${PORT}/api/health`);
-  console.log(`✓ Running in IN-MEMORY mode (no database required)`);
+
+  // Test database connection on startup
+  const dbConnected = await testConnection();
+  if (dbConnected) {
+    console.log(`✓ Database: PostgreSQL connected`);
+  } else {
+    console.log(`⚠️  Database: Connection failed - check DATABASE_URL in .env`);
+  }
+
   console.log(`✓ Security enabled: Rate limiting, input validation, CORS protection`);
   console.log(`\n📊 Available endpoints:`);
   console.log(`   POST /api/sessions - Save user session (validated)`);

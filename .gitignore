@@ -22,3 +22,46 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 🔒 SECURITY - NEVER COMMIT THESE FILES
+# ======================================
+
+# Environment files with real credentials
+.env
+.env.local
+.env.development
+.env.production
+backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.production
+
+# Encrypted configuration files
+backend/config/secure-config.enc
+config/secure-config.enc
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# SSL/TLS certificates and keys
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+
+# API keys and secrets
+secrets.json
+keys.json
+credentials.json
+
+# Backup files with sensitive data
+*backup*.sql
+*dump*.sql
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

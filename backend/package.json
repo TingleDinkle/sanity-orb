@@ -7,6 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "db:init": "psql $DATABASE_URL -f migrations/init.sql 2>/dev/null || psql $(echo $DATABASE_URL | sed 's|postgresql://||' | sed 's|postgres://||') -f migrations/init.sql 2>/dev/null || echo 'Please set DATABASE_URL in .env and ensure PostgreSQL is running'",
+    "db:reset": "echo 'DROP TABLE IF EXISTS user_analytics, snapshots, sessions CASCADE;' | psql $DATABASE_URL && npm run db:init",
+    "db:test": "node -e \"import('./config/database.js').then(m => m.testConnection().then(connected => process.exit(connected ? 0 : 1)))\"",
     "migrate": "node migrations/run.js"
   },
   "dependencies": {
@@ -19,7 +22,8 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "node-fetch": "^3.3.2",
-    "pg": "^8.11.3"
+    "pg": "^8.16.3",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
