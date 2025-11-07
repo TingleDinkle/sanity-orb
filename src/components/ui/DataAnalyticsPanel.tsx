@@ -409,26 +409,26 @@ const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
                               {data.predictions.trend === 'declining' && (
                                 <>
                                   <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-white/80">
-                                    ⚠️ Declining trend detected - Consider taking a break
+                                    Declining trend detected - Consider taking a break
                                   </div>
                                   <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
-                                    💡 Try resetting to optimal levels more frequently
+                                    Try resetting to optimal levels more frequently
                                   </div>
                                 </>
                               )}
                               {data.predictions.trend === 'improving' && (
                                 <>
                                   <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-white/80">
-                                    ✅ Great! Your sanity levels are improving
+                                    Great! Your sanity levels are improving
                                   </div>
                                   <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
-                                    🎯 Keep maintaining current patterns
+                                    Keep maintaining current patterns
                                   </div>
                                 </>
                               )}
                               {data.predictions.trend === 'stable' && (
                                 <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 text-white/80">
-                                  📊 Stable levels - Consider occasional optimization
+                                  Stable levels - Consider occasional optimization
                                 </div>
                               )}
                             </div>

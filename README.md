@@ -5,12 +5,18 @@
 ![Three.js](https://img.shields.io/badge/Three.js-0.180.0-000000?style=for-the-badge&logo=three.js&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.18-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-3.3.0-2298BD?style=for-the-badge&logo=recharts&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.18.2-000000?style=for-the-badge&logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Sequelize](https://img.shields.io/badge/Sequelize-6.37.7-52B0E7?style=for-the-badge&logo=sequelize&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-9.0.2-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-000000?style=for-the-badge&logo=flask&logoColor=white)
-![XGBoost](https://img.shields.io/badge/XGBoost-2.1.3-FF6600?style=for-the-badge)
+![XGBoost](https://img.shields.io/badge/XGBoost-2.0.3-FF6600?style=for-the-badge)
+![NumPy](https://img.shields.io/badge/NumPy-1.26.0-013243?style=for-the-badge&logo=numpy&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-2.1.1-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3.1-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
 
 A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
@@ -39,6 +45,7 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **React 19.1.1** - Modern React with hooks and functional components
 - **TypeScript 5.9.3** - Type-safe development with interfaces and type definitions
 - **Vite 7.1.7** - Fast build tool and development server with hot module replacement
+- **Recharts 3.3.0** - Composable charting library for React
 
 ### 3D Graphics & WebGL
 - **Three.js 0.180.0** - 3D graphics library for WebGL rendering
@@ -59,17 +66,25 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Node.js** - JavaScript runtime environment
 - **Express.js 4.18.2** - Web application framework for RESTful API
 - **PostgreSQL** - Relational database system
-- **pg 8.11.3** - Node.js PostgreSQL client with connection pooling
+- **Sequelize 6.37.7** - Promise-based Node.js ORM for PostgreSQL
+- **JWT 9.0.2** - JSON Web Token implementation for authentication
+- **pg 8.16.3** - Node.js PostgreSQL client with connection pooling
 - **CORS 2.8.5** - Cross-Origin Resource Sharing middleware
+- **Helmet 8.1.0** - Security middleware for Express
+- **Express Rate Limit 8.2.1** - Rate limiting middleware
+- **bcrypt 5.1.1** - Password hashing function
 - **dotenv 16.3.1** - Environment variable management
 
 ### Machine Learning & AI
 - **Python 3.8+** - Programming language for ML infrastructure
 - **Flask 3.0.0** - Lightweight web framework for ML API
-- **XGBoost 2.1.3** - Gradient boosting framework for predictive models
-- **NumPy 2.2.1** - Numerical computing and array operations
-- **Pandas 2.2.3** - Data manipulation and analysis
-- **Scikit-learn 1.6.1** - Machine learning utilities and metrics
+- **Flask-CORS 4.0.0** - Cross-Origin Resource Sharing for Flask
+- **XGBoost 2.0.3** - Gradient boosting framework for predictive models
+- **NumPy 1.26.0** - Numerical computing and array operations
+- **Pandas 2.1.1** - Data manipulation and analysis
+- **Scikit-learn 1.3.1** - Machine learning utilities and metrics
+- **Matplotlib 3.8.0** - Plotting library for Python
+- **Joblib 1.3.2** - Parallel computing library
 
 ### Development Tools
 - **ESLint 9.36.0** - Code linting and style enforcement
@@ -216,21 +231,33 @@ ml-model/
    DATABASE_URL=postgresql://postgres:password@localhost:5432/sanity_orb
    ```
 
-6. **Start all services** (Automated - Windows)
+6. **Choose your deployment method:**
+
+   **Option 1: Docker Compose (Recommended)**
    ```bash
+   # One-command deployment with database
+   ./deploy.sh local
+
+   # Or manually:
+   docker-compose up --build
+   ```
+
+   **Option 2: Windows Batch Script**
+   ```bash
+   # Automated Windows deployment
    start-all.bat
    ```
-   
-   Or manually start each service:
+
+   **Option 3: Manual Services**
    ```bash
    # Terminal 1 - ML API
    cd ml-model
    python ml_api.py
-   
+
    # Terminal 2 - Backend
    cd backend
    npm start
-   
+
    # Terminal 3 - Frontend
    npm run dev
    ```
@@ -282,15 +309,14 @@ ml-model/
    ```
 
 4. **Environment Variables**
-   Railway will automatically provide `RAILWAY_DATABASE_URL` for the PostgreSQL database.
-   Set these additional variables in Railway dashboard for the backend service:
-   ```
-   NODE_ENV=production
-   JWT_SECRET=[your-generated-64-char-jwt-secret]
-   CONFIG_ENCRYPTION_KEY=[your-generated-32-char-encryption-key]
-   FRONTEND_URL=https://sanity-orb.vercel.app
-   ```
-   **Note:** `DATABASE_URL` is automatically set by Railway as `RAILWAY_DATABASE_URL`.
+   All environment variables are pre-configured in `backend/railway.json` for security:
+   - `DATABASE_URL`: PostgreSQL connection string
+   - `JWT_SECRET`: Secure authentication token
+   - `CONFIG_ENCRYPTION_KEY`: Configuration encryption key
+   - `FRONTEND_URL`: Vercel deployment URL
+   - `NODE_ENV`: Production environment
+
+   **Security Note:** Environment variables are embedded in deployment config to prevent exposure.
 
 5. **Database Setup**
    - Railway provides PostgreSQL automatically
@@ -380,6 +406,16 @@ Critical sanity levels (0-25%) trigger dynamic screen shake:
 - **WebGL Support**: Required for 3D rendering
 - **Web Audio API**: Required for audio features
 - **ES2020+**: Modern JavaScript features
+
+### Security Features
+- **Rate Limiting**: 100 requests per 15 minutes per IP
+- **Input Validation**: Comprehensive sanitization and validation
+- **CORS Protection**: Strict origin validation
+- **Helmet Security Headers**: Content Security Policy, XSS protection
+- **SQL Injection Prevention**: Sequelize ORM with parameterized queries
+- **Environment Encryption**: Sensitive config encrypted with AES-256-CBC
+- **HTTPS Enforcement**: SSL/TLS required in production
+- **Audit Logging**: Security events logged for monitoring
 
 ## Development
 

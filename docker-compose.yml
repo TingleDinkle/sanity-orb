@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: sanity-orb-postgres
+    environment:
+      POSTGRES_DB: sanity_orb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Traumerei362
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sanity_orb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sanity-orb-network
+
+  # ML Service (Python/Flask)
+  ml-api:
+    build:
+      context: ./ml-model
+      dockerfile: Dockerfile
+    container_name: sanity-orb-ml
+    ports:
+      - "5001:5001"
+    environment:
+      FLASK_ENV: development
+      PORT: 5001
+    volumes:
+      - ./ml-model:/app
+      - /app/__pycache__
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sanity-orb-network
+
+  # Backend Service (Node.js/Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sanity-orb-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:Traumerei362@postgres:5432/sanity_orb
+      ML_API_URL: http://ml-api:5001/api
+      JWT_SECRET: 4AyVhpGdL7EpZDFxZG5/JOYaqQIROMJmL+pC/zCKtYWNDkjfe3oExarW1EPebCfTTeh5QDsJIFN3bpgRTBWCYg==
+      CONFIG_ENCRYPTION_KEY: AlaLB/YUDduNO17p/IRcH39B26Bzipa1SDnxpxjHFQQ=
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sanity-orb-network
+
+  # Frontend Service (React/Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: sanity-orb-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3001/api
+      VITE_ML_API_URL: http://localhost:5001/api
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - sanity-orb-network
+
+volumes:
+  postgres_data:
+
+networks:
+  sanity-orb-network:
+    driver: bridge

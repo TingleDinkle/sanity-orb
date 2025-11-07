@@ -29,7 +29,7 @@ const DataAnalyticsButton: React.FC<DataAnalyticsButtonProps> = ({ onClick, isCo
         <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-xl rounded-lg border border-white/20 text-white/90 text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           Data Analytics
           {!isConnected && (
-            <div className="text-xs text-yellow-400 mt-0.5">⚠️ Offline Mode</div>
+            <div className="text-xs text-yellow-400 mt-0.5">Offline Mode</div>
           )}
         </div>
       </button>
