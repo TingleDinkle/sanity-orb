@@ -23,6 +23,8 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
   const pointLightRef = useRef<THREE.PointLight | null>(null);
   const prevTimeRef = useRef<number | null>(null);
   const logicalTimeRef = useRef(0);
+  const frameCountRef = useRef(0);
+  const lastGeometryUpdateRef = useRef(0);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -71,36 +73,53 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
     scene.add(pointLight);
     pointLightRef.current = pointLight;
 
-    // Animation loop
+    // Animation loop - OPTIMIZED for performance
     let animationId: number;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-      // Use real delta for smoother time progression across devices
+
+      frameCountRef.current++;
       const now = performance.now();
       if (prevTimeRef.current == null) {
         prevTimeRef.current = now;
       }
       const delta = Math.min(0.05, (now - prevTimeRef.current) / 1000);
       prevTimeRef.current = now;
+
       // Accumulate logical time separately
       logicalTimeRef.current += delta;
       const time = logicalTimeRef.current;
       const progress = Math.min(time / MIND_ASSEMBLY_CONFIG.totalDuration, 1);
 
-      // Phase 1: Core awakens (0-1.5s)
+      // PERFORMANCE OPTIMIZATIONS: Early exit for completed phases and batching
+      const isEarlyPhase = time < MIND_ASSEMBLY_CONFIG.phases.nodesConverge.start + MIND_ASSEMBLY_CONFIG.phases.nodesConverge.duration;
+      const isMidPhase = time >= MIND_ASSEMBLY_CONFIG.phases.networkForm.start && time < MIND_ASSEMBLY_CONFIG.phases.finalState.start;
+      const isLatePhase = time >= MIND_ASSEMBLY_CONFIG.phases.finalState.start;
+
+      // PERFORMANCE: Skip all node/connection updates in late phase - only orb matters
+      if (isLatePhase) {
+        // Only update final phase (orb rotation/pulsing)
+        if (orbRef.current) {
+          orbRef.current.rotation.y += 0.005;
+          const pulse = Math.sin(time * 2) * 0.02;
+          orbRef.current.scale.setScalar(1 + pulse);
+        }
+      } else {
+
+      // Phase 1: Core awakens (0-1.5s) - LIGHT COMPUTATION
       if (time < MIND_ASSEMBLY_CONFIG.phases.coreAwaken.duration) {
         const phase1Progress = time / MIND_ASSEMBLY_CONFIG.phases.coreAwaken.duration;
         if (coreRef.current) {
-          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          const coreMaterial = coreRef.current.material as any;
           coreMaterial.opacity = Math.pow(phase1Progress, 2) * 0.8;
           coreMaterial.emissiveIntensity = Math.sin(phase1Progress * Math.PI) * 2.0;
           coreRef.current.scale.setScalar(MIND_ASSEMBLY_CONFIG.coreScale.initial + phase1Progress * (MIND_ASSEMBLY_CONFIG.coreScale.max - MIND_ASSEMBLY_CONFIG.coreScale.initial));
-          
+
           // Pulsing effect
           const pulse = Math.sin(time * 5) * 0.1;
           coreRef.current.scale.setScalar(1 + pulse);
         }
-        
+
         if (pointLightRef.current) {
           pointLightRef.current.intensity = phase1Progress * 1.5;
         }
@@ -121,10 +140,10 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
             convergenceSpeed * 0.02
           );
           
-          // Fade in nodes gradually
+          // Fade in nodes gradually - PERFORMANCE: Only calculate when close
           const distanceToTarget = node.position.distanceTo(new THREE.Vector3(target.x, target.y, target.z));
           if (distanceToTarget < 5) {
-            const material = node.material as THREE.MeshBasicMaterial;
+            const material = node.material as any;
             material.opacity = Math.min(1, (5 - distanceToTarget) / 5);
             material.emissiveIntensity = material.opacity * 1.5;
           }
@@ -160,18 +179,22 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           time < MIND_ASSEMBLY_CONFIG.phases.networkForm.start + MIND_ASSEMBLY_CONFIG.phases.networkForm.duration) {
         const phase3Progress = (time - MIND_ASSEMBLY_CONFIG.phases.networkForm.start) / MIND_ASSEMBLY_CONFIG.phases.networkForm.duration;
         
+        // PERFORMANCE: Batch geometry updates - only update every 3 frames
+        const shouldUpdateGeometry = frameCountRef.current % 3 === 0;
         connectionsRef.current.forEach((conn) => {
           const { line, node1, node2, pulsePhase } = conn;
-          
-          // Update line positions
-          const positions = line.geometry.attributes.position.array as Float32Array;
-          positions[0] = node1.position.x;
-          positions[1] = node1.position.y;
-          positions[2] = node1.position.z;
-          positions[3] = node2.position.x;
-          positions[4] = node2.position.y;
-          positions[5] = node2.position.z;
-          line.geometry.attributes.position.needsUpdate = true;
+
+          // Update line positions - PERFORMANCE: Batched updates
+          if (shouldUpdateGeometry) {
+            const positions = line.geometry.attributes.position.array as Float32Array;
+            positions[0] = node1.position.x;
+            positions[1] = node1.position.y;
+            positions[2] = node1.position.z;
+            positions[3] = node2.position.x;
+            positions[4] = node2.position.y;
+            positions[5] = node2.position.z;
+            line.geometry.attributes.position.needsUpdate = true;
+          }
           
           // Fade in connections
           const fadeIn = Math.min(1, phase3Progress * 2);
@@ -185,20 +208,22 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           const midPoint = new THREE.Vector3()
             .lerpVectors(node1.position, node2.position, pulsePosition);
           
-          // Brighten nodes when pulse passes
+          // Brighten nodes when pulse passes - PERFORMANCE: Only update occasionally
           if (pulsePosition < 0.1 || pulsePosition > 0.9) {
-            const node1Material = node1.material as THREE.MeshBasicMaterial;
-            const node2Material = node2.material as THREE.MeshBasicMaterial;
+            const node1Material = node1.material as any;
+            const node2Material = node2.material as any;
             node1Material.emissiveIntensity = 2.0;
             node2Material.emissiveIntensity = 2.0;
           }
         });
-        
-        // Gradually reduce node emissive intensity
-        nodesRef.current.forEach(node => {
-          const material = node.material as THREE.MeshBasicMaterial;
-          material.emissiveIntensity *= 0.98;
-        });
+
+        // Gradually reduce node emissive intensity - PERFORMANCE: Batch updates
+        if (frameCountRef.current % 2 === 0) { // Every other frame
+          nodesRef.current.forEach(node => {
+            const material = node.material as any;
+            material.emissiveIntensity *= 0.98;
+          });
+        }
       }
 
       // Phase 4: Loading Animation (5.5-7.0s) - Network breathes and pulses
@@ -219,7 +244,7 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           node.position.copy(expandedPos);
           
           // Pulsing node brightness
-          const material = node.material as THREE.MeshBasicMaterial;
+          const material = node.material as any;
           material.emissiveIntensity = 1.0 + breathingCycle * 1.5;
           
           // Slight rotation for dynamic feel
@@ -383,6 +408,7 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           glowRef.current.material.uniforms.intensity.value = 0.4;
         }
       }
+      } // Close the else block
 
       // Complete animation
       if (progress >= 1) {
@@ -434,17 +460,17 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
       
       if (coreRef.current) {
         coreRef.current.geometry.dispose();
-        coreRef.current.material.dispose();
+        (coreRef.current.material as any).dispose();
       }
-      
+
       if (glowRef.current) {
         glowRef.current.geometry.dispose();
-        glowRef.current.material.dispose();
+        (glowRef.current.material as any).dispose();
       }
-      
+
       if (orbRef.current) {
         orbRef.current.geometry.dispose();
-        orbRef.current.material.dispose();
+        (orbRef.current.material as any).dispose();
       }
       
       renderer.dispose();
