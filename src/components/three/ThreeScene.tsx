@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { checkWebGLSupport, getSanityColor } from '../../utils/sanityUtils';
 import { STAR_FIELD_CONFIGS, CAMERA_DISTANCE } from '../../constants/sanityConstants';
@@ -19,6 +19,9 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
   const particlesRef = useRef<THREE.Mesh[]>([]);
   const starsRef = useRef<THREE.Points[]>([]);
   const timeRef = useRef(0);
+  const sanityRef = useRef(sanity);
+  const targetColorRef = useRef(getSanityColor(sanity));
+  const currentColorRef = useRef(getSanityColor(sanity));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -193,15 +196,16 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
         timeRef.current += deltaTime * 2; // Much slower, more controlled speed
         const t = timeRef.current;
 
-        // Pre-calculate common values
-        const chaos = 1 - sanity / 100;
+        // Pre-calculate common values using ref for smooth updates
+        const chaos = 1 - sanityRef.current / 100;
         const chaosFactor = chaos * 0.8;
         const pulseSpeed = 0.8 + chaos * 1.2;
 
-        if (orbRef.current && orbRef.current.material.uniforms) {
-          orbRef.current.material.uniforms.time.value = t;
-          orbRef.current.material.uniforms.pulseSpeed.value = pulseSpeed;
-          orbRef.current.material.uniforms.turbulence.value = chaosFactor;
+        if (orbRef.current && orbRef.current.material && (orbRef.current.material as THREE.ShaderMaterial).uniforms) {
+          const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
+          orbMaterial.uniforms.time.value = t;
+          orbMaterial.uniforms.pulseSpeed.value = pulseSpeed;
+          orbMaterial.uniforms.turbulence.value = chaosFactor;
           
           // Slower, more controlled rotation based on sanity
           const rotationSpeed = 0.3 + chaos * 0.7; // Slower base speed, increases with chaos
@@ -237,8 +241,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           particle.position.z = radius * Math.cos(data.phi);
           
           const distanceFromCenter = particle.position.length();
-          particle.material.opacity = 0.3 + (1 - distanceFromCenter / 5) * 0.5;
-          
+          (particle.material as THREE.MeshBasicMaterial).opacity = 0.3 + (1 - distanceFromCenter / 5) * 0.5;
+
           // Much slower rotation
           particle.rotation.x += deltaTime * 5;
           particle.rotation.y += deltaTime * 7;
@@ -248,9 +252,9 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
         starsRef.current.forEach((field, i) => {
           field.rotation.y += field.userData.speed * deltaTime * 200;
           field.rotation.x += field.userData.speed * 0.5 * deltaTime * 200;
-          
+
           const breathe = Math.sin(t * 0.3 + i) * 0.1 + 1; // Slower breathing
-          field.material.opacity = 0.4 + breathe * 0.2;
+          (field.material as THREE.PointsMaterial).opacity = 0.4 + breathe * 0.2;
         });
 
         // Smooth camera movement - much slower
@@ -297,39 +301,48 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       console.error('Three.js initialization error:', err);
       setError(`Three.js error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
+  }, []); // Remove sanity dependency to prevent scene recreation
+
+  // Update sanity ref for smooth animation
+  useEffect(() => {
+    sanityRef.current = sanity;
   }, [sanity]);
 
   // Color update effect with smoother transitions
   useEffect(() => {
-    if (orbRef.current && glowRef.current && orbRef.current.material.uniforms) {
+    if (orbRef.current && glowRef.current && orbRef.current.material && (orbRef.current.material as THREE.ShaderMaterial).uniforms) {
       const targetColor = getSanityColor(sanity);
+      targetColorRef.current = targetColor;
       let animationId: number;
-      
+
       const updateColors = () => {
         if (!orbRef.current || !glowRef.current) return;
-        
+
+        const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
+        const glowMaterial = glowRef.current.material as THREE.ShaderMaterial;
+
         // Smoother interpolation with easing
         const lerpFactor = 0.08; // Increased from 0.05 for smoother transitions
-        
-        orbRef.current.material.uniforms.color.value.lerp(targetColor, lerpFactor);
-        glowRef.current.material.uniforms.color.value.lerp(targetColor, lerpFactor);
-        
+
+        orbMaterial.uniforms.color.value.lerp(targetColor, lerpFactor);
+        glowMaterial.uniforms.color.value.lerp(targetColor, lerpFactor);
+
         particlesRef.current.forEach(particle => {
-          particle.material.color.lerp(targetColor, lerpFactor);
+          (particle.material as THREE.MeshBasicMaterial).color.lerp(targetColor, lerpFactor);
         });
-        
-        const currentColor = orbRef.current.material.uniforms.color.value;
-        const distance = Math.abs(currentColor.r - targetColor.r) + 
-                        Math.abs(currentColor.g - targetColor.g) + 
+
+        const currentColor = orbMaterial.uniforms.color.value;
+        const distance = Math.abs(currentColor.r - targetColor.r) +
+                        Math.abs(currentColor.g - targetColor.g) +
                         Math.abs(currentColor.b - targetColor.b);
-        
+
         if (distance > 0.005) { // Reduced threshold for more precise color matching
           animationId = requestAnimationFrame(updateColors);
         }
       };
-      
+
       updateColors();
-      
+
       return () => {
         if (animationId) {
           cancelAnimationFrame(animationId);

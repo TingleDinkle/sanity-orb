@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
 
 interface ControlPanelProps {
@@ -9,6 +9,18 @@ interface ControlPanelProps {
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isVisible, onToggleVisibility }) => {
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced sanity change to prevent excessive updates during slider dragging
+  const debouncedSanityChange = useCallback((value: number) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      onSanityChange(value);
+    }, 16); // ~60fps debounce
+  }, [onSanityChange]);
   if (!isVisible) {
     return (
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
@@ -68,7 +80,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
             min="0"
             max="100"
             value={sanity}
-            onChange={(e) => onSanityChange(Number(e.target.value))}
+            onChange={(e) => debouncedSanityChange(Number(e.target.value))}
             className="w-full h-3 bg-transparent appearance-none cursor-pointer relative z-10"
             style={{
               background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)',
