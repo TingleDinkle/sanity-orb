@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { checkWebGLSupport, getSanityColor } from '../../utils/sanityUtils';
 import { STAR_FIELD_CONFIGS, CAMERA_DISTANCE } from '../../constants/sanityConstants';
 import { vertexShader, fragmentShader, glowVertexShader, glowFragmentShader } from '../../shaders/orbShaders';
+import MicroUniverse from './MicroUniverse';
+import { CollectiveData } from '../../services/api';
 
 interface ThreeSceneProps {
   sanity: number;
@@ -12,9 +14,13 @@ interface ThreeSceneProps {
     elevation: number;
     distance: number;
   };
+  collectiveData?: CollectiveData | null;
+  collectiveAverage?: number | null;
+  onZoomIn?: () => void; // Callback when user zooms into micro-universe
+  onZoomOut?: () => void; // Callback when user zooms out to macro view
 }
 
-const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, cameraAngles }) => {
+const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, cameraAngles, collectiveData, collectiveAverage, onZoomIn, onZoomOut }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -23,11 +29,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
   const glowRef = useRef<THREE.Mesh | null>(null);
   const particlesRef = useRef<THREE.Mesh[]>([]);
   const starsRef = useRef<THREE.Points[]>([]);
+  const microUniverseRef = useRef<MicroUniverse | null>(null);
   const timeRef = useRef(0);
   const sanityRef = useRef(sanity);
   const targetColorRef = useRef(getSanityColor(sanity));
   const currentColorRef = useRef(getSanityColor(sanity));
   const [error, setError] = useState<string | null>(null);
+
+  // LOD (Level of Detail) state
+  const [lodLevel, setLodLevel] = useState<'macro' | 'transition' | 'micro'>('macro');
+  const lastLodLevelRef = useRef<'macro' | 'transition' | 'micro'>('macro');
+
+
 
   // Camera position will be controlled by props
 
@@ -191,6 +204,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
       rimLight2.position.set(-4, -2, -3);
       scene.add(rimLight2);
 
+      // Initialize MicroUniverse
+      const microUniverse = new MicroUniverse({
+        collectiveData: null,
+        visible: false,
+        onOrbClick: (clusterId) => {
+          console.log('Clicked cluster:', clusterId);
+          // Handle cluster click - could show details, etc.
+        }
+      });
+      scene.add(microUniverse.getObject3D());
+      microUniverseRef.current = microUniverse;
+
       // Animation loop - optimized for performance
       let animationId: number;
       let lastTime = 0;
@@ -264,6 +289,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
           (field.material as THREE.PointsMaterial).opacity = 0.4 + breathe * 0.2;
         });
 
+
+
         renderer.render(scene, camera);
       };
       animate(0);
@@ -286,16 +313,32 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
         }
         
         orbGeometry.dispose();
-        (orbMaterial as any).dispose();
+        if (Array.isArray(orbMaterial)) {
+          orbMaterial.forEach(m => m.dispose());
+        } else {
+          orbMaterial.dispose();
+        }
         glowGeometry.dispose();
-        (glowMaterial as any).dispose();
+        if (Array.isArray(glowMaterial)) {
+          glowMaterial.forEach(m => m.dispose());
+        } else {
+          glowMaterial.dispose();
+        }
         particles.forEach(p => {
           p.geometry.dispose();
-          p.material.dispose();
+          if (Array.isArray(p.material)) {
+            p.material.forEach(m => m.dispose());
+          } else {
+            p.material.dispose();
+          }
         });
         starFields.forEach(field => {
           field.geometry.dispose();
-          (field.material as any).dispose();
+          if (Array.isArray(field.material)) {
+            field.material.forEach(m => m.dispose());
+          } else {
+            (field.material as any).dispose();
+          }
         });
         renderer.dispose();
       };
@@ -310,10 +353,25 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
     sanityRef.current = sanity;
   }, [sanity]);
 
-  // Color update effect with smoother transitions
+  // Color update effect with smoother transitions - AI-enhanced averaging
   useEffect(() => {
     if (orbRef.current && glowRef.current && orbRef.current.material && (orbRef.current.material as THREE.ShaderMaterial).uniforms) {
-      const targetColor = getSanityColor(sanity);
+      // Calculate blended color using individual sanity and collective average
+      const individualColor = getSanityColor(sanity);
+      let targetColor = individualColor;
+
+      // If we have collective data, blend with collective average
+      if (collectiveAverage !== null && collectiveAverage !== undefined) {
+        const collectiveColor = getSanityColor(collectiveAverage);
+
+        // Blend individual and collective colors based on LOD level
+        // In macro view, show more individual color; in micro view, show more collective
+        const collectiveWeight = lodLevel === 'micro' ? 0.7 :
+                                lodLevel === 'transition' ? 0.4 : 0.2;
+
+        targetColor = individualColor.clone().lerp(collectiveColor, collectiveWeight);
+      }
+
       targetColorRef.current = targetColor;
       let animationId: number;
 
@@ -351,7 +409,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
         }
       };
     }
-  }, [sanity]);
+  }, [sanity, collectiveAverage, lodLevel]);
 
   // Update camera position based on cameraAngles prop
   useEffect(() => {
@@ -369,23 +427,81 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, 
     }
   }, [cameraAngles]);
 
-  // Adjust camera and orb scale when control panel is hidden
-  useEffect(() => {
-    if (cameraRef.current && orbRef.current) {
-      const camera = cameraRef.current;
-      const orb = orbRef.current;
+  // Control panel visibility should NOT affect camera or orb - removed problematic effect
 
-      if (!isControlPanelVisible) {
-        // Move camera closer and adjust orb scale for better visibility
-        camera.position.z = 4.5; // Closer to orb
-        orb.scale.setScalar(1.2); // Slightly larger orb
+  // LOD (Level of Detail) monitoring - check camera distance to determine zoom level
+  // Only trigger when user is NOT actively controlling camera (no mouse down)
+  useEffect(() => {
+    if (!cameraRef.current) return;
+
+    const checkLodLevel = () => {
+      const camera = cameraRef.current;
+      if (!camera) return;
+
+      const distance = camera.position.length();
+      console.log('Camera distance:', distance, 'LOD level:', lodLevel);
+
+      let newLodLevel: 'macro' | 'transition' | 'micro';
+
+      if (distance < 3.5) { // More conservative threshold
+        newLodLevel = 'micro';
+      } else if (distance < 7) { // Wider transition zone
+        newLodLevel = 'transition';
       } else {
-        // Reset to normal position and scale
-        camera.position.z = 6;
-        orb.scale.setScalar(1);
+        newLodLevel = 'macro';
       }
+
+      if (newLodLevel !== lastLodLevelRef.current) {
+        console.log('LOD transition:', lastLodLevelRef.current, '->', newLodLevel);
+        setLodLevel(newLodLevel);
+
+        // Only trigger callbacks for actual state changes, not transitions
+        if (lastLodLevelRef.current === 'macro' && newLodLevel === 'micro') {
+          console.log('Triggering onZoomIn callback');
+          onZoomIn?.();
+        } else if (lastLodLevelRef.current === 'micro' && newLodLevel === 'macro') {
+          console.log('Triggering onZoomOut callback');
+          onZoomOut?.();
+        }
+
+        lastLodLevelRef.current = newLodLevel;
+      }
+    };
+
+    // Check LOD level initially and when camera angles change significantly
+    checkLodLevel();
+  }, [cameraAngles, onZoomIn, onZoomOut, lodLevel]);
+
+  // Update MicroUniverse data when collectiveData changes
+  useEffect(() => {
+    console.log('ThreeScene: collectiveData changed:', collectiveData);
+    if (microUniverseRef.current && collectiveData !== undefined) {
+      console.log('ThreeScene: updating MicroUniverse with data');
+      microUniverseRef.current.updateData(collectiveData);
+    } else {
+      console.log('ThreeScene: MicroUniverse not ready or no data');
     }
-  }, [isControlPanelVisible]);
+  }, [collectiveData]);
+
+  // Handle LOD transitions - control MicroUniverse visibility only
+  useEffect(() => {
+    console.log('LOD Level changed to:', lodLevel);
+
+    if (microUniverseRef.current) {
+      // Show micro-universe when in micro or transition LOD levels
+      const shouldShow = lodLevel === 'micro' || lodLevel === 'transition';
+      microUniverseRef.current.setVisible(shouldShow);
+    }
+
+    // Removed automatic camera transitions - let user control zoom manually
+    if (lodLevel === 'micro' && lastLodLevelRef.current !== 'micro') {
+      console.log('Micro-universe activated');
+      onZoomIn?.();
+    } else if (lodLevel === 'macro' && lastLodLevelRef.current !== 'macro') {
+      console.log('Macro view activated');
+      onZoomOut?.();
+    }
+  }, [lodLevel, onZoomIn, onZoomOut]);
 
   if (error) {
     return (

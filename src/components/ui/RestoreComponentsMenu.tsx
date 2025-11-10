@@ -4,23 +4,28 @@ interface RestoreComponentsMenuProps {
   showStatusPanel: boolean;
   showCoherenceIndex: boolean;
   showSystemIndicators: boolean;
+  showMicroUniverseIndicator: boolean;
   onRestoreStatusPanel: () => void;
   onRestoreCoherenceIndex: () => void;
   onRestoreSystemIndicators: () => void;
+  onRestoreMicroUniverseIndicator: () => void;
 }
 
 const RestoreComponentsMenu: React.FC<RestoreComponentsMenuProps> = ({
   showStatusPanel,
   showCoherenceIndex,
   showSystemIndicators,
+  showMicroUniverseIndicator,
   onRestoreStatusPanel,
   onRestoreCoherenceIndex,
   onRestoreSystemIndicators,
+  onRestoreMicroUniverseIndicator,
 }) => {
   const hiddenComponents = [
     { name: 'Status Panel', shown: showStatusPanel, restore: onRestoreStatusPanel },
     { name: 'Coherence Index', shown: showCoherenceIndex, restore: onRestoreCoherenceIndex },
     { name: 'System Indicators', shown: showSystemIndicators, restore: onRestoreSystemIndicators },
+    { name: 'Micro-Universe Indicator', shown: showMicroUniverseIndicator, restore: onRestoreMicroUniverseIndicator },
   ].filter(component => !component.shown);
 
   if (hiddenComponents.length === 0) return null;

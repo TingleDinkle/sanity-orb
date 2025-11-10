@@ -33,8 +33,15 @@ const OpeningAnimation: React.FC<OpeningAnimationProps> = ({ onComplete }) => {
     // Phase 7: Text fades out with overlay (7.3s+) - Fade with everything else
     if (time >= MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 1.3) {
       const fadeProgress = (time - (MIND_ASSEMBLY_CONFIG.phases.textStabilization.start + 1.3)) / 0.7;
-      const fadeOut = Math.max(0, 1 - (fadeProgress * fadeProgress));
+      // Use linear fade instead of squared fade for more consistent fading
+      const fadeOut = Math.max(0, 1 - fadeProgress);
       setTextOpacity(fadeOut);
+
+      // Ensure text is completely hidden by animation end
+      if (time >= MIND_ASSEMBLY_CONFIG.totalDuration - 0.1) {
+        setTextOpacity(0);
+        setTextVisible(false);
+      }
     }
   };
 

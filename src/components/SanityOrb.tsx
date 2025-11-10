@@ -10,6 +10,7 @@ import RestoreComponentsMenu from './ui/RestoreComponentsMenu';
 import { audioManager } from '../utils/audioManager';
 import DataAnalyticsButton from './ui/DataAnalyticsButton';
 import { api } from '../services/api';
+import { CollectiveData } from '../services/api';
 
 // Lazy load heavy components
 const ThreeScene = lazy(() => import('./three/ThreeScene'));
@@ -22,12 +23,13 @@ const SanityOrb: React.FC = () => {
   const [showStatusPanel, setShowStatusPanel] = useState(true);
   const [showCoherenceIndex, setShowCoherenceIndex] = useState(true);
   const [showSystemIndicators, setShowSystemIndicators] = useState(true);
+  const [showGlobalMood, setShowGlobalMood] = useState(true);
+  const [showMicroUniverseIndicator, setShowMicroUniverseIndicator] = useState(true);
   const [isHelpVisible, setIsHelpVisible] = useState(false);
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [showDataAnalytics, setShowDataAnalytics] = useState(false);
 
   // Backend integration state
-  const [globalMood, setGlobalMood] = useState<number | null>(null);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
 
   // Camera angle controls
@@ -36,6 +38,34 @@ const SanityOrb: React.FC = () => {
     elevation: 0,    // Vertical tilt (-π/2 to π/2) - start from original position
     distance: 6,     // Zoom distance from orb
   });
+
+  // Micro-universe state
+  const [isInMicroUniverse, setIsInMicroUniverse] = useState(false);
+  const [collectiveData, setCollectiveData] = useState<CollectiveData | null>(null);
+  const [collectiveAverage, setCollectiveAverage] = useState<number | null>(null);
+
+  // Zoom handlers for LOD transitions
+  const handleZoomIn = async () => {
+    console.log('Zooming into micro-universe...');
+    setIsInMicroUniverse(true);
+
+    // Fetch collective data when entering micro-universe
+    if (isBackendConnected) {
+      try {
+        const response = await api.getCollectiveData(1000, 24);
+        if (response.success) {
+          setCollectiveData(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch collective data:', error);
+      }
+    }
+  };
+
+  const handleZoomOut = () => {
+    console.log('Zooming out to macro view...');
+    setIsInMicroUniverse(false);
+  };
 
   // Screen shake effect for critical level
   useEffect(() => {
@@ -119,30 +149,79 @@ const SanityOrb: React.FC = () => {
       } catch (error) {
         console.error('Failed to save snapshot:', error);
       }
-    }, 30000); // Every 30 seconds
+    }, 120000); // Every 2 minutes (reduced from 30 seconds)
 
     return () => clearInterval(interval);
   }, [sanity, isBackendConnected]);
 
-  // Fetch global mood periodically
+
+
+  // Fetch collective average periodically for AI-enhanced color averaging
   useEffect(() => {
     if (!isBackendConnected) return;
 
-    const fetchGlobalMood = async () => {
+    const fetchCollectiveAverage = async () => {
       try {
-        const response = await api.getCurrentMood();
+        const response = await api.getCollectiveAverage(24);
         if (response.success) {
-          setGlobalMood(response.currentMood);
+          setCollectiveAverage(response.data.average_sanity);
         }
       } catch (error) {
-        console.error('Failed to fetch global mood:', error);
+        console.error('Failed to fetch collective average:', error);
       }
     };
 
-    fetchGlobalMood();
-    const interval = setInterval(fetchGlobalMood, 60000); // Every minute
+    fetchCollectiveAverage();
+    const interval = setInterval(fetchCollectiveAverage, 300000); // Every 5 minutes
 
     return () => clearInterval(interval);
+  }, [isBackendConnected]);
+
+  // Real-time updates for collective data (polling every 30 seconds)
+  useEffect(() => {
+    if (!isBackendConnected) return;
+
+    const fetchRealTimeCollectiveData = async () => {
+      try {
+        console.log('Fetching real-time collective data...');
+        const response = await api.getCollectiveData(1000, 24); // Last 24 hours
+        if (response.success) {
+          setCollectiveData(response.data);
+          console.log('Real-time collective data updated:', response.data.metadata.total_sessions + response.data.metadata.total_snapshots, 'total minds');
+        }
+      } catch (error) {
+        console.error('Failed to fetch real-time collective data:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchRealTimeCollectiveData();
+
+    // Poll every 30 seconds for real-time updates
+    const interval = setInterval(fetchRealTimeCollectiveData, 30000);
+
+    return () => clearInterval(interval);
+  }, [isBackendConnected]);
+
+  // Preload collective data for micro-universe (fetch once on mount)
+  useEffect(() => {
+    if (!isBackendConnected) return;
+
+    const preloadCollectiveData = async () => {
+      try {
+        console.log('Preloading collective data for micro-universe...');
+        // Use hoursBack=9999 to get ALL data (not just recent)
+        const response = await api.getCollectiveData(1000, 9999);
+        if (response.success) {
+          console.log('Collective data preloaded:', response.data);
+          setCollectiveData(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to preload collective data:', error);
+      }
+    };
+
+    preloadCollectiveData();
   }, [isBackendConnected]);
 
   // Save session when user changes sanity significantly
@@ -299,7 +378,15 @@ const SanityOrb: React.FC = () => {
       {/* Apply blur to scene when help is visible */}
       <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
         <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />}>
-          <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} cameraAngles={cameraAngles} />
+          <ThreeScene
+            sanity={sanity}
+            isControlPanelVisible={isControlPanelVisible}
+            cameraAngles={cameraAngles}
+            collectiveData={collectiveData}
+            collectiveAverage={collectiveAverage}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+          />
         </Suspense>
       </div>
       
@@ -337,9 +424,11 @@ const SanityOrb: React.FC = () => {
           showStatusPanel={showStatusPanel}
           showCoherenceIndex={showCoherenceIndex}
           showSystemIndicators={showSystemIndicators}
+          showMicroUniverseIndicator={showMicroUniverseIndicator}
           onRestoreStatusPanel={() => setShowStatusPanel(true)}
           onRestoreCoherenceIndex={() => setShowCoherenceIndex(true)}
           onRestoreSystemIndicators={() => setShowSystemIndicators(true)}
+          onRestoreMicroUniverseIndicator={() => setShowMicroUniverseIndicator(true)}
         />
         
         <ControlPanel 
@@ -353,18 +442,29 @@ const SanityOrb: React.FC = () => {
         <FunnyMessages sanity={sanity} />
       </div>
 
-      {/* Global Mood Indicator - shows when backend is connected */}
-      {globalMood !== null && isBackendConnected && (
-        <div className={`absolute top-20 left-4 bg-white/5 backdrop-blur-xl rounded-xl px-4 py-2 border border-white/10 pointer-events-auto z-50 transition-all duration-300 ${isHelpVisible ? 'blur-sm opacity-0' : ''}`}>
-          <div className="text-white/40 text-xs uppercase tracking-wider mb-1">
-            Global Internet Mood
+
+
+      {/* Micro-Universe Indicator - shows when in micro-universe mode and enabled */}
+      {showMicroUniverseIndicator && isInMicroUniverse && collectiveData && (
+        <div className={`absolute top-44 left-4 bg-purple-500/20 backdrop-blur-xl rounded-xl px-4 py-2 border border-purple-400/30 pointer-events-auto z-50 transition-all duration-300 hover:bg-purple-500/30 group ${isHelpVisible ? 'blur-sm opacity-0' : ''}`}>
+          <div className="text-purple-300/60 text-xs uppercase tracking-wider mb-1">
+            Micro-Universe Active
           </div>
-          <div className="text-white text-2xl font-light">
-            {globalMood}%
+          <div className="text-purple-200 text-lg font-light">
+            {collectiveData.sessions.length + collectiveData.snapshots.length} minds
           </div>
-          <div className="text-white/30 text-xs mt-1">
+          <div className="text-purple-300/40 text-xs mt-1">
             Collective consciousness
           </div>
+          <button
+            onClick={() => setShowMicroUniverseIndicator(false)}
+            className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-1.5 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+            title="Hide Micro-Universe Indicator"
+          >
+            <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 

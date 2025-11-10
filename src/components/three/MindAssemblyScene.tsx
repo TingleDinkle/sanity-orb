@@ -378,16 +378,20 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
 
         nodesRef.current.forEach(node => {
           const material = node.material as any;
-          material.color.lerp(targetColor, colorLerpFactor);
-          material.emissive.lerp(targetColor, colorLerpFactor);
+          if (material && material.color && material.emissive) {
+            material.color.lerp(targetColor, colorLerpFactor);
+            material.emissive.lerp(targetColor, colorLerpFactor);
+          }
         });
 
         connectionsRef.current.forEach(conn => {
           const material = conn.line.material as THREE.LineBasicMaterial;
-          material.color.lerp(targetColor, colorLerpFactor);
+          if (material && material.color) {
+            material.color.lerp(targetColor, colorLerpFactor);
+          }
         });
 
-        if (glowRef.current && (glowRef.current.material as any).uniforms) {
+        if (glowRef.current && (glowRef.current.material as any).uniforms && (glowRef.current.material as any).uniforms.color) {
           (glowRef.current.material as any).uniforms.color.value.lerp(targetColor, colorLerpFactor);
         }
 

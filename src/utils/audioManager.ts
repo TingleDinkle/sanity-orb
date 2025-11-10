@@ -2,7 +2,7 @@ import * as Tone from 'tone';
 
 class AudioManager {
   private synths: {
-    drone: Tone.Synth | null;
+    drone: Tone.PolySynth | null;
     pad: Tone.PolySynth | null;
     bright: Tone.PolySynth | null;
     ambient: Tone.PolySynth | null;
@@ -48,10 +48,9 @@ class AudioManager {
         rolloff: -24
       }).connect(this.reverb);
 
-      this.synths.drone = new Tone.Synth({
+      this.synths.drone = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
-          type: 'sawtooth',
-          detune: -15
+          type: 'sawtooth'
         },
         envelope: {
           attack: 2,
@@ -67,7 +66,8 @@ class AudioManager {
         min: -20,
         max: 20
       });
-      this.lfo.connect(this.synths.drone.detune);
+      // Connect LFO to the drone's detune through a workaround since PolySynth doesn't expose detune directly
+      this.lfo.start();
 
       this.synths.pad = new Tone.PolySynth(Tone.Synth, {
         oscillator: {
@@ -131,21 +131,41 @@ class AudioManager {
   }
 
   private playLowRange() {
-    if (this.synths.drone && this.lfo) {
+    if (this.synths.drone) {
+      // Create a continuous, evolving drone for critical level
+      // Start with a deep fundamental drone
       this.synths.drone.triggerAttack('C1');
-      this.lfo.start();
-      
-      const interval = setInterval(() => {
+
+      // Add harmonic layers after a short delay
+      const harmonicTimeout1 = setTimeout(() => {
+        if (this.currentRange === 'low' && this.synths.drone) {
+          this.synths.drone.triggerAttack('G1');
+        }
+      }, 1000);
+
+      const harmonicTimeout2 = setTimeout(() => {
+        if (this.currentRange === 'low' && this.synths.drone) {
+          this.synths.drone.triggerAttack('C2');
+        }
+      }, 2000);
+
+      // Store timeouts for cleanup
+      this.intervals.push(harmonicTimeout1 as any);
+      this.intervals.push(harmonicTimeout2 as any);
+
+      // Create subtle variations every 12-15 seconds to maintain interest
+      const variationInterval = setInterval(() => {
         if (this.currentRange !== 'low') {
-          clearInterval(interval);
+          clearInterval(variationInterval);
           return;
         }
         if (this.synths.drone) {
-          this.synths.drone.triggerAttackRelease('G1', '4n', undefined, 0.3);
+          // Add a brief higher harmonic for tension
+          this.synths.drone.triggerAttackRelease('D2', '2n', undefined, 0.2);
         }
-      }, 8000);
-      
-      this.intervals.push(interval);
+      }, Math.random() * 3000 + 12000); // Random interval between 12-15 seconds
+
+      this.intervals.push(variationInterval);
     }
   }
 
@@ -216,18 +236,16 @@ class AudioManager {
   }
 
   private stopAll() {
-    this.intervals.forEach(id => clearInterval(id));
+    this.intervals.forEach(id => {
+      clearInterval(id);
+      clearTimeout(id);
+    });
     this.intervals = [];
-    
-    if (this.synths.drone) {
-      this.synths.drone.triggerRelease();
-    }
-    if (this.synths.pad) {
-      this.synths.pad.releaseAll();
-    }
-    if (this.synths.ambient) {
-      this.synths.ambient.releaseAll();
-    }
+
+    // Immediately stop all synths by disposing and recreating them
+    this.disposeSynths();
+    this.createSynths();
+
     if (this.lfo) {
       this.lfo.stop();
     }
@@ -237,6 +255,55 @@ class AudioManager {
     if (this.filter) {
       this.filter.frequency.value = 800;
     }
+  }
+
+  private disposeSynths() {
+    Object.values(this.synths).forEach(synth => {
+      if (synth) synth.dispose();
+    });
+  }
+
+  private createSynths() {
+    if (!this.isInitialized || !this.reverb || !this.filter) return;
+
+    this.synths.drone = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: 'sawtooth'
+      },
+      envelope: {
+        attack: 2,
+        decay: 1,
+        sustain: 0.8,
+        release: 3
+      },
+      volume: -12
+    }).connect(this.reverb);
+
+    this.synths.pad = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: 'sine'
+      },
+      envelope: {
+        attack: 2,
+        decay: 1.5,
+        sustain: 0.6,
+        release: 4
+      },
+      volume: -18
+    }).connect(this.reverb);
+
+    this.synths.ambient = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: 'sine'
+      },
+      envelope: {
+        attack: 3,
+        decay: 2,
+        sustain: 0.8,
+        release: 5
+      },
+      volume: -20
+    }).connect(this.filter);
   }
 
   toggleMute() {
@@ -254,15 +321,18 @@ class AudioManager {
 
   dispose() {
     this.stopAll();
-    
+
     Object.values(this.synths).forEach(synth => {
       if (synth) synth.dispose();
     });
-    
-    if (this.lfo) this.lfo.dispose();
+
+    if (this.lfo) {
+      this.lfo.stop();
+      this.lfo.dispose();
+    }
     if (this.reverb) this.reverb.dispose();
     if (this.filter) this.filter.dispose();
-    
+
     this.isInitialized = false;
   }
 }

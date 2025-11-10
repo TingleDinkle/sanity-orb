@@ -24,6 +24,34 @@ interface CurrentMood {
   timestamp: string;
 }
 
+export interface CollectiveData {
+  sessions: Array<{
+    sanity_level: number;
+    timestamp: string;
+    cluster_id: number;
+  }>;
+  snapshots: Array<{
+    sanity_level: number;
+    timestamp: string;
+    cluster_id: number;
+  }>;
+  metadata: {
+    total_sessions: number;
+    total_snapshots: number;
+    time_range_hours: number;
+    generated_at: string;
+  };
+}
+
+export interface CollectiveAverage {
+  average_sanity: number;
+  confidence: number;
+  sample_size: number;
+  trend: string;
+  distribution: Record<number, number>;
+  generated_at: string;
+}
+
 class SanityOrbAPI {
   private baseURL: string;
   private userId: string;
@@ -169,6 +197,22 @@ class SanityOrbAPI {
     } catch (error) {
       return { healthy: false, error };
     }
+  }
+
+  // ============================================
+  // COLLECTIVE CONSCIOUSNESS
+  // ============================================
+
+  async getCollectiveData(limit: number = 1000, hours: number = 24): Promise<{ success: boolean; data: CollectiveData }> {
+    return this.request(`/collective/data?limit=${limit}&hours=${hours}`, {
+      method: 'GET',
+    });
+  }
+
+  async getCollectiveAverage(hours: number = 24): Promise<{ success: boolean; data: CollectiveAverage }> {
+    return this.request(`/collective/average?hours=${hours}`, {
+      method: 'GET',
+    });
   }
 }
 
@@ -327,6 +371,8 @@ export const useSanityAPI = () => {
     getCurrentMood: api.getCurrentMood.bind(api),
     checkHealth: api.checkHealth.bind(api),
     getUserId: api.getUserIdForSharing.bind(api),
+    getCollectiveData: api.getCollectiveData.bind(api),
+    getCollectiveAverage: api.getCollectiveAverage.bind(api),
   };
 };
 
