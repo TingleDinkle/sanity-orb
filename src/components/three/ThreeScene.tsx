@@ -7,9 +7,14 @@ import { vertexShader, fragmentShader, glowVertexShader, glowFragmentShader } fr
 interface ThreeSceneProps {
   sanity: number;
   isControlPanelVisible: boolean;
+  cameraAngles?: {
+    azimuth: number;
+    elevation: number;
+    distance: number;
+  };
 }
 
-const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }) => {
+const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible, cameraAngles }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -23,6 +28,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
   const targetColorRef = useRef(getSanityColor(sanity));
   const currentColorRef = useRef(getSanityColor(sanity));
   const [error, setError] = useState<string | null>(null);
+
+  // Camera position will be controlled by props
 
   useEffect(() => {
     if (!checkWebGLSupport()) {
@@ -189,10 +196,10 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
       let lastTime = 0;
       const animate = (currentTime: number) => {
         animationId = requestAnimationFrame(animate);
-        
+
         const deltaTime = (currentTime - lastTime) * 0.001; // Convert to seconds
         lastTime = currentTime;
-        
+
         timeRef.current += deltaTime * 2; // Much slower, more controlled speed
         const t = timeRef.current;
 
@@ -206,13 +213,13 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           orbMaterial.uniforms.time.value = t;
           orbMaterial.uniforms.pulseSpeed.value = pulseSpeed;
           orbMaterial.uniforms.turbulence.value = chaosFactor;
-          
+
           // Slower, more controlled rotation based on sanity
           const rotationSpeed = 0.3 + chaos * 0.7; // Slower base speed, increases with chaos
           orbRef.current.rotation.y += deltaTime * rotationSpeed;
           orbRef.current.rotation.x = Math.sin(t * 0.2) * 0.05; // Slower oscillation
           orbRef.current.rotation.z = Math.cos(t * 0.25) * 0.03; // Slower oscillation
-          
+
           const basePulse = Math.sin(t * pulseSpeed * 0.5) * 0.02; // Slower pulse
           const microPulse = Math.sin(t * 2) * 0.005 * chaos; // Much slower micro pulse
           const scale = 1 + basePulse + microPulse;
@@ -228,18 +235,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
         // Optimized particle updates - much slower and more controlled
         particlesRef.current.forEach((particle, i) => {
           const data = particle.userData;
-          
+
           // Much slower orbit speeds
           data.theta += data.orbitSpeed * deltaTime * 200;
           data.phi += data.verticalSpeed * Math.sin(t + i) * deltaTime * 200;
-          
+
           const wobble = Math.sin(t * data.speed * 0.3 + i) * 0.2 * chaos; // Slower wobble
           const radius = data.radius + wobble;
-          
+
           particle.position.x = radius * Math.sin(data.phi) * Math.cos(data.theta);
           particle.position.y = radius * Math.sin(data.phi) * Math.sin(data.theta);
           particle.position.z = radius * Math.cos(data.phi);
-          
+
           const distanceFromCenter = particle.position.length();
           (particle.material as THREE.MeshBasicMaterial).opacity = 0.3 + (1 - distanceFromCenter / 5) * 0.5;
 
@@ -256,11 +263,6 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
           const breathe = Math.sin(t * 0.3 + i) * 0.1 + 1; // Slower breathing
           (field.material as THREE.PointsMaterial).opacity = 0.4 + breathe * 0.2;
         });
-
-        // Smooth camera movement - much slower
-        camera.position.x = Math.sin(t * 0.05) * 0.2; // Slower and smaller movement
-        camera.position.y = Math.cos(t * 0.07) * 0.15; // Slower and smaller movement
-        camera.lookAt(0, 0, 0);
 
         renderer.render(scene, camera);
       };
@@ -284,16 +286,16 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
         }
         
         orbGeometry.dispose();
-        orbMaterial.dispose();
+        (orbMaterial as any).dispose();
         glowGeometry.dispose();
-        glowMaterial.dispose();
+        (glowMaterial as any).dispose();
         particles.forEach(p => {
           p.geometry.dispose();
           p.material.dispose();
         });
         starFields.forEach(field => {
           field.geometry.dispose();
-          field.material.dispose();
+          (field.material as any).dispose();
         });
         renderer.dispose();
       };
@@ -351,12 +353,28 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, isControlPanelVisible }
     }
   }, [sanity]);
 
+  // Update camera position based on cameraAngles prop
+  useEffect(() => {
+    if (cameraRef.current && cameraAngles) {
+      const camera = cameraRef.current;
+
+      // Convert spherical coordinates to Cartesian (matching original camera.position.z = 6)
+      // azimuth: horizontal rotation, elevation: vertical angle from horizontal plane
+      const x = cameraAngles.distance * Math.sin(cameraAngles.azimuth) * Math.cos(cameraAngles.elevation);
+      const y = cameraAngles.distance * Math.sin(cameraAngles.elevation);
+      const z = cameraAngles.distance * Math.cos(cameraAngles.azimuth) * Math.cos(cameraAngles.elevation);
+
+      camera.position.set(x, y, z);
+      camera.lookAt(0, 0, 0);
+    }
+  }, [cameraAngles]);
+
   // Adjust camera and orb scale when control panel is hidden
   useEffect(() => {
     if (cameraRef.current && orbRef.current) {
       const camera = cameraRef.current;
       const orb = orbRef.current;
-      
+
       if (!isControlPanelVisible) {
         // Move camera closer and adjust orb scale for better visibility
         camera.position.z = 4.5; // Closer to orb

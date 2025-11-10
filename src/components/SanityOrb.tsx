@@ -25,10 +25,17 @@ const SanityOrb: React.FC = () => {
   const [isHelpVisible, setIsHelpVisible] = useState(false);
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [showDataAnalytics, setShowDataAnalytics] = useState(false);
-  
+
   // Backend integration state
   const [globalMood, setGlobalMood] = useState<number | null>(null);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
+
+  // Camera angle controls
+  const [cameraAngles, setCameraAngles] = useState({
+    azimuth: 0,      // Horizontal rotation around orb (-π to π)
+    elevation: 0,    // Vertical tilt (-π/2 to π/2) - start from original position
+    distance: 6,     // Zoom distance from orb
+  });
 
   // Screen shake effect for critical level
   useEffect(() => {
@@ -157,6 +164,68 @@ const SanityOrb: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [sanity, isBackendConnected]);
 
+  // Camera mouse controls
+  useEffect(() => {
+    let isMouseDown = false;
+    let lastMousePos = { x: 0, y: 0 };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      // Only handle mouse events when help is not visible and not clicking on UI elements
+      if (isHelpVisible || (event.target as HTMLElement)?.closest('[data-ui-element]')) {
+        return;
+      }
+      isMouseDown = true;
+      lastMousePos = { x: event.clientX, y: event.clientY };
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isMouseDown) return;
+
+      const deltaX = event.clientX - lastMousePos.x;
+      const deltaY = event.clientY - lastMousePos.y;
+
+      setCameraAngles(prev => ({
+        ...prev,
+        azimuth: prev.azimuth + deltaX * 0.005,
+        elevation: Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, prev.elevation + deltaY * 0.005))
+      }));
+
+      lastMousePos = { x: event.clientX, y: event.clientY };
+    };
+
+    const handleMouseUp = () => {
+      isMouseDown = false;
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (isHelpVisible) return;
+
+      event.preventDefault();
+      setCameraAngles(prev => ({
+        ...prev,
+        distance: Math.max(2, Math.min(15, prev.distance + event.deltaY * 0.01))
+      }));
+    };
+
+    // Add event listeners to the main container
+    const container = document.querySelector('.sanity-orb-container') as HTMLElement;
+    if (container) {
+      container.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      container.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('mousedown', handleMouseDown);
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        container.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [isHelpVisible]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -204,8 +273,8 @@ const SanityOrb: React.FC = () => {
   }, [isControlPanelVisible, isHelpVisible]);
 
   return (
-    <div 
-      className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950"
+    <div
+      className="sanity-orb-container relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950"
       style={{
         transform: `translate(${shakeIntensity * (Math.random() - 0.5) * 2}px, ${shakeIntensity * (Math.random() - 0.5) * 2}px)`,
         transition: 'transform 0.05s ease-out'
@@ -227,7 +296,7 @@ const SanityOrb: React.FC = () => {
       {/* Apply blur to scene when help is visible */}
       <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
         <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />}>
-          <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} />
+          <ThreeScene sanity={sanity} isControlPanelVisible={isControlPanelVisible} cameraAngles={cameraAngles} />
         </Suspense>
       </div>
       
