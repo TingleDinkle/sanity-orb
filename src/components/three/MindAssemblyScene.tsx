@@ -295,47 +295,108 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         camera.position.z = 8 + cameraBreathing;
       }
 
-      // Phase 5: Convergence to unity (4.5-6.5s)
-      if (time >= MIND_ASSEMBLY_CONFIG.phases.convergence.start && 
+      // Phase 5: Convergence to unity (4.5-6.5s) - SMOOTH MORPHING TRANSITION
+      if (time >= MIND_ASSEMBLY_CONFIG.phases.convergence.start &&
           time < MIND_ASSEMBLY_CONFIG.phases.convergence.start + MIND_ASSEMBLY_CONFIG.phases.convergence.duration) {
         const phase4Progress = (time - MIND_ASSEMBLY_CONFIG.phases.convergence.start) / MIND_ASSEMBLY_CONFIG.phases.convergence.duration;
-        
-        // Glow intensifies
-        if (glowRef.current && glowRef.current.material.uniforms) {
-          glowRef.current.material.uniforms.intensity.value = phase4Progress * 0.4;
+        const smoothProgress = phase4Progress * phase4Progress * (3 - 2 * phase4Progress); // Smoothstep easing
+
+        // Smooth camera movement - zoom in and center on convergence
+        const cameraZoom = 1 - smoothProgress * 0.3; // Zoom in 30%
+        camera.position.z = 8 * cameraZoom;
+        camera.position.x = Math.sin(time * MIND_ASSEMBLY_CONFIG.cameraMovement.speed) * MIND_ASSEMBLY_CONFIG.cameraMovement.amplitude * (1 - smoothProgress);
+        camera.position.y = Math.cos(time * 0.12) * MIND_ASSEMBLY_CONFIG.cameraMovement.amplitude * (1 - smoothProgress);
+
+        // Glow intensifies with smooth pulsing
+        if (glowRef.current && (glowRef.current.material as any).uniforms) {
+          const pulseIntensity = 0.2 + smoothProgress * 0.3 + Math.sin(time * 6) * 0.1;
+          (glowRef.current.material as any).uniforms.intensity.value = pulseIntensity;
         }
-        
-        // Nodes begin to merge into orb
-        nodesRef.current.forEach(node => {
-          const scale = 1 - phase4Progress * 0.7;
-          node.scale.setScalar(scale);
+
+        // Nodes smoothly morph towards center with organic movement
+        nodesRef.current.forEach((node, i) => {
+          const target = nodeTargetsRef.current[i];
+          const distanceToCenter = node.position.length();
+          const morphFactor = smoothProgress * (1 - distanceToCenter / 8); // Closer nodes morph first
+
+          // Organic morphing movement
+          const morphX = Math.sin(time * 2 + i * 0.5) * 0.1 * (1 - smoothProgress);
+          const morphY = Math.cos(time * 1.5 + i * 0.3) * 0.1 * (1 - smoothProgress);
+          const morphZ = Math.sin(time * 3 + i * 0.7) * 0.1 * (1 - smoothProgress);
+
+          node.position.x += morphX;
+          node.position.y += morphY;
+          node.position.z += morphZ;
+
+          // Scale down with smooth easing
+          const scale = 1 - morphFactor * 0.8;
+          node.scale.setScalar(Math.max(0.1, scale));
+
+          // Energy pulsing during morph
+          const material = node.material as any;
+          const pulse = Math.sin(time * 8 + i) * 0.3 + 0.7;
+          material.emissiveIntensity = pulse * (1 - smoothProgress);
         });
-        
-        // Orb forms
+
+        // Connections pulse and fade during morphing
+        connectionsRef.current.forEach((conn, i) => {
+          const { line } = conn;
+          const material = line.material as THREE.LineBasicMaterial;
+
+          // Energy waves traveling through connections
+          const wavePosition = (time * 4 + i * 0.1) % 1;
+          const waveIntensity = Math.sin(wavePosition * Math.PI) * 0.5 + 0.5;
+          material.opacity = (0.2 + waveIntensity * 0.3) * (1 - smoothProgress * 0.7);
+        });
+
+        // Orb emerges with smooth scaling and glowing
         if (time >= 5.0) {
           const orbProgress = (time - 5.0) / 1.5;
+          const smoothOrbProgress = orbProgress * orbProgress * (3 - 2 * orbProgress); // Smoothstep
+
           if (orbRef.current) {
             const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
-            orbMaterial.opacity = Math.pow(orbProgress, 2) * 0.6;
-            orbRef.current.scale.setScalar(orbProgress);
+
+            // Smooth opacity fade-in with pulsing
+            const baseOpacity = Math.pow(smoothOrbProgress, 1.5) * 0.7;
+            const pulseOpacity = Math.sin(time * 4) * 0.1;
+            orbMaterial.opacity = Math.min(0.8, baseOpacity + pulseOpacity);
+
+            // Smooth scale growth with organic pulsing
+            const baseScale = smoothOrbProgress * 0.8;
+            const pulseScale = Math.sin(time * 3) * 0.05;
+            orbRef.current.scale.setScalar(Math.max(0.1, baseScale + pulseScale));
+
+            // Orb begins gentle rotation
+            orbRef.current.rotation.y += 0.01 * smoothOrbProgress;
           }
         }
-        
-        // Color shift to green
+
+        // Smooth color transition to final green
         const targetColor = new THREE.Color(MIND_ASSEMBLY_CONFIG.targetColor);
+        const colorLerpFactor = smoothProgress * 0.03; // Very gradual color shift
+
         nodesRef.current.forEach(node => {
-          const material = node.material as THREE.MeshBasicMaterial;
-          material.color.lerp(targetColor, phase4Progress * 0.05);
-          material.emissive.lerp(targetColor, phase4Progress * 0.05);
+          const material = node.material as any;
+          material.color.lerp(targetColor, colorLerpFactor);
+          material.emissive.lerp(targetColor, colorLerpFactor);
         });
-        
+
         connectionsRef.current.forEach(conn => {
           const material = conn.line.material as THREE.LineBasicMaterial;
-          material.color.lerp(targetColor, phase4Progress * 0.05);
+          material.color.lerp(targetColor, colorLerpFactor);
         });
-        
-        if (glowRef.current && glowRef.current.material.uniforms) {
-          glowRef.current.material.uniforms.color.value.lerp(targetColor, phase4Progress * 0.05);
+
+        if (glowRef.current && (glowRef.current.material as any).uniforms) {
+          (glowRef.current.material as any).uniforms.color.value.lerp(targetColor, colorLerpFactor);
+        }
+
+        // Core pulses in harmony with the morphing
+        if (coreRef.current) {
+          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          const corePulse = Math.sin(time * 5) * 0.2 + 0.8;
+          coreMaterial.emissiveIntensity = corePulse * (1 - smoothProgress * 0.5);
+          coreRef.current.scale.setScalar(1 + corePulse * 0.1 * (1 - smoothProgress));
         }
       }
 
@@ -404,8 +465,8 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         }
         
         // Glow stays with orb
-        if (glowRef.current && glowRef.current.material.uniforms) {
-          glowRef.current.material.uniforms.intensity.value = 0.4;
+        if (glowRef.current && (glowRef.current.material as any).uniforms) {
+          (glowRef.current.material as any).uniforms.intensity.value = 0.4;
         }
       }
       } // Close the else block

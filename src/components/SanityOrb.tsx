@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import StatusPanel from './ui/StatusPanel';
 import CoherenceIndex from './ui/CoherenceIndex';
 import SystemIndicators from './ui/SystemIndicators';
@@ -164,13 +164,12 @@ const SanityOrb: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [sanity, isBackendConnected]);
 
-  // Camera mouse controls
+  // Simple smooth camera controls (fixed version)
   useEffect(() => {
     let isMouseDown = false;
     let lastMousePos = { x: 0, y: 0 };
 
     const handleMouseDown = (event: MouseEvent) => {
-      // Only handle mouse events when help is not visible and not clicking on UI elements
       if (isHelpVisible || (event.target as HTMLElement)?.closest('[data-ui-element]')) {
         return;
       }
@@ -184,10 +183,14 @@ const SanityOrb: React.FC = () => {
       const deltaX = event.clientX - lastMousePos.x;
       const deltaY = event.clientY - lastMousePos.y;
 
+      // Smooth sensitivities
+      const azimuthSensitivity = 0.003;
+      const elevationSensitivity = 0.002;
+
       setCameraAngles(prev => ({
-        ...prev,
-        azimuth: prev.azimuth + deltaX * 0.005,
-        elevation: Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, prev.elevation + deltaY * 0.005))
+        azimuth: prev.azimuth + deltaX * azimuthSensitivity,
+        elevation: Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, prev.elevation + deltaY * elevationSensitivity)),
+        distance: prev.distance
       }));
 
       lastMousePos = { x: event.clientX, y: event.clientY };
@@ -199,15 +202,15 @@ const SanityOrb: React.FC = () => {
 
     const handleWheel = (event: WheelEvent) => {
       if (isHelpVisible) return;
-
       event.preventDefault();
+
       setCameraAngles(prev => ({
         ...prev,
-        distance: Math.max(2, Math.min(15, prev.distance + event.deltaY * 0.01))
+        distance: Math.max(2, Math.min(15, prev.distance + event.deltaY * 0.005))
       }));
     };
 
-    // Add event listeners to the main container
+    // Add event listeners
     const container = document.querySelector('.sanity-orb-container') as HTMLElement;
     if (container) {
       container.addEventListener('mousedown', handleMouseDown);
