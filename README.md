@@ -218,7 +218,7 @@ cd ..
 ./start-all-simple.bat
 ```
 
-**That's it!** Your Sanity Orb will be running at http://localhost:5173
+Your Sanity Orb will be running at http://localhost:5173
 
 ### Alternative Startup Methods
 
