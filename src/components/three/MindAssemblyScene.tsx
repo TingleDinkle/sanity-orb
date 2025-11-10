@@ -393,11 +393,11 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         // Only orb remains, gentle rotation
         if (orbRef.current) {
           orbRef.current.rotation.y += 0.005;
-          
-          // Gentle pulsing
-          const pulse = Math.sin(time * 2) * 0.02;
+
+          // Organic breathing pattern - combines fast micro-pulses with slow macro-breathing
+          const pulse = (Math.sin(time * 1.8) * 0.015) + (Math.sin(time * 0.3) * 0.008);
           orbRef.current.scale.setScalar(1 + pulse);
-          
+
           // Keep orb visible
           const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
           orbMaterial.opacity = 0.8;
