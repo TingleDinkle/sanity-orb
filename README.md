@@ -395,14 +395,19 @@ Critical sanity levels (0-25%) trigger dynamic screen shake:
 - **ES2020+**: Modern JavaScript features
 
 ### Security Features
-- **Rate Limiting**: 100 requests per 15 minutes per IP
-- **Input Validation**: Comprehensive sanitization and validation
-- **CORS Protection**: Strict origin validation
-- **Helmet Security Headers**: Content Security Policy, XSS protection
+- **Enterprise Anti-Scraping Protection**: Multi-layered bot detection and blocking
+- **Edge Security (Vercel Middleware)**: 20+ bot pattern detection, behavioral analysis, randomized responses
+- **Advanced Rate Limiting**: Progressive slowdown (500ms → 20s delays), behavioral tracking
+- **Request Fingerprinting**: Suspicious activity detection, temporary IP blocking (15min bans)
+- **API Obfuscation**: Multiple endpoint aliases, robots.txt blocking for scraping tools
+- **Input Validation**: Comprehensive sanitization and validation using express-validator
+- **CORS Protection**: Strict origin validation with file:// protocol support
+- **Helmet Security Headers**: Content Security Policy, XSS protection, frame options
 - **SQL Injection Prevention**: Sequelize ORM with parameterized queries
-- **Environment Encryption**: Sensitive config encrypted with AES-256-CBC
-- **HTTPS Enforcement**: SSL/TLS required in production
-- **Audit Logging**: Security events logged for monitoring
+- **Environment Encryption**: Sensitive config encrypted with AES-256-GCM
+- **HTTPS Enforcement**: SSL/TLS required in production with certificate validation
+- **Audit Logging**: Security events and database operations logged for monitoring
+- **Connection Security**: PostgreSQL with SSL, connection pooling, and timeouts
 
 ## Development
 
