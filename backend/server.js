@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 import rateLimit from 'express-rate-limit';
+import expressSlowDown from 'express-slow-down';
 import helmet from 'helmet';
 import { body, param, validationResult } from 'express-validator';
 import DatabaseStorage from './services/databaseStorage.js';
@@ -55,7 +56,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate limiting - increased limits for development
+// ============================================
+// ENHANCED RATE LIMITING & REQUEST TRACKING
+// ============================================
+
+// Progressive rate limiting - slows down abusive requests
+const speedLimiter = expressSlowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 100, // allow 100 requests per 15 minutes
+  delayMs: 500, // add 500ms delay per request after delayAfter
+  maxDelayMs: 20000, // maximum delay of 20 seconds
+  skipSuccessfulRequests: false,
+  skipFailedRequests: false,
+});
+
+// Standard rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 500, // limit each IP to 500 requests per windowMs
@@ -78,8 +93,135 @@ const strictLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Apply rate limiting
-app.use('/api/', limiter);
+// Request tracking for behavioral analysis
+const requestTracker = new Map();
+
+// Request fingerprinting middleware
+const requestFingerprinting = (req, res, next) => {
+  const clientIP = req.ip || req.connection.remoteAddress;
+  const userAgent = req.get('User-Agent') || '';
+  const now = Date.now();
+
+  // Initialize client tracking if not exists
+  if (!requestTracker.has(clientIP)) {
+    requestTracker.set(clientIP, {
+      requests: [],
+      firstSeen: now,
+      suspicious: false,
+      lastActivity: now,
+      userAgent: userAgent,
+      totalRequests: 0,
+      blockedUntil: 0
+    });
+  }
+
+  const clientData = requestTracker.get(clientIP);
+  clientData.lastActivity = now;
+  clientData.totalRequests++;
+
+  // Add current request to tracking
+  clientData.requests.push({
+    timestamp: now,
+    path: req.path,
+    method: req.method,
+    userAgent: userAgent
+  });
+
+  // Clean old requests (keep last 24 hours)
+  clientData.requests = clientData.requests.filter(r => now - r.timestamp < 24 * 60 * 60 * 1000);
+
+  // Behavioral analysis
+  const recentRequests = clientData.requests.filter(r => now - r.timestamp < 60000); // Last minute
+  const recentApiRequests = recentRequests.filter(r => r.path.startsWith('/api/'));
+
+  // Detect suspicious patterns
+  let isSuspicious = false;
+  let reason = '';
+
+  // Too many requests per minute
+  if (recentRequests.length > 30) {
+    isSuspicious = true;
+    reason = 'Too many requests per minute';
+  }
+
+  // Too many API calls per minute
+  if (recentApiRequests.length > 20) {
+    isSuspicious = true;
+    reason = 'Excessive API usage';
+  }
+
+  // API enumeration patterns
+  const uniquePaths = [...new Set(recentApiRequests.map(r => r.path))];
+  if (uniquePaths.length > 10) {
+    isSuspicious = true;
+    reason = 'API enumeration detected';
+  }
+
+  // Rapid fire requests to same endpoint
+  const sameEndpointRequests = recentRequests.filter(r => r.path === req.path);
+  if (sameEndpointRequests.length > 5) {
+    isSuspicious = true;
+    reason = 'Rapid requests to same endpoint';
+  }
+
+  // User-Agent switching (common scraper tactic)
+  const userAgents = [...new Set(clientData.requests.slice(-10).map(r => r.userAgent))];
+  if (userAgents.length > 3) {
+    isSuspicious = true;
+    reason = 'User-Agent switching detected';
+  }
+
+  // Mark as suspicious
+  if (isSuspicious && !clientData.suspicious) {
+    clientData.suspicious = true;
+    console.log(`🚨 Suspicious activity detected from ${clientIP}: ${reason}`);
+  }
+
+  // Temporary blocking for highly suspicious clients
+  if (clientData.suspicious && clientData.requests.filter(r => now - r.timestamp < 300000).length > 50) {
+    clientData.blockedUntil = now + 15 * 60 * 1000; // Block for 15 minutes
+    return res.status(429).json({
+      error: 'Too many suspicious requests. Please try again later.',
+      retryAfter: '900'
+    });
+  }
+
+  // Check if currently blocked
+  if (now < clientData.blockedUntil) {
+    const remainingSeconds = Math.ceil((clientData.blockedUntil - now) / 1000);
+    return res.status(429).json({
+      error: 'Temporarily blocked due to suspicious activity.',
+      retryAfter: remainingSeconds
+    });
+  }
+
+  // Add tracking headers for legitimate requests
+  res.set('X-Request-ID', `req_${clientIP}_${now}`);
+  res.set('X-Rate-Limit-Remaining', 'available');
+
+  next();
+};
+
+// Periodic cleanup of old tracking data
+setInterval(() => {
+  const now = Date.now();
+  const cutoff = now - 24 * 60 * 60 * 1000; // 24 hours ago
+
+  for (const [ip, data] of requestTracker.entries()) {
+    // Remove clients with no recent activity
+    if (data.lastActivity < cutoff) {
+      requestTracker.delete(ip);
+    } else {
+      // Clean old request logs
+      data.requests = data.requests.filter(r => r.timestamp > cutoff);
+    }
+  }
+}, 60 * 60 * 1000); // Run cleanup every hour
+
+// Apply rate limiting and tracking
+app.use('/api/', speedLimiter); // Progressive slowdown
+app.use('/api/', limiter); // Hard limits
+app.use('/api/', requestFingerprinting); // Behavioral analysis
 app.use('/api/sessions', strictLimiter);
 app.use('/api/snapshots', strictLimiter);
 app.use('/api/ml/predict', strictLimiter);
@@ -115,13 +257,13 @@ const sanitizeUserId = (userId) => {
 };
 
 // Validate sanity level (kept for future use)
-const validateSanityLevel = (value) => {
-  const num = Number(value);
-  if (isNaN(num) || num < 0 || num > 100) {
-    throw new Error('Sanity level must be a number between 0 and 100');
-  }
-  return num;
-};
+// const validateSanityLevel = (value) => {
+//   const num = Number(value);
+//   if (isNaN(num) || num < 0 || num > 100) {
+//     throw new Error('Sanity level must be a number between 0 and 100');
+//   }
+//   return num;
+// };
 
 // Initialize database storage
 const storage = new DatabaseStorage();
@@ -257,7 +399,8 @@ app.get('/api/mood/current', async (req, res) => {
 // COLLECTIVE CONSCIOUSNESS ENDPOINTS
 // ============================================
 
-app.get('/api/collective/data',
+// Obfuscated endpoint names to make scraping harder
+const collectiveDataHandler = [
   [
     param('limit').optional().isInt({ min: 1, max: 5000 }).withMessage('Limit must be between 1 and 5000'),
     param('hours').optional().isInt({ min: 1, max: 168 }).withMessage('Hours must be between 1 and 168 (1 week)')
@@ -354,7 +497,13 @@ app.get('/api/collective/data',
         timestamp: new Date().toISOString()
       });
     }
-  });
+  }
+];
+
+// Register multiple endpoints with the same handler
+app.get('/api/collective/data', ...collectiveDataHandler);
+app.get('/api/v2/data/sync', ...collectiveDataHandler);
+app.get('/api/internal/metrics', ...collectiveDataHandler);
 
 app.get('/api/collective/average',
   [

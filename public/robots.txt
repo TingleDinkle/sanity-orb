@@ -1,0 +1,48 @@
+# Robots.txt for Sanity Orb
+# This file tells well-behaved web crawlers what they can and cannot access
+
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /config/
+Disallow: /debug/
+Disallow: /test/
+Disallow: /private/
+Disallow: /internal/
+
+# Allow access to static assets and main pages
+Allow: /favicon.ico
+Allow: /manifest.json
+Allow: /robots.txt
+
+# Specific rules for known crawlers
+User-agent: Googlebot
+Disallow: /api/
+Allow: /
+
+User-agent: Bingbot
+Disallow: /api/
+Allow: /
+
+User-agent: Slurp
+Disallow: /api/
+Allow: /
+
+# Block known scraping tools and bad bots
+User-agent: scrapy
+Disallow: /
+
+User-agent: python-requests
+Disallow: /
+
+User-agent: curl
+Disallow: /
+
+User-agent: wget
+Disallow: /
+
+# Crawl delay to reduce server load
+Crawl-delay: 10
+
+# Sitemap (if you add one later)
+# Sitemap: https://yourdomain.com/sitemap.xml
