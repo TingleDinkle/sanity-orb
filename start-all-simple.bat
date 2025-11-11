@@ -29,7 +29,7 @@ start "ML API Server" cmd /k "cd ml-model && python ml_api.py"
 timeout /t 2 /nobreak >nul
 
 echo [2/4] Starting Backend Server (Node.js on port 3001)...
-start "Backend Server" cmd /k "cd backend && npm start"
+start "Backend Server" cmd /k "cd /d %~dp0backend && npm start"
 timeout /t 3 /nobreak >nul
 
 echo [3/4] Starting Frontend Dev Server (Vite on port 5173)...
