@@ -134,8 +134,8 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Session Analysis** - Historical session tracking with predictive insights
 - **Trend Detection** - AI-powered pattern recognition for sanity fluctuations
 - **Smart Recommendations** - Context-aware suggestions based on current state
-- **Micro-Universe Mode** - Immersive collective consciousness visualization with real-time mind connections
-- **Collective Data Integration** - Live aggregation of global sanity sessions and snapshots
+- **Micro-Universe Mode** - Mathematical cuboctahedral visualization with Platonic solid positioning for 10-cluster collective consciousness representation
+- **Collective Data Integration** - Live aggregation of global sanity sessions and snapshots with volumetric data rendering
 
 ### User Experience
 - **Opening Animation** - Cinematic mind assembly sequence on startup
