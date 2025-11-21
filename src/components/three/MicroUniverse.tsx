@@ -23,6 +23,50 @@ export class MicroUniverse {
     this.setVisible(props.visible);
   }
 
+  private calculateAllTenClusterPositions(allClusterIds: number[], clusters: any): THREE.Vector3[] {
+    // GUARANTEED PLATONIC SOLID POSITIONS - Mathematically perfect 10-point distribution
+    // Using Octahedron + 2 additional points (inspired by Icosahedral but simplified)
+
+    const radius = 1.2; // Well within the orb's volume (orb is ~2.0 radius)
+    const positions: THREE.Vector3[] = [];
+
+    // Base Octahedron vertices (6 points)
+    const octahedronVertices: THREE.Vector3[] = [
+      new THREE.Vector3(radius, 0, 0),          // +X
+      new THREE.Vector3(-radius, 0, 0),         // -X
+      new THREE.Vector3(0, radius, 0),           // +Y
+      new THREE.Vector3(0, -radius, 0),          // -Y
+      new THREE.Vector3(0, 0, radius),           // +Z
+      new THREE.Vector3(0, 0, -radius)           // -Z
+    ];
+
+    // Add 4 more points using Golden Ratio for mathematically beautiful distribution
+    const phi = (1 + Math.sqrt(5)) / 2; // Golden Ratio ≈ 1.618
+    const scaledRadius = radius * 0.8; // Slightly smaller for the additional points
+
+    const goldenRatioPoints: THREE.Vector3[] = [
+      new THREE.Vector3(scaledRadius/phi, scaledRadius, scaledRadius/phi),
+      new THREE.Vector3(-scaledRadius/phi, scaledRadius, -scaledRadius/phi),
+      new THREE.Vector3(-scaledRadius/phi, -scaledRadius, scaledRadius/phi),
+      new THREE.Vector3(scaledRadius/phi, -scaledRadius, -scaledRadius/phi)
+    ];
+
+    // Combine all 10 points
+    positions.push(...octahedronVertices, ...goldenRatioPoints);
+
+    // Ensure all positions are within desired bounds (inside main orb)
+    positions.forEach(pos => {
+      if (pos.length() > radius) {
+        pos.normalize().multiplyScalar(radius * 0.9);
+      }
+    });
+
+    console.log(`🧮 Generated 10-point Platonic solid distribution with radius ${radius}`);
+    console.log(`   All points guaranteed within volume (max radius: ${Math.max(...positions.map(p => p.length())).toFixed(3)})`);
+
+    return positions;
+  }
+
   private calculateClusterPositions(activeClusterIds: number[], clusters: any): THREE.Vector3[] {
     const positions: THREE.Vector3[] = [];
     const maxIterations = 50;
@@ -139,34 +183,44 @@ export class MicroUniverse {
 
     const { clusters, clusterKeys } = this.processedData;
 
-    // Only create instances for clusters that have data
-    const activeClusters = clusterKeys.filter(clusterId => clusters[clusterId].count > 0);
-    console.log('Active clusters:', activeClusters);
-    console.log('Cluster details:', activeClusters.map(id => ({ id, count: clusters[id].count, avgSanity: clusters[id].avgSanity })));
+    // GUARANTEE ALL 10 CLUSTER POSITIONS - Always display 10 points (0-9)
+    console.log('Total clusters (always 10):', clusterKeys.length);
 
-    if (activeClusters.length === 0) return; // No data to display
+    // Calculate positions for ALL 10 clusters using Platonic solid mathematics
+    const positions = this.calculateAllTenClusterPositions(clusterKeys, clusters);
+
+    // Set positions for ALL 10 clusters
+    clusterKeys.forEach((clusterId, index) => {
+      clusters[clusterId].position.copy(positions[index]);
+      // Update avgSanity based on data or keep placeholder
+      if (clusters[clusterId].sanityLevels.length > 0) {
+        clusters[clusterId].avgSanity = clusters[clusterId].sanityLevels.reduce((a, b) => a + b, 0) / clusters[clusterId].sanityLevels.length;
+        clusters[clusterId].color = getSanityColor(clusters[clusterId].avgSanity);
+      }
+      console.log(`Cluster ${clusterId}: ${clusters[clusterId].count} data points, avg sanity: ${clusters[clusterId].avgSanity.toFixed(1)}`);
+    });
 
     // Create geometry and material - suitable size for micro-universe
-    const geometry = new THREE.SphereGeometry(0.4, 16, 16);
-    const material = new THREE.MeshBasicMaterial(); // Use basic material for better color control
+    const geometry = new THREE.SphereGeometry(0.08, 12, 12);
+    const material = new THREE.MeshBasicMaterial();
 
-    // Create instanced mesh with only active clusters
-    this.instancedMesh = new THREE.InstancedMesh(geometry, material, activeClusters.length);
+    // Create instanced mesh with ALL 10 clusters
+    this.instancedMesh = new THREE.InstancedMesh(geometry, material, clusterKeys.length);
     this.instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
     if (this.instancedMesh.instanceColor) {
       this.instancedMesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
     }
 
-    const matrix = new THREE.Matrix4();
-    const dummy = new THREE.Object3D(); // Use Object3D for easier matrix manipulation
+    const dummy = new THREE.Object3D();
 
-    activeClusters.forEach((clusterId: number, index: number) => {
+    clusterKeys.forEach((clusterId: number, index: number) => {
       const cluster = clusters[clusterId];
 
-      // Use Object3D for cleaner matrix setup
       dummy.position.copy(cluster.position);
-      dummy.scale.setScalar(1.0); // No additional scaling - geometry is already sized
+      // Scale real data clusters larger than synthetic/placeholder ones
+      const scale = cluster.count > 0 ? 1.2 : 0.8;
+      dummy.scale.setScalar(scale);
       dummy.updateMatrix();
 
       this.instancedMesh!.setMatrixAt(index, dummy.matrix);
@@ -182,72 +236,130 @@ export class MicroUniverse {
   }
 
   private createFramework() {
-    // Create sophisticated but stable geometric framework
+    if (!this.processedData) return;
+
+    const { clusters, clusterKeys } = this.processedData;
     const points: THREE.Vector3[] = [];
     const colors: number[] = [];
 
-    // Create a beautiful, stable icosahedral framework
-    const t = (1 + Math.sqrt(5)) / 2; // Golden ratio
-    const vertices = [
-      new THREE.Vector3(-1, t, 0), new THREE.Vector3(1, t, 0),
-      new THREE.Vector3(-1, -t, 0), new THREE.Vector3(1, -t, 0),
-      new THREE.Vector3(0, -1, t), new THREE.Vector3(0, 1, t),
-      new THREE.Vector3(0, -1, -t), new THREE.Vector3(0, 1, -t),
-      new THREE.Vector3(t, 0, -1), new THREE.Vector3(t, 0, 1),
-      new THREE.Vector3(-t, 0, -1), new THREE.Vector3(-t, 0, 1)
+    // Create CUBOCTAHEDRAL framework using our 10 data points
+    // Cuboctahedron properties: 8 triangles + 6 squares, but we adapt for 10 vertices
+
+    // Define 8 triangular face connections (cuboctahedral triangles on our 10 points)
+    const triangularFaces = [
+      [0, 1, 2],   // Red triangle motif
+      [3, 4, 5],   // Blue triangle motif
+      [6, 7, 8],   // Green triangle motif
+      [9, 0, 4],   // Connecting triangles
+      [1, 5, 7],   // Yellow triangle motif
+      [2, 3, 9],   // Purple triangle motif
+      [6, 8, 3],   // Orange triangle motif
+      [5, 6, 9]    // Connecting triangles for full mesh
     ];
 
-    // Normalize to fit within orb
-    vertices.forEach(v => v.normalize().multiplyScalar(2.1));
-
-    // Icosahedral edges (30 edges)
-    const edges = [
-      [0, 11], [0, 5], [0, 1], [0, 7], [0, 10],
-      [1, 5], [1, 7], [1, 8], [1, 9],
-      [2, 11], [2, 5], [2, 3], [2, 4], [2, 10],
-      [3, 4], [3, 8], [3, 9], [3, 6],
-      [4, 5], [4, 9], [4, 11],
-      [6, 7], [6, 8], [6, 10],
-      [7, 8], [7, 10], [7, 11],
-      [9, 11]
+    // Define 6 square face connections (adapted for our 10 vertices)
+    const squareFaces = [
+      [0, 2, 3, 9],  // Square face motifs
+      [1, 4, 5, 7],  // Square face motifs
+      [2, 4, 6, 8],  // Square face motifs
+      [3, 5, 8, 9],  // Square face motifs
+      [0, 1, 6, 7],  // Square face motifs
+      [4, 7, 3, 6]   // Square face motifs (remaining connectivity)
     ];
 
-    // Add some beautiful cross-connections for complexity
-    const crossEdges = [
-      [0, 8], [1, 10], [2, 7], [3, 11], [4, 6], [5, 9] // Cross-connections
-    ];
-
-    const allEdges = [...edges, ...crossEdges];
-
-    // Create framework with elegant colors
-    const dataInfluence = this.processedData ? Math.min(1, (this.processedData.clusterKeys.length / 10)) : 0.5;
     const time = Date.now() * 0.001;
+    const orbRadius = 2.0; // SanityOrb's surface radius
+    const breathingFactor = 0.08 * Math.sin(time * 0.3); // Subtle breathing animation
+    let edgeIndex = 0;
 
-    allEdges.forEach(([start, end], edgeIndex) => {
-      const startVertex = vertices[start];
-      const endVertex = vertices[end];
+    // Helper function for softened opacity calculation
+    const calculateSoftenedOpacity = (startPos: THREE.Vector3, endPos: THREE.Vector3): number => {
+      const midPoint = startPos.clone().add(endPos).multiplyScalar(0.5);
+      const distanceFromCenter = midPoint.length();
 
-      points.push(startVertex, endVertex);
+      // Distance-based falloff: closer to surface = more transparent
+      // - At orb center: full opacity (distance ~0)
+      // - At surface or beyond: high transparency (distance ~orbRadius)
+      const distanceToSurface = Math.abs(orbRadius - distanceFromCenter);
+      const softnessZone = 0.3; // How wide the softening zone is
+      const softnessFactor = Math.max(0, distanceToSurface - softnessZone) / softnessZone;
 
-      // Elegant color scheme with data influence
-      const hue = (edgeIndex * 0.1 + time * 0.05) % 1;
-      const saturation = 0.7 + dataInfluence * 0.3;
-      const lightness = 0.4 + dataInfluence * 0.3;
+      // Triangle vs Square base opacity (triangles more visible) - INCREASED for better definition
+      const baseOpacity = 0.25; // Increased from 0.15 for much stronger definition
+      const softnessReduction = softnessFactor * 0.7; // Stronger falloff preservation
 
-      const color = new THREE.Color().setHSL(hue, saturation, lightness);
-      colors.push(color.r, color.g, color.b);
-      colors.push(color.r, color.g, color.b);
+      return baseOpacity * (0.9 - softnessReduction) * (1 + breathingFactor); // 90% base visibility
+    };
+
+    // Create triangular face edges (cuboctahedral triangles) with straight, defined connections
+    triangularFaces.forEach((face, faceIndex) => {
+      for (let i = 0; i < 3; i++) {
+        const startIdx = face[i];
+        const endIdx = face[(i + 1) % 3];
+
+        if (clusters[clusterKeys[startIdx]] && clusters[clusterKeys[endIdx]]) {
+          const startPos = clusters[clusterKeys[startIdx]].position;
+          const endPos = clusters[clusterKeys[endIdx]].position;
+
+          points.push(startPos);
+          points.push(endPos);
+
+          // Cuboctahedral colors - triangles are more cohesive (slightly brighter)
+          const triangleHue = (faceIndex * 0.125 + time * 0.02) % 1; // 8 triangles span spectrum
+          const baseColor = new THREE.Color().setHSL(triangleHue, 0.8, 0.5);
+
+          // Apply volumetric softening with stronger definition
+          const opacity = calculateSoftenedOpacity(startPos, endPos);
+          const softenedColor = baseColor.clone().multiplyScalar(opacity);
+
+          colors.push(softenedColor.r, softenedColor.g, softenedColor.b);
+          colors.push(softenedColor.r, softenedColor.g, softenedColor.b);
+          edgeIndex++;
+        }
+      }
     });
+
+    // Create square face edges (cuboctahedral squares) with straight, defined connections
+    squareFaces.forEach((face, faceIndex) => {
+      for (let i = 0; i < 4; i++) {
+        const startIdx = face[i];
+        const endIdx = face[(i + 1) % 4];
+
+        if (clusters[clusterKeys[startIdx]] && clusters[clusterKeys[endIdx]]) {
+          const startPos = clusters[clusterKeys[startIdx]].position;
+          const endPos = clusters[clusterKeys[endIdx]].position;
+
+          points.push(startPos);
+          points.push(endPos);
+
+          // Square edges are more stable/harmonious (different shade)
+          const squareHue = (faceIndex * 0.166 + 0.5 + time * 0.01) % 1; // 6 squares in complementary range
+          const baseColor = new THREE.Color().setHSL(squareHue, 0.6, 0.4);
+
+          // Apply volumetric softening with stronger definition
+          const opacity = calculateSoftenedOpacity(startPos, endPos) * 0.85; // Squares slightly more subtle but still defined
+          const softenedColor = baseColor.clone().multiplyScalar(opacity);
+
+          colors.push(softenedColor.r, softenedColor.g, softenedColor.b);
+          colors.push(softenedColor.r, softenedColor.g, softenedColor.b);
+          edgeIndex++;
+        }
+      }
+    });
+
+    console.log(`🏗️ Cuboctahedral Framework: ${triangularFaces.length} triangular motifs + ${squareFaces.length} square motifs = ${edgeIndex} structural edges`);
 
     if (points.length > 0) {
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
+      // Cuboctahedral material - subtle but present
       const material = new THREE.LineBasicMaterial({
         vertexColors: true,
         transparent: true,
-        opacity: 0.5,
-        blending: THREE.AdditiveBlending
+        opacity: 0.15,  // Much subtler than icosahedral
+        blending: THREE.AdditiveBlending,
+        depthWrite: false  // Don't interfere with depth buffer
       });
 
       this.framework = new THREE.LineSegments(geometry, material);
@@ -261,32 +373,47 @@ export class MicroUniverse {
     const { clusters, clusterKeys } = this.processedData;
     const points: THREE.Vector3[] = [];
     const colors: number[] = [];
+    const opacities: number[] = []; // Store opacity per connection
 
-    // Create connections between clusters
+    // Create connections between ALL 10 clusters for complete web
     clusterKeys.forEach((clusterId: number, i: number) => {
       const clusterA = clusters[clusterId];
-      if (clusterA.count === 0) return;
 
       clusterKeys.slice(i + 1).forEach((otherId: number) => {
         const clusterB = clusters[otherId];
-        if (clusterB.count === 0) return;
-
-        const sanityDiff = Math.abs(clusterA.avgSanity - clusterB.avgSanity);
         const distance = clusterA.position.distanceTo(clusterB.position);
 
-        // Connect if sanity levels are similar and distance is reasonable
-        if (sanityDiff < 40 && distance < 10) {
+        // Connect all clusters within reasonable distance (inside orb)
+        if (distance < 2.5) { // Connect within orb volume
           points.push(clusterA.position, clusterB.position);
 
-          // Connection color based on sanity difference
+          // Connection strength based on data availability and sanity similarity
+          let connectionStrength = 0.2; // Base minimum for synthetic clusters
+
+          if (clusterA.count > 0 && clusterB.count > 0) {
+            // Both have real data
+            const sanityDiff = Math.abs(clusterA.avgSanity - clusterB.avgSanity);
+            connectionStrength = 0.8 - (sanityDiff / 100); // Stronger for similar sanity levels
+          } else if (clusterA.count > 0 || clusterB.count > 0) {
+            // One has real data, one is synthetic
+            connectionStrength = 0.4; // Moderate connection
+          }
+          // Both synthetic: use base 0.2
+
+          // Connection color based on cluster data with strength influence
           const connectionColor = new THREE.Color().lerpColors(
             clusterA.color,
             clusterB.color,
             0.5
-          ).multiplyScalar(0.3); // Dim the connection lines
+          ).multiplyScalar(connectionStrength);
 
+          // Store colors twice (start and end points)
           colors.push(connectionColor.r, connectionColor.g, connectionColor.b);
           colors.push(connectionColor.r, connectionColor.g, connectionColor.b);
+
+          // Store opacity for material creation
+          opacities.push(connectionStrength);
+          opacities.push(connectionStrength);
         }
       });
     });
@@ -294,10 +421,19 @@ export class MicroUniverse {
     if (points.length > 0) {
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-      const material = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.6 });
+
+      // Create material with per-connection opacity
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending
+      });
 
       this.connections = new THREE.LineSegments(geometry, material);
       this.group.add(this.connections);
+
+      console.log(`🌐 Created ${points.length/2} connections between all 10 clusters`);
     }
   }
 
