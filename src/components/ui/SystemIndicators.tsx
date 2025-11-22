@@ -1,11 +1,10 @@
 import React, { memo } from 'react';
+import { useStore } from '../../store/store';
 
-interface SystemIndicatorsProps {
-  sanity: number;
-  onHide: () => void;
-}
+const SystemIndicators: React.FC = () => {
+  const sanity = useStore(state => state.sanity);
+  const setShowSystemIndicators = useStore(state => state.setShowSystemIndicators);
 
-const SystemIndicators: React.FC<SystemIndicatorsProps> = ({ sanity, onHide }) => {
   const getIndicatorColor = () => {
     if (sanity >= 75) return 'bg-green-400';
     if (sanity >= 50) return 'bg-yellow-400';
@@ -23,6 +22,7 @@ const SystemIndicators: React.FC<SystemIndicatorsProps> = ({ sanity, onHide }) =
       }}
       data-ui-element="true"
     >
+      {/* <button onClick={() => setShowSystemIndicators(false)}>Hide</button> */}
     </div>
   );
 };

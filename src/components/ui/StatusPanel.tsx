@@ -1,12 +1,11 @@
 import React, { memo } from 'react';
+import { useStore } from '../../store/store';
 import { getSanityLabel, getSanityDescription, getGradientColor } from '../../utils/sanityUtils';
 
-interface StatusPanelProps {
-  sanity: number;
-  onHide: () => void;
-}
+const StatusPanel: React.FC = () => {
+  const sanity = useStore(state => state.sanity);
+  const setShowStatusPanel = useStore(state => state.setShowStatusPanel);
 
-const StatusPanel: React.FC<StatusPanelProps> = ({ sanity, onHide }) => {
   return (
     <div 
       className="absolute text-center pointer-events-auto"
@@ -20,7 +19,7 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ sanity, onHide }) => {
     >
       <div className={`bg-gradient-to-br ${getGradientColor(sanity)} backdrop-blur-xl rounded-3xl px-10 py-5 border border-white/10 shadow-2xl transition-all duration-700 select-none relative group`}>
         <button
-          onClick={onHide}
+          onClick={() => setShowStatusPanel(false)}
           className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-1.5 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
           title="Hide Status Panel"
         >

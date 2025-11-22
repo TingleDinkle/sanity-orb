@@ -1,8 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-
-interface FunnyMessagesProps {
-  sanity: number;
-}
+import { useStore } from '../../store/store';
 
 const FUNNY_MESSAGES = [
   // Tech Support Classics
@@ -133,7 +130,8 @@ interface Message {
   createdAt: number;
 }
 
-const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
+const FunnyMessages: React.FC = () => {
+  const sanity = useStore(state => state.sanity);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageId, setMessageId] = useState(0);
 

@@ -1,14 +1,15 @@
 import React, { useCallback, useRef, memo } from 'react';
+import { useStore } from '../../store/store';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
 
-interface ControlPanelProps {
-  sanity: number;
-  onSanityChange: (value: number) => void;
-  isVisible: boolean;
-  onToggleVisibility: () => void;
-}
+const ControlPanel: React.FC = () => {
+  const { sanity, setSanity, isVisible, toggleVisibility } = useStore(state => ({
+    sanity: state.sanity,
+    setSanity: state.setSanity,
+    isVisible: state.isControlPanelVisible,
+    toggleVisibility: state.toggleControlPanel,
+  }));
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isVisible, onToggleVisibility }) => {
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced sanity change to prevent excessive updates during slider dragging
@@ -18,14 +19,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      onSanityChange(value);
+      setSanity(value);
     }, 16); // ~60fps debounce
-  }, [onSanityChange]);
+  }, [setSanity]);
+
   if (!isVisible) {
     return (
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
         <button
-          onClick={onToggleVisibility}
+          onClick={toggleVisibility}
           className="bg-white/10 backdrop-blur-xl rounded-full p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95"
           title="Show Controls"
         >
@@ -63,7 +65,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
               ))}
             </div>
             <button
-              onClick={onToggleVisibility}
+              onClick={toggleVisibility}
               className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
               title="Hide Controls"
             >
@@ -127,7 +129,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
             return (
               <button
                 key={preset.value}
-                onClick={() => onSanityChange(preset.value)}
+                onClick={() => setSanity(preset.value)}
                 className={`flex-1 py-2 px-4 rounded-xl text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 ${
                   isActive 
                     ? 'bg-white/20 text-white border border-white/30 shadow-lg' 

@@ -1,11 +1,10 @@
 import React, { memo } from 'react';
+import { useStore } from '../../store/store';
 
-interface CoherenceIndexProps {
-  sanity: number;
-  onHide: () => void;
-}
+const CoherenceIndex: React.FC = () => {
+  const sanity = useStore(state => state.sanity);
+  const setShowCoherenceIndex = useStore(state => state.setShowCoherenceIndex);
 
-const CoherenceIndex: React.FC<CoherenceIndexProps> = ({ sanity, onHide }) => {
   return (
     <div 
       className="absolute pointer-events-auto"
@@ -18,7 +17,7 @@ const CoherenceIndex: React.FC<CoherenceIndexProps> = ({ sanity, onHide }) => {
     >
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl px-7 py-4 border border-white/10 shadow-2xl select-none relative group">
         <button
-          onClick={onHide}
+          onClick={() => setShowCoherenceIndex(false)}
           className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-1.5 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
           title="Hide Coherence Index"
         >

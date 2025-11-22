@@ -1,31 +1,32 @@
 import React, { memo } from 'react';
+import { useStore } from '../../store/store';
 
-interface RestoreComponentsMenuProps {
-  showStatusPanel: boolean;
-  showCoherenceIndex: boolean;
-  showSystemIndicators: boolean;
-  showMicroUniverseIndicator: boolean;
-  onRestoreStatusPanel: () => void;
-  onRestoreCoherenceIndex: () => void;
-  onRestoreSystemIndicators: () => void;
-  onRestoreMicroUniverseIndicator: () => void;
-}
+const RestoreComponentsMenu: React.FC = () => {
+  const {
+    showStatusPanel,
+    showCoherenceIndex,
+    showSystemIndicators,
+    showMicroUniverseIndicator,
+    setShowStatusPanel,
+    setShowCoherenceIndex,
+    setShowSystemIndicators,
+    setShowMicroUniverseIndicator,
+  } = useStore(state => ({
+    showStatusPanel: state.showStatusPanel,
+    showCoherenceIndex: state.showCoherenceIndex,
+    showSystemIndicators: state.showSystemIndicators,
+    showMicroUniverseIndicator: state.showMicroUniverseIndicator,
+    setShowStatusPanel: state.setShowStatusPanel,
+    setShowCoherenceIndex: state.setShowCoherenceIndex,
+    setShowSystemIndicators: state.setShowSystemIndicators,
+    setShowMicroUniverseIndicator: state.setShowMicroUniverseIndicator,
+  }));
 
-const RestoreComponentsMenu: React.FC<RestoreComponentsMenuProps> = ({
-  showStatusPanel,
-  showCoherenceIndex,
-  showSystemIndicators,
-  showMicroUniverseIndicator,
-  onRestoreStatusPanel,
-  onRestoreCoherenceIndex,
-  onRestoreSystemIndicators,
-  onRestoreMicroUniverseIndicator,
-}) => {
   const hiddenComponents = [
-    { name: 'Status Panel', shown: showStatusPanel, restore: onRestoreStatusPanel },
-    { name: 'Coherence Index', shown: showCoherenceIndex, restore: onRestoreCoherenceIndex },
-    { name: 'System Indicators', shown: showSystemIndicators, restore: onRestoreSystemIndicators },
-    { name: 'Micro-Universe Indicator', shown: showMicroUniverseIndicator, restore: onRestoreMicroUniverseIndicator },
+    { name: 'Status Panel', shown: showStatusPanel, restore: () => setShowStatusPanel(true) },
+    { name: 'Coherence Index', shown: showCoherenceIndex, restore: () => setShowCoherenceIndex(true) },
+    { name: 'System Indicators', shown: showSystemIndicators, restore: () => setShowSystemIndicators(true) },
+    { name: 'Micro-Universe Indicator', shown: showMicroUniverseIndicator, restore: () => setShowMicroUniverseIndicator(true) },
   ].filter(component => !component.shown);
 
   if (hiddenComponents.length === 0) return null;

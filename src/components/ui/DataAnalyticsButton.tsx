@@ -1,15 +1,16 @@
 import React from 'react';
+import { useStore } from '../../store/store';
 
-interface DataAnalyticsButtonProps {
-  onClick: () => void;
-  isConnected: boolean;
-}
+const DataAnalyticsButton: React.FC = () => {
+  const { isConnected, toggleDataAnalytics } = useStore(state => ({
+    isConnected: state.isBackendConnected,
+    toggleDataAnalytics: state.toggleDataAnalytics,
+  }));
 
-const DataAnalyticsButton: React.FC<DataAnalyticsButtonProps> = ({ onClick, isConnected }) => {
   return (
     <div className="absolute bottom-8 right-8 pointer-events-auto z-50">
       <button
-        onClick={onClick}
+        onClick={toggleDataAnalytics}
         className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-white/20 active:scale-95"
         title="Open Data Analytics"
       >

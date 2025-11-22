@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { api, mlAPI } from "../../services/api";
+import { useStore } from '../../store/store';
+import { api } from "../../services/api";
 
-const DataAnalyticsPanel = ({ isVisible, onClose, currentSanity }) => {
+const DataAnalyticsPanel = () => {
+  const { isVisible, onClose, currentSanity } = useStore(state => ({
+    isVisible: state.showDataAnalytics,
+    onClose: state.toggleDataAnalytics,
+    currentSanity: state.sanity,
+  }));
+
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
