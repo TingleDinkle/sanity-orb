@@ -72,6 +72,7 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **CORS 2.8.5** - Cross-Origin Resource Sharing middleware
 - **Helmet 8.1.0** - Security middleware for Express
 - **Express Rate Limit 8.2.1** - Rate limiting middleware
+- **Redis (ioredis ^5.4.1)** - In-memory data store for caching and rate limiting
 - **bcrypt 5.1.1** - Password hashing function
 - **dotenv 16.3.1** - Environment variable management
 
