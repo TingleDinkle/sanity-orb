@@ -19,7 +19,7 @@
 ![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3.1-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
 
-A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb. Watch as the orb's colors, particles, and effects dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
+A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb surrounded by an advanced civilization's energy harvesting megastructure. Watch as the orb's colors, particles, Dyson sphere, and orbiting drone swarm dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
 ## The Origin Story
 
@@ -37,7 +37,7 @@ The orb represents the internet's collective mental state, and through your inte
 
 ## Overview
 
-The Internet Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by particle systems, star fields, and dynamic lighting effects that respond to user input in real-time. Experience the internet's digital consciousness through this mesmerizing visualization with immersive audio soundscapes, screen shake effects during critical states, and humorous Minecraft-style pop-up messages during unstable periods.
+The Internet Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by an Interstellar-style volumetric Dyson sphere, a swarm of sophisticated mega drones, energy harvesting particle streams, particle systems, star fields, and dynamic lighting effects that respond to user input in real-time. Experience the internet's digital consciousness through this mesmerizing visualization with immersive audio soundscapes, screen shake effects during critical states, and humorous Minecraft-style pop-up messages during unstable periods.
 
 ## Technologies Used
 
@@ -101,6 +101,9 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 
 ### 3D Visual Effects
 - **Animated Orb** - Procedurally animated sphere with noise-based surface distortion
+- **Advanced Volumetric Dyson Sphere** - Multi-layered Interstellar-style energy harvesting megastructure with volumetric shaders, realistic energy streams, and cinematic rim lighting
+- **Mega Drone Swarm** - 16 sophisticated mechanical drones orbiting the Dyson sphere with detailed textures, thruster glows, sensor arrays, and dynamic orbital mechanics
+- **Energy Harvesting System** - Realistic particle streams flowing from the sanity orb to the Dyson sphere, with coherent beam formations and dynamic intensity based on sanity state
 - **Particle System** - 120 orbiting particles with dynamic movement and color changes
 - **Star Field** - Multiple layers of animated background stars
 - **Glow Effects** - Additive blending glow spheres and rim lighting
@@ -127,6 +130,8 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Smooth Transitions** - 8-step color interpolation between digital consciousness levels
 - **Real-time Updates** - All effects change color simultaneously
 - **Dynamic Themes** - Colors shift from green (harmony) to red (chaos) based on internet stability
+- **Energy Harvesting Visualization** - Particle streams flow from the sanity orb to the Dyson sphere, with intensity and color dynamically responding to sanity state
+- **Dyson Sphere State Response** - Volumetric layers, energy streams, and rim lighting intensity vary dramatically based on sanity level, creating very pronounced visual states
 
 ### AI-Powered Analytics
 - **Data Analytics Dashboard** - Comprehensive visualization of sanity metrics and trends
@@ -342,10 +347,10 @@ After deployment, update your environment variables:
 - **?**: Show/hide help overlay
 
 ### Visual States
-- **Digital Harmony (75-100%)**: Bright green orb with stable particles and gentle harmonic audio
-- **Network Stable (50-75%)**: Yellow-green orb with gentle movement and ambient pad tones
-- **Data Fragmented (25-50%)**: Orange orb with increased turbulence, humorous Minecraft-style error messages, and transitioning audio
-- **Digital Chaos (0-25%)**: Red orb with screen shake, ominous dark overlay, chaotic particle behavior, and deep drone audio
+- **Digital Harmony (75-100%)**: Bright green orb with stable particles, gentle harmonic audio, and vibrant Dyson sphere energy harvesting with active drone swarm
+- **Network Stable (50-75%)**: Yellow-green orb with gentle movement, ambient pad tones, and moderate Dyson sphere activity with coordinated drone formations
+- **Data Fragmented (25-50%)**: Orange orb with increased turbulence, humorous Minecraft-style error messages, transitioning audio, and flickering Dyson sphere with erratic drone behavior
+- **Digital Chaos (0-25%)**: Red orb with screen shake, ominous dark overlay, chaotic particle behavior, deep drone audio, and unstable Dyson sphere with flickering energy streams and disoriented drone swarm
 
 ## Video Demo
 
@@ -357,9 +362,14 @@ https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype Demo)
 
 ### Shader System
 The orb uses custom GLSL shaders for advanced visual effects:
-- **Vertex Shader**: Implements Simplex noise for surface distortion
-- **Fragment Shader**: Creates fresnel-based glow effects with pulsing animations
-- **Uniforms**: Time, color, pulse speed, and turbulence parameters
+- **Orb Shaders**: Vertex shader implements Simplex noise for surface distortion; fragment shader creates fresnel-based glow effects with pulsing animations
+- **Volumetric Dyson Sphere Shaders**: Advanced multi-layered volumetric shaders with:
+  - Volumetric density functions using multi-scale Simplex noise
+  - Energy harvesting stream visualization with spiral patterns
+  - Chromatic fresnel effects for Interstellar-style rim lighting
+  - Realistic transparency and depth calculations
+  - Dynamic energy flow patterns driven by sanity state
+- **Uniforms**: Time, color, pulse speed, turbulence, sanity state, and energy harvest intensity parameters
 
 ### Audio Architecture
 The audio system uses Tone.js to create three distinct soundscapes:
@@ -387,6 +397,8 @@ Critical sanity levels (0-25%) trigger dynamic screen shake:
 - **Bundle Optimization**: Code splitting and tree shaking via Vite
 - **WebGL Optimization**: Hardware-accelerated rendering with antialiasing
 - **Audio Optimization**: Lazy initialization on first user interaction
+- **Volumetric Rendering**: Multi-layered sphere geometry with optimized segment counts (128x128 main, 96x96 additional layers)
+- **Particle System Optimization**: Efficient energy harvesting particles with beam coherence and reduced opacity for performance
 
 ### Browser Compatibility
 - **Modern Browsers**: Chrome, Firefox, Safari, Edge (latest versions)
