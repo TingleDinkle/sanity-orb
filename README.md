@@ -172,6 +172,8 @@ src/
 │   ├── animations/
 │   │   └── OpeningAnimation.tsx    # Startup sequence
 │   └── SanityOrb.tsx               # Main application component
+├── store/
+│   └── store.ts                    # Zustand global state store
 ├── types/
 │   └── sanity.ts                   # TypeScript interfaces
 ├── constants/
