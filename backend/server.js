@@ -93,105 +93,98 @@ const strictLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Request tracking for behavioral analysis
-const requestTracker = new Map();
+import redisClient, { testRedisConnection } from './config/redis.js';
 
-// Request fingerprinting middleware
-const requestFingerprinting = (req, res, next) => {
+// Request fingerprinting middleware (Redis-based)
+const requestFingerprinting = async (req, res, next) => {
   const clientIP = req.ip || req.connection.remoteAddress;
   const userAgent = req.get('User-Agent') || '';
   const now = Date.now();
+  const clientKey = `client:${clientIP}`;
+  const requestsKey = `requests:${clientIP}`;
+  const pipeline = redisClient.pipeline();
 
-  // Initialize client tracking if not exists
-  if (!requestTracker.has(clientIP)) {
-    requestTracker.set(clientIP, {
-      requests: [],
-      firstSeen: now,
-      suspicious: false,
-      lastActivity: now,
-      userAgent: userAgent,
-      totalRequests: 0,
-      blockedUntil: 0
+  // 1. Fetch client data and increment request count
+  pipeline.hgetall(clientKey);
+  pipeline.hincrby(clientKey, 'totalRequests', 1);
+  pipeline.zadd(requestsKey, now, now.toString()); // Score and member are the same
+  pipeline.expire(clientKey, 24 * 60 * 60); // 24-hour expiry
+  pipeline.expire(requestsKey, 24 * 60 * 60); // 24-hour expiry
+
+  const [[err, clientData], [err2, totalRequests], [err3], [err4], [err5]] = await pipeline.exec();
+
+  if (err || err2) {
+    console.error('Redis error:', err || err2);
+    return next(); // Fail open if Redis has an issue
+  }
+
+  // Initialize client if it's their first request
+  if (!clientData || Object.keys(clientData).length === 0) {
+    const initPipeline = redisClient.pipeline();
+    initPipeline.hset(clientKey, 'firstSeen', now);
+    initPipeline.hset(clientKey, 'userAgent', userAgent);
+    await initPipeline.exec();
+  }
+
+  // Check if currently blocked
+  if (clientData.blockedUntil && now < parseInt(clientData.blockedUntil, 10)) {
+    const remainingSeconds = Math.ceil((parseInt(clientData.blockedUntil, 10) - now) / 1000);
+    return res.status(429).json({
+      error: 'Temporarily blocked due to suspicious activity.',
+      retryAfter: remainingSeconds
     });
   }
 
-  const clientData = requestTracker.get(clientIP);
-  clientData.lastActivity = now;
-  clientData.totalRequests++;
+  // 2. Behavioral Analysis
+  const oneMinuteAgo = now - 60000;
+  const fiveMinutesAgo = now - 300000;
 
-  // Add current request to tracking
-  clientData.requests.push({
-    timestamp: now,
-    path: req.path,
-    method: req.method,
-    userAgent: userAgent
-  });
+  // Get counts of recent requests
+  const countPipeline = redisClient.pipeline();
+  countPipeline.zcount(requestsKey, oneMinuteAgo, now); // Requests in the last minute
+  countPipeline.zcount(requestsKey, fiveMinutesAgo, now); // Requests in the last 5 minutes
+  countPipeline.zremrangebyscore(requestsKey, '-inf', fiveMinutesAgo); // Clean up very old requests
 
-  // Clean old requests (keep last 24 hours)
-  clientData.requests = clientData.requests.filter(r => now - r.timestamp < 24 * 60 * 60 * 1000);
-
-  // Behavioral analysis
-  const recentRequests = clientData.requests.filter(r => now - r.timestamp < 60000); // Last minute
-  const recentApiRequests = recentRequests.filter(r => r.path.startsWith('/api/'));
+  const [[errCount, recentRequestsCount], [errCount5, fiveMinCount], [errRem]] = await countPipeline.exec();
+  
+  if (errCount) {
+    console.error('Redis zcount error:', errCount);
+    return next(); // Fail open
+  }
 
   // Detect suspicious patterns
   let isSuspicious = false;
   let reason = '';
 
-  // Too many requests per minute
-  if (recentRequests.length > 30) {
+  if (recentRequestsCount > 45) { // Stricter limit
     isSuspicious = true;
     reason = 'Too many requests per minute';
   }
-
-  // Too many API calls per minute
-  if (recentApiRequests.length > 20) {
-    isSuspicious = true;
-    reason = 'Excessive API usage';
+  
+  const uniqueUserAgents = clientData.userAgents ? JSON.parse(clientData.userAgents) : [];
+  if (!uniqueUserAgents.includes(userAgent)) {
+    uniqueUserAgents.push(userAgent);
+    await redisClient.hset(clientKey, 'userAgents', JSON.stringify(uniqueUserAgents.slice(-5)));
   }
 
-  // API enumeration patterns
-  const uniquePaths = [...new Set(recentApiRequests.map(r => r.path))];
-  if (uniquePaths.length > 10) {
-    isSuspicious = true;
-    reason = 'API enumeration detected';
-  }
-
-  // Rapid fire requests to same endpoint
-  const sameEndpointRequests = recentRequests.filter(r => r.path === req.path);
-  if (sameEndpointRequests.length > 5) {
-    isSuspicious = true;
-    reason = 'Rapid requests to same endpoint';
-  }
-
-  // User-Agent switching (common scraper tactic)
-  const userAgents = [...new Set(clientData.requests.slice(-10).map(r => r.userAgent))];
-  if (userAgents.length > 3) {
+  if (uniqueUserAgents.length > 3) {
     isSuspicious = true;
     reason = 'User-Agent switching detected';
   }
 
   // Mark as suspicious
-  if (isSuspicious && !clientData.suspicious) {
-    clientData.suspicious = true;
+  if (isSuspicious && clientData.suspicious !== 'true') {
+    await redisClient.hset(clientKey, 'suspicious', 'true');
     console.log(`🚨 Suspicious activity detected from ${clientIP}: ${reason}`);
   }
 
   // Temporary blocking for highly suspicious clients
-  if (clientData.suspicious && clientData.requests.filter(r => now - r.timestamp < 300000).length > 50) {
-    clientData.blockedUntil = now + 15 * 60 * 1000; // Block for 15 minutes
+  if (clientData.suspicious === 'true' && fiveMinCount > 100) {
+    const blockedUntil = now + 15 * 60 * 1000; // Block for 15 minutes
+    await redisClient.hset(clientKey, 'blockedUntil', blockedUntil);
     return res.status(429).json({
       error: 'Too many suspicious requests. Please try again later.',
       retryAfter: '900'
-    });
-  }
-
-  // Check if currently blocked
-  if (now < clientData.blockedUntil) {
-    const remainingSeconds = Math.ceil((clientData.blockedUntil - now) / 1000);
-    return res.status(429).json({
-      error: 'Temporarily blocked due to suspicious activity.',
-      retryAfter: remainingSeconds
     });
   }
 
@@ -201,22 +194,6 @@ const requestFingerprinting = (req, res, next) => {
 
   next();
 };
-
-// Periodic cleanup of old tracking data
-setInterval(() => {
-  const now = Date.now();
-  const cutoff = now - 24 * 60 * 60 * 1000; // 24 hours ago
-
-  for (const [ip, data] of requestTracker.entries()) {
-    // Remove clients with no recent activity
-    if (data.lastActivity < cutoff) {
-      requestTracker.delete(ip);
-    } else {
-      // Clean old request logs
-      data.requests = data.requests.filter(r => r.timestamp > cutoff);
-    }
-  }
-}, 60 * 60 * 1000); // Run cleanup every hour
 
 // Apply rate limiting and tracking
 app.use('/api/', speedLimiter); // Progressive slowdown
@@ -270,18 +247,26 @@ const storage = new DatabaseStorage();
 
 app.get('/api/health', async (req, res) => {
   try {
-    // Test database connection
-    const dbConnected = await testConnection();
+    // Test database and redis connections
+    const [dbConnected, redisConnected] = await Promise.all([
+      testConnection(),
+      testRedisConnection()
+    ]);
 
-    res.json({
-      status: dbConnected ? 'healthy' : 'degraded',
+    const isHealthy = dbConnected && redisConnected;
+
+    res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
-      database: dbConnected ? 'postgresql' : 'disconnected'
+      dependencies: {
+        database: dbConnected ? 'connected' : 'disconnected',
+        redis: redisConnected ? 'connected' : 'disconnected'
+      }
     });
   } catch (error) {
     res.status(503).json({
       status: 'unhealthy',
-      error: 'Database connection failed',
+      error: 'Health check failed',
       timestamp: new Date().toISOString()
     });
   }
@@ -726,12 +711,22 @@ app.listen(PORT, async () => {
   console.log(`🌐 Sanity Orb Backend running on port ${PORT}`);
   console.log(`✓ Health check: http://localhost:${PORT}/api/health`);
 
-  // Test database connection on startup
-  const dbConnected = await testConnection();
+  // Test critical connections on startup
+  const [dbConnected, redisConnected] = await Promise.all([
+    testConnection(),
+    testRedisConnection()
+  ]);
+
   if (dbConnected) {
     console.log(`✓ Database: PostgreSQL connected`);
   } else {
     console.log(`⚠️  Database: Connection failed - check DATABASE_URL in .env`);
+  }
+
+  if (redisConnected) {
+    console.log(`✓ Caching:  Redis connected`);
+  } else {
+    console.log(`⚠️  Caching:  Redis connection failed - check REDIS_URL in .env`);
   }
 
   console.log(`✓ Security enabled: Rate limiting, input validation, CORS protection`);

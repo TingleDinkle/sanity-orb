@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface CoherenceIndexProps {
   sanity: number;
@@ -14,6 +14,7 @@ const CoherenceIndex: React.FC<CoherenceIndexProps> = ({ sanity, onHide }) => {
         bottom: '32px',
         zIndex: 1000
       }}
+      data-ui-element="true"
     >
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl px-7 py-4 border border-white/10 shadow-2xl select-none relative group">
         <button
@@ -46,4 +47,4 @@ const CoherenceIndex: React.FC<CoherenceIndexProps> = ({ sanity, onHide }) => {
   );
 };
 
-export default CoherenceIndex;
+export default memo(CoherenceIndex);

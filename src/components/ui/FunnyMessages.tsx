@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 
 interface FunnyMessagesProps {
   sanity: number;
@@ -277,4 +277,4 @@ const FunnyMessages: React.FC<FunnyMessagesProps> = ({ sanity }) => {
   );
 };
 
-export default FunnyMessages;
+export default memo(FunnyMessages);

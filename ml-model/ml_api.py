@@ -94,6 +94,20 @@ def predict_session():
     try:
         data = request.json
         
+        # --- Input Validation ---
+        required_keys = [
+            "hour", "day_of_week", "session_duration", "interactions",
+            "prev_sanity_1", "prev_sanity_2", "prev_sanity_3",
+            "stress_level", "mood_factor"
+        ]
+        if not data or any(key not in data for key in required_keys):
+            missing = [key for key in required_keys if key not in (data or {})]
+            return jsonify({'success': False, 'error': f'Missing required keys: {missing}'}), 400
+        
+        if not all(isinstance(data[key], (int, float)) for key in required_keys):
+            return jsonify({'success': False, 'error': 'All input values must be numeric'}), 400
+        # --- End Validation ---
+        
         # Calculate avg_prev_sanity
         avg_prev_sanity = (
             data['prev_sanity_1'] + 
@@ -119,14 +133,14 @@ def predict_session():
         prediction = models['session'].predict(features)[0]
         prediction = float(np.clip(prediction, 0, 100))
         
-        # Calculate confidence based on feature consistency
-        confidence = 85 + np.random.uniform(-5, 10)
-        confidence = float(np.clip(confidence, 70, 98))
+        # TODO: Implement a proper confidence model. 
+        # The previous random calculation was misleading.
+        confidence = -1.0
         
         return jsonify({
             'success': True,
             'prediction': round(prediction, 2),
-            'confidence': round(confidence, 2),
+            'confidence': confidence,
             'model': 'XGBoost Regressor',
             'timestamp': datetime.now().isoformat()
         })
@@ -149,13 +163,21 @@ def predict_trend():
     """
     try:
         data = request.json
-        history = np.array(data['history'])
         
-        if len(history) < 5:
+        # --- Input Validation ---
+        if not data or 'history' not in data:
+            return jsonify({'success': False, 'error': 'Missing "history" in request body'}), 400
+        
+        history = data['history']
+        
+        if not isinstance(history, list) or len(history) < 5:
             return jsonify({
                 'success': False,
-                'error': 'At least 5 data points required'
+                'error': '"history" must be a list of at least 5 numbers'
             }), 400
+        # --- End Validation ---
+
+        history = np.array(history)
         
         # Calculate features
         mean_val = np.mean(history)
@@ -232,6 +254,19 @@ def classify_sanity():
     """
     try:
         data = request.json
+
+        # --- Input Validation ---
+        required_keys = [
+            "current_sanity", "session_count", "avg_duration", 
+            "interaction_rate", "consistency"
+        ]
+        if not data or any(key not in data for key in required_keys):
+            missing = [key for key in required_keys if key not in (data or {})]
+            return jsonify({'success': False, 'error': f'Missing required keys: {missing}'}), 400
+
+        if not all(isinstance(data[key], (int, float)) for key in required_keys):
+            return jsonify({'success': False, 'error': 'All input values must be numeric'}), 400
+        # --- End Validation ---
         
         features = pd.DataFrame([{
             'current_sanity': data['current_sanity'],
@@ -298,6 +333,23 @@ def advanced_prediction():
     try:
         data = request.json
         
+        # --- Input Validation ---
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body cannot be empty'}), 400
+
+        if 'current_sanity' not in data or not isinstance(data['current_sanity'], (int, float)):
+             return jsonify({'success': False, 'error': 'Missing or invalid "current_sanity"'}), 400
+
+        if 'history' not in data or not isinstance(data['history'], list):
+             return jsonify({'success': False, 'error': 'Missing or invalid "history"'}), 400
+        
+        if 'session_data' not in data or not isinstance(data['session_data'], dict):
+             return jsonify({'success': False, 'error': 'Missing or invalid "session_data"'}), 400
+
+        if 'user_stats' not in data or not isinstance(data['user_stats'], dict):
+             return jsonify({'success': False, 'error': 'Missing or invalid "user_stats"'}), 400
+        # --- End Validation ---
+
         # Get predictions from all models
         results = {}
         

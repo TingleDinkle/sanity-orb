@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface RestoreComponentsMenuProps {
   showStatusPanel: boolean;
@@ -31,7 +31,7 @@ const RestoreComponentsMenu: React.FC<RestoreComponentsMenuProps> = ({
   if (hiddenComponents.length === 0) return null;
 
   return (
-    <div className="absolute top-20 right-8 pointer-events-auto z-50">
+    <div className="absolute top-20 right-8 pointer-events-auto z-50" data-ui-element="true">
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/10 shadow-2xl">
         <div className="text-white/40 text-xs uppercase tracking-widest mb-3 font-light">
           Restore Components
@@ -55,4 +55,4 @@ const RestoreComponentsMenu: React.FC<RestoreComponentsMenuProps> = ({
   );
 };
 
-export default RestoreComponentsMenu;
+export default memo(RestoreComponentsMenu);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { getSanityLabel, getSanityDescription, getGradientColor } from '../../utils/sanityUtils';
 
 interface StatusPanelProps {
@@ -16,6 +16,7 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ sanity, onHide }) => {
         transform: 'translateX(-50%)',
         zIndex: 1000
       }}
+      data-ui-element="true"
     >
       <div className={`bg-gradient-to-br ${getGradientColor(sanity)} backdrop-blur-xl rounded-3xl px-10 py-5 border border-white/10 shadow-2xl transition-all duration-700 select-none relative group`}>
         <button
@@ -42,4 +43,4 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ sanity, onHide }) => {
   );
 };
 
-export default StatusPanel;
+export default memo(StatusPanel);

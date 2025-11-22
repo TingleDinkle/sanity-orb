@@ -14,7 +14,7 @@ class DatabaseStorage {
       });
 
       // Update user analytics asynchronously (don't wait)
-      this.updateUserAnalytics(data.userId || 'anonymous').catch(err =>
+      this.updateUserAnalytics(data.userId || 'anonymous', data.sanityLevel).catch(err =>
         console.error('Analytics update failed:', err)
       );
 
@@ -104,27 +104,25 @@ class DatabaseStorage {
   }
 
   // User Analytics
-  async updateUserAnalytics(userId) {
+  async updateUserAnalytics(userId, newSanityLevel) {
     try {
       const [analytics] = await UserAnalytics.findOrCreate({
         where: { userId },
-        defaults: { userId, sessionCount: 0 }
+        defaults: { userId, sessionCount: 0, avgSanityLevel: 0, lastActive: new Date() }
       });
 
-      // Update session count and average sanity
-      const userSessions = await Session.findAll({
-        where: { userId },
-        attributes: ['sanity_level']
-      });
+      const oldSessionCount = analytics.sessionCount || 0;
+      const oldAvgSanity = analytics.avgSanityLevel || 0;
 
-      const sessionCount = userSessions.length;
-      const avgSanityLevel = sessionCount > 0
-        ? userSessions.reduce((sum, s) => sum + s.sanity_level, 0) / sessionCount
-        : 0;
+      // Increment session count
+      const newSessionCount = oldSessionCount + 1;
+
+      // Calculate new average sanity level incrementally
+      const newAvgSanityLevel = ((oldAvgSanity * oldSessionCount) + newSanityLevel) / newSessionCount;
 
       await analytics.update({
-        sessionCount,
-        avgSanityLevel: Math.round(avgSanityLevel * 100) / 100,
+        sessionCount: newSessionCount,
+        avgSanityLevel: Math.round(newAvgSanityLevel * 100) / 100,
         lastActive: new Date()
       });
     } catch (error) {
@@ -202,14 +200,14 @@ class DatabaseStorage {
       const sessions = await Session.findAll({
         attributes: ['id', 'sanity_level', 'created_at'],
         order: [['created_at', 'DESC']],
-        limit: 50,
+        limit: limit,
         raw: true // Use raw results to avoid Sequelize instance issues
       });
 
       const snapshots = await Snapshot.findAll({
         attributes: ['id', 'sanity_level', 'timestamp'],
         order: [['timestamp', 'DESC']],
-        limit: 50,
+        limit: limit,
         raw: true
       });
 

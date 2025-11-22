@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, memo } from 'react';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
 
 interface ControlPanelProps {
@@ -146,4 +146,4 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ sanity, onSanityChange, isV
   );
 };
 
-export default ControlPanel;
+export default memo(ControlPanel);

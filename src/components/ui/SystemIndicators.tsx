@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface SystemIndicatorsProps {
   sanity: number;
@@ -21,9 +21,10 @@ const SystemIndicators: React.FC<SystemIndicatorsProps> = ({ sanity, onHide }) =
         bottom: '32px',
         zIndex: 1000
       }}
+      data-ui-element="true"
     >
     </div>
   );
 };
 
-export default SystemIndicators;
+export default memo(SystemIndicators);

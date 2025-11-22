@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import StatusPanel from './ui/StatusPanel';
 import CoherenceIndex from './ui/CoherenceIndex';
 import SystemIndicators from './ui/SystemIndicators';
@@ -28,6 +28,17 @@ const SanityOrb: React.FC = () => {
   const [isHelpVisible, setIsHelpVisible] = useState(false);
   const [shakeIntensity, setShakeIntensity] = useState(0);
   const [showDataAnalytics, setShowDataAnalytics] = useState(false);
+
+  // Memoized callbacks for UI components
+  const handleHideStatusPanel = useCallback(() => setShowStatusPanel(false), []);
+  const handleHideCoherenceIndex = useCallback(() => setShowCoherenceIndex(false), []);
+  const handleHideSystemIndicators = useCallback(() => setShowSystemIndicators(false), []);
+  const handleRestoreStatusPanel = useCallback(() => setShowStatusPanel(true), []);
+  const handleRestoreCoherenceIndex = useCallback(() => setShowCoherenceIndex(true), []);
+  const handleRestoreSystemIndicators = useCallback(() => setShowSystemIndicators(true), []);
+  const handleRestoreMicroUniverseIndicator = useCallback(() => setShowMicroUniverseIndicator(true), []);
+  const handleToggleControlPanel = useCallback(() => setIsControlPanelVisible(v => !v), []);
+  const handleSanityChange = useCallback((newSanity: number) => setSanity(newSanity), []);
 
   // Backend integration state
   const [isBackendConnected, setIsBackendConnected] = useState(false);
@@ -156,72 +167,35 @@ const SanityOrb: React.FC = () => {
 
 
 
-  // Fetch collective average periodically for AI-enhanced color averaging
+  // Fetch collective data periodically
   useEffect(() => {
     if (!isBackendConnected) return;
 
-    const fetchCollectiveAverage = async () => {
+    const fetchCollectiveData = async () => {
       try {
-        const response = await api.getCollectiveAverage(24);
-        if (response.success) {
-          setCollectiveAverage(response.data.average_sanity);
-        }
-      } catch (error) {
-        console.error('Failed to fetch collective average:', error);
-      }
-    };
-
-    fetchCollectiveAverage();
-    const interval = setInterval(fetchCollectiveAverage, 300000); // Every 5 minutes
-
-    return () => clearInterval(interval);
-  }, [isBackendConnected]);
-
-  // Real-time updates for collective data (polling every 30 seconds)
-  useEffect(() => {
-    if (!isBackendConnected) return;
-
-    const fetchRealTimeCollectiveData = async () => {
-      try {
-        console.log('Fetching real-time collective data...');
-        const response = await api.getCollectiveData(1000, 24); // Last 24 hours
+        // Use a reasonable timeframe, e.g., last 48 hours
+        const response = await api.getCollectiveData(1500, 48);
         if (response.success) {
           setCollectiveData(response.data);
-          console.log('Real-time collective data updated:', response.data.metadata.total_sessions + response.data.metadata.total_snapshots, 'total minds');
+          
+          // Also fetch the more lightweight average
+          const avgResponse = await api.getCollectiveAverage(24);
+          if (avgResponse.success) {
+            setCollectiveAverage(avgResponse.data.average_sanity);
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch real-time collective data:', error);
+        console.error('Failed to fetch collective data:', error);
       }
     };
 
     // Initial fetch
-    fetchRealTimeCollectiveData();
+    fetchCollectiveData(); 
 
-    // Poll every 30 seconds for real-time updates
-    const interval = setInterval(fetchRealTimeCollectiveData, 30000);
+    // Poll every 5 minutes
+    const interval = setInterval(fetchCollectiveData, 300000); 
 
     return () => clearInterval(interval);
-  }, [isBackendConnected]);
-
-  // Preload collective data for micro-universe (fetch once on mount)
-  useEffect(() => {
-    if (!isBackendConnected) return;
-
-    const preloadCollectiveData = async () => {
-      try {
-        console.log('Preloading collective data for micro-universe...');
-        // Use hoursBack=9999 to get ALL data (not just recent)
-        const response = await api.getCollectiveData(1000, 9999);
-        if (response.success) {
-          console.log('Collective data preloaded:', response.data);
-          setCollectiveData(response.data);
-        }
-      } catch (error) {
-        console.error('Failed to preload collective data:', error);
-      }
-    };
-
-    preloadCollectiveData();
   }, [isBackendConnected]);
 
   // Save session when user changes sanity significantly
@@ -402,21 +376,21 @@ const SanityOrb: React.FC = () => {
         {showStatusPanel && (
           <StatusPanel 
             sanity={sanity} 
-            onHide={() => setShowStatusPanel(false)}
+            onHide={handleHideStatusPanel}
           />
         )}
         
         {showCoherenceIndex && (
           <CoherenceIndex 
             sanity={sanity}
-            onHide={() => setShowCoherenceIndex(false)}
+            onHide={handleHideCoherenceIndex}
           />
         )}
         
         {showSystemIndicators && (
           <SystemIndicators 
             sanity={sanity}
-            onHide={() => setShowSystemIndicators(false)}
+            onHide={handleHideSystemIndicators}
           />
         )}
         
@@ -425,17 +399,17 @@ const SanityOrb: React.FC = () => {
           showCoherenceIndex={showCoherenceIndex}
           showSystemIndicators={showSystemIndicators}
           showMicroUniverseIndicator={showMicroUniverseIndicator}
-          onRestoreStatusPanel={() => setShowStatusPanel(true)}
-          onRestoreCoherenceIndex={() => setShowCoherenceIndex(true)}
-          onRestoreSystemIndicators={() => setShowSystemIndicators(true)}
-          onRestoreMicroUniverseIndicator={() => setShowMicroUniverseIndicator(true)}
+          onRestoreStatusPanel={handleRestoreStatusPanel}
+          onRestoreCoherenceIndex={handleRestoreCoherenceIndex}
+          onRestoreSystemIndicators={handleRestoreSystemIndicators}
+          onRestoreMicroUniverseIndicator={handleRestoreMicroUniverseIndicator}
         />
         
         <ControlPanel 
           sanity={sanity} 
-          onSanityChange={setSanity}
+          onSanityChange={handleSanityChange}
           isVisible={isControlPanelVisible}
-          onToggleVisibility={() => setIsControlPanelVisible(!isControlPanelVisible)}
+          onToggleVisibility={handleToggleControlPanel}
         />
         
         {/* Funny messages only show in warning range (25-50) */}
