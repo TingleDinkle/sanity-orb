@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, memo } from 'react';
+import React, { memo } from 'react';
 import { useStore } from '../../store/store';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
 
@@ -7,19 +7,6 @@ const ControlPanel: React.FC = () => {
   const setSanity = useStore(state => state.setSanity);
   const isVisible = useStore(state => state.isControlPanelVisible);
   const toggleVisibility = useStore(state => state.toggleControlPanel);
-
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Debounced sanity change to prevent excessive updates during slider dragging
-  const debouncedSanityChange = useCallback((value: number) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      setSanity(value);
-    }, 16); // ~60fps debounce
-  }, [setSanity]);
 
   if (!isVisible) {
     return (
@@ -80,25 +67,52 @@ const ControlPanel: React.FC = () => {
             min="0"
             max="100"
             value={sanity}
-            onChange={(e) => debouncedSanityChange(Number(e.target.value))}
-            className="w-full h-3 bg-transparent appearance-none cursor-pointer relative z-10"
+            onChange={(e) => setSanity(Number(e.target.value))}
+            className="w-full h-4 bg-transparent appearance-none cursor-pointer rounded-full slider-thumb-white"
             style={{
-              background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)',
-              borderRadius: '9999px'
+              background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)'
             }}
           />
-          {/* Enhanced visual indicator */}
-          <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none">
-            <div 
-              className="w-1 h-8 bg-white/60 rounded-full transition-all duration-200"
-              style={{ 
-                left: `${sanity}%`,
-                transform: 'translateX(-50%)',
-                boxShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
-              }}
-            />
-          </div>
         </div>
+
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            .slider-thumb-white::-webkit-slider-thumb {
+              appearance: none;
+              height: 24px;
+              width: 24px;
+              border-radius: 50%;
+              background: white;
+              border: 2px solid rgba(255, 255, 255, 0.5);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
+              cursor: pointer;
+              transition: all 0.2s ease;
+            }
+            .slider-thumb-white::-webkit-slider-thumb:hover {
+              transform: scale(1.05);
+            }
+            .slider-thumb-white::-moz-range-thumb {
+              height: 24px;
+              width: 24px;
+              border-radius: 50%;
+              background: white;
+              border: 2px solid rgba(255, 255, 255, 0.5);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
+              cursor: pointer;
+              transition: all 0.2s ease;
+            }
+            .slider-thumb-white::-ms-thumb {
+              height: 24px;
+              width: 24px;
+              border-radius: 50%;
+              background: white;
+              border: 2px solid rgba(255, 255, 255, 0.5);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
+              cursor: pointer;
+              transition: all 0.2s ease;
+            }
+          `
+        }} />
         
         <div className="flex justify-between text-xs text-white/40 tracking-wider">
           <div className="flex flex-col items-start">
