@@ -4,11 +4,9 @@ import { useStore } from '../../store/store';
 import { api } from "../../services/api";
 
 const DataAnalyticsPanel = () => {
-  const { isVisible, onClose, currentSanity } = useStore(state => ({
-    isVisible: state.showDataAnalytics,
-    onClose: state.toggleDataAnalytics,
-    currentSanity: state.sanity,
-  }));
+  const isVisible = useStore(state => state.showDataAnalytics);
+  const onClose = useStore(state => state.toggleDataAnalytics);
+  const currentSanity = useStore(state => state.sanity);
 
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);

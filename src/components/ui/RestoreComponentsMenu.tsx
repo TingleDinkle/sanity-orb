@@ -1,33 +1,36 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { useStore } from '../../store/store';
 
 const RestoreComponentsMenu: React.FC = () => {
-  const {
+  const showStatusPanel = useStore(state => state.showStatusPanel);
+  const showCoherenceIndex = useStore(state => state.showCoherenceIndex);
+  const showSystemIndicators = useStore(state => state.showSystemIndicators);
+  const showMicroUniverseIndicator = useStore(state => state.showMicroUniverseIndicator);
+  const setShowStatusPanel = useStore(state => state.setShowStatusPanel);
+  const setShowCoherenceIndex = useStore(state => state.setShowCoherenceIndex);
+  const setShowSystemIndicators = useStore(state => state.setShowSystemIndicators);
+  const setShowMicroUniverseIndicator = useStore(state => state.setShowMicroUniverseIndicator);
+
+  const onRestoreStatusPanel = useCallback(() => setShowStatusPanel(true), [setShowStatusPanel]);
+  const onRestoreCoherenceIndex = useCallback(() => setShowCoherenceIndex(true), [setShowCoherenceIndex]);
+  const onRestoreSystemIndicators = useCallback(() => setShowSystemIndicators(true), [setShowSystemIndicators]);
+  const onRestoreMicroUniverseIndicator = useCallback(() => setShowMicroUniverseIndicator(true), [setShowMicroUniverseIndicator]);
+
+  const hiddenComponents = useMemo(() => [
+    { name: 'Status Panel', shown: showStatusPanel, restore: onRestoreStatusPanel },
+    { name: 'Coherence Index', shown: showCoherenceIndex, restore: onRestoreCoherenceIndex },
+    { name: 'System Indicators', shown: showSystemIndicators, restore: onRestoreSystemIndicators },
+    { name: 'Micro-Universe Indicator', shown: showMicroUniverseIndicator, restore: onRestoreMicroUniverseIndicator },
+  ].filter(component => !component.shown), [
     showStatusPanel,
     showCoherenceIndex,
     showSystemIndicators,
     showMicroUniverseIndicator,
-    setShowStatusPanel,
-    setShowCoherenceIndex,
-    setShowSystemIndicators,
-    setShowMicroUniverseIndicator,
-  } = useStore(state => ({
-    showStatusPanel: state.showStatusPanel,
-    showCoherenceIndex: state.showCoherenceIndex,
-    showSystemIndicators: state.showSystemIndicators,
-    showMicroUniverseIndicator: state.showMicroUniverseIndicator,
-    setShowStatusPanel: state.setShowStatusPanel,
-    setShowCoherenceIndex: state.setShowCoherenceIndex,
-    setShowSystemIndicators: state.setShowSystemIndicators,
-    setShowMicroUniverseIndicator: state.setShowMicroUniverseIndicator,
-  }));
-
-  const hiddenComponents = [
-    { name: 'Status Panel', shown: showStatusPanel, restore: () => setShowStatusPanel(true) },
-    { name: 'Coherence Index', shown: showCoherenceIndex, restore: () => setShowCoherenceIndex(true) },
-    { name: 'System Indicators', shown: showSystemIndicators, restore: () => setShowSystemIndicators(true) },
-    { name: 'Micro-Universe Indicator', shown: showMicroUniverseIndicator, restore: () => setShowMicroUniverseIndicator(true) },
-  ].filter(component => !component.shown);
+    onRestoreStatusPanel,
+    onRestoreCoherenceIndex,
+    onRestoreSystemIndicators,
+    onRestoreMicroUniverseIndicator,
+  ]);
 
   if (hiddenComponents.length === 0) return null;
 

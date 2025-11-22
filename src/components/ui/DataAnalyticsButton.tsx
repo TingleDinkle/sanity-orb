@@ -2,10 +2,8 @@ import React from 'react';
 import { useStore } from '../../store/store';
 
 const DataAnalyticsButton: React.FC = () => {
-  const { isConnected, toggleDataAnalytics } = useStore(state => ({
-    isConnected: state.isBackendConnected,
-    toggleDataAnalytics: state.toggleDataAnalytics,
-  }));
+  const isConnected = useStore(state => state.isBackendConnected);
+  const toggleDataAnalytics = useStore(state => state.toggleDataAnalytics);
 
   return (
     <div className="absolute bottom-8 right-8 pointer-events-auto z-50">

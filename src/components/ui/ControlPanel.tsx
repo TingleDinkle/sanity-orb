@@ -3,12 +3,10 @@ import { useStore } from '../../store/store';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
 
 const ControlPanel: React.FC = () => {
-  const { sanity, setSanity, isVisible, toggleVisibility } = useStore(state => ({
-    sanity: state.sanity,
-    setSanity: state.setSanity,
-    isVisible: state.isControlPanelVisible,
-    toggleVisibility: state.toggleControlPanel,
-  }));
+  const sanity = useStore(state => state.sanity);
+  const setSanity = useStore(state => state.setSanity);
+  const isVisible = useStore(state => state.isControlPanelVisible);
+  const toggleVisibility = useStore(state => state.toggleControlPanel);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

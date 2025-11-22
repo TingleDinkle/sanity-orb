@@ -18,17 +18,24 @@ const DataAnalyticsPanel = lazy(() => import('./ui/DataAnalyticsPanel'));
 
 const SanityOrb: React.FC = () => {
   // Select state and actions from the Zustand store
-  const {
-    sanity, setSanity,
-    isBackendConnected, setIsBackendConnected,
-    isHelpVisible, setHelpVisible,
-    shakeIntensity, setShakeIntensity,
-    cameraAngles, setCameraAngles,
-    isInMicroUniverse, setIsInMicroUniverse,
-    collectiveData, setCollectiveData,
-    collectiveAverage, setCollectiveAverage,
-    audioInitialized, setAudioInitialized,
-  } = useStore();
+  const sanity = useStore(state => state.sanity);
+  const setSanity = useStore(state => state.setSanity);
+  const isBackendConnected = useStore(state => state.isBackendConnected);
+  const setIsBackendConnected = useStore(state => state.setIsBackendConnected);
+  const isHelpVisible = useStore(state => state.isHelpVisible);
+  const setHelpVisible = useStore(state => state.setHelpVisible);
+  const shakeIntensity = useStore(state => state.shakeIntensity);
+  const setShakeIntensity = useStore(state => state.setShakeIntensity);
+  const cameraAngles = useStore(state => state.cameraAngles);
+  const setCameraAngles = useStore(state => state.setCameraAngles);
+  const isInMicroUniverse = useStore(state => state.isInMicroUniverse);
+  const setIsInMicroUniverse = useStore(state => state.setIsInMicroUniverse);
+  const collectiveData = useStore(state => state.collectiveData);
+  const setCollectiveData = useStore(state => state.setCollectiveData);
+  const collectiveAverage = useStore(state => state.collectiveAverage);
+  const setCollectiveAverage = useStore(state => state.setCollectiveAverage);
+  const audioInitialized = useStore(state => state.audioInitialized);
+  const setAudioInitialized = useStore(state => state.setAudioInitialized);
   
   const isControlPanelVisible = useStore(state => state.isControlPanelVisible);
   const showStatusPanel = useStore(state => state.showStatusPanel);
