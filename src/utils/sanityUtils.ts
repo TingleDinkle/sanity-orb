@@ -78,10 +78,10 @@ export const checkWebGLSupport = (): boolean => {
 // Mind Assembly Animation Utilities
 export const createNeuralNodes = (count: number, scene: THREE.Scene): THREE.Mesh[] => {
   const nodes: THREE.Mesh[] = [];
-  
+
   for (let i = 0; i < count; i++) {
     const geometry = new THREE.SphereGeometry(0.04, 16, 16);
-    const material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: new THREE.Color(0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1.0),
       transparent: true,
       opacity: 0,
@@ -150,7 +150,7 @@ export const createConnection = (node1: THREE.Mesh, node2: THREE.Mesh, color: TH
 
 export const createMindCore = (scene: THREE.Scene): THREE.Mesh => {
   const coreGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-  const coreMaterial = new THREE.MeshBasicMaterial({
+  const coreMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color(0.4, 0.7, 1.0),
     transparent: true,
     opacity: 0,
