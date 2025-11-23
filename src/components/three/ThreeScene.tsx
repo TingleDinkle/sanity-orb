@@ -109,6 +109,14 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
       mountElement.appendChild(renderer.domElement);
       rendererRef.current = renderer;
 
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 4.0;
+      controls.maxDistance = 50.0;
+      controls.autoRotate = false;
+      controlsRef.current = controls;
+
       // Create star fields
       const starFields = STAR_FIELD_CONFIGS.map(config => {
         const geometry = new THREE.BufferGeometry();
