@@ -26,8 +26,6 @@ const SanityOrb: React.FC = () => {
   const setHelpVisible = useStore(state => state.setHelpVisible);
   const shakeIntensity = useStore(state => state.shakeIntensity);
   const setShakeIntensity = useStore(state => state.setShakeIntensity);
-  const cameraAngles = useStore(state => state.cameraAngles);
-  const setCameraAngles = useStore(state => state.setCameraAngles);
   const isInMicroUniverse = useStore(state => state.isInMicroUniverse);
   const setIsInMicroUniverse = useStore(state => state.setIsInMicroUniverse);
   const collectiveData = useStore(state => state.collectiveData);
@@ -193,68 +191,6 @@ const SanityOrb: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [sanity, isBackendConnected]);
 
-  // Simple smooth camera controls
-  useEffect(() => {
-    let isMouseDown = false;
-    let lastMousePos = { x: 0, y: 0 };
-
-    const handleMouseDown = (event: MouseEvent) => {
-      if (isHelpVisible || (event.target as HTMLElement)?.closest('[data-ui-element]')) {
-        return;
-      }
-      isMouseDown = true;
-      lastMousePos = { x: event.clientX, y: event.clientY };
-    };
-
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!isMouseDown) return;
-
-      const deltaX = event.clientX - lastMousePos.x;
-      const deltaY = event.clientY - lastMousePos.y;
-      const azimuthSensitivity = 0.003;
-      const elevationSensitivity = 0.002;
-
-      setCameraAngles(prev => ({
-        azimuth: prev.azimuth + deltaX * azimuthSensitivity,
-        elevation: Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, prev.elevation + deltaY * elevationSensitivity)),
-        distance: prev.distance
-      }));
-
-      lastMousePos = { x: event.clientX, y: event.clientY };
-    };
-
-    const handleMouseUp = () => {
-      isMouseDown = false;
-    };
-
-    const handleWheel = (event: WheelEvent) => {
-      if (isHelpVisible) return;
-      event.preventDefault();
-
-      setCameraAngles(prev => ({
-        ...prev,
-        distance: Math.max(2, Math.min(15, prev.distance + event.deltaY * 0.005))
-      }));
-    };
-
-    const container = document.querySelector('.sanity-orb-container') as HTMLElement;
-    if (container) {
-      container.addEventListener('mousedown', handleMouseDown);
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      container.addEventListener('wheel', handleWheel, { passive: false });
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('mousedown', handleMouseDown);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-        container.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, [isHelpVisible, setCameraAngles]);
-
   // Keyboard shortcuts
   useEffect(() => {
     const toggleControlPanel = useStore.getState().toggleControlPanel;
@@ -290,7 +226,7 @@ const SanityOrb: React.FC = () => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isHelpVisible, setSanity]);
-  
+
   return (
     <div
       className="sanity-orb-container relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950"
@@ -311,12 +247,11 @@ const SanityOrb: React.FC = () => {
         />
       )}
       
-      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`}>
+      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm scale-[0.98]' : ''}`} style={{ zIndex: 0 }}>
         <Suspense fallback={<div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950" />}>
           <ThreeScene
             sanity={sanity}
             isControlPanelVisible={isControlPanelVisible}
-            cameraAngles={cameraAngles}
             collectiveData={collectiveData}
             collectiveAverage={collectiveAverage}
             onZoomIn={handleZoomIn}
@@ -332,7 +267,7 @@ const SanityOrb: React.FC = () => {
         }} 
       />
 
-      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm opacity-0 pointer-events-none' : ''}`}>
+      <div className={`absolute inset-0 transition-all duration-300 ${isHelpVisible ? 'blur-sm opacity-0 pointer-events-none' : 'pointer-events-none'}`}>
         {showStatusPanel && <StatusPanel />}
         {showCoherenceIndex && <CoherenceIndex />}
         {showSystemIndicators && <SystemIndicators />}

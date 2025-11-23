@@ -24,18 +24,13 @@ import { CollectiveData } from '../../services/api';
 interface ThreeSceneProps {
   sanity: number;
   isControlPanelVisible: boolean;
-  cameraAngles?: {
-    azimuth: number;
-    elevation: number;
-    distance: number;
-  };
   collectiveData?: CollectiveData | null;
   collectiveAverage?: number | null;
   onZoomIn?: () => void; // Callback when user zooms into micro-universe
   onZoomOut?: () => void; // Callback when user zooms out to macro view
 }
 
-const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiveData, collectiveAverage, onZoomIn, onZoomOut }) => {
+const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collectiveAverage, onZoomIn, onZoomOut }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -113,10 +108,22 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.minDistance = 4.0;
-      controls.maxDistance = 50.0;
+      controls.minDistance = 2.5;
+      controls.maxDistance = 100.0;
       controls.autoRotate = false;
+      controls.enablePan = true;
+      controls.screenSpacePanning = true;
       controlsRef.current = controls;
+
+      controls.addEventListener('start', () => {
+        console.log('OrbitControls: start');
+      });
+      controls.addEventListener('end', () => {
+        console.log('OrbitControls: end');
+      });
+      controls.addEventListener('change', () => {
+        console.log('OrbitControls: change');
+      });
 
       // Create star fields
       const starFields = STAR_FIELD_CONFIGS.map(config => {
@@ -755,6 +762,10 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
       const animate = (currentTime: number) => {
         animationId = requestAnimationFrame(animate);
 
+        if (controlsRef.current) {
+          controlsRef.current.update();
+        }
+
         const delta = clockRef.current.getDelta();
         if (mixerRef.current) {
           mixerRef.current.update(delta);
@@ -1246,7 +1257,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
 
     // Check LOD level initially and when camera angles change significantly
     checkLodLevel();
-  }, [cameraAngles, onZoomIn, onZoomOut, lodLevel]);
+  }, [onZoomIn, onZoomOut, lodLevel]);
 
   // Update MicroUniverse data when collectiveData changes
   useEffect(() => {
@@ -1296,7 +1307,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
     );
   }
 
-  return <div ref={mountRef} className="absolute inset-0" />;
+  return <div ref={mountRef} className="absolute inset-0" style={{ pointerEvents: 'auto' }} />;
 };
 
 export default ThreeScene;
