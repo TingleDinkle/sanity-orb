@@ -113,17 +113,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       controls.autoRotate = false;
       controls.enablePan = true;
       controls.screenSpacePanning = true;
+      controls.target.set(0, 0, 0);
       controlsRef.current = controls;
-
-      controls.addEventListener('start', () => {
-        console.log('OrbitControls: start');
-      });
-      controls.addEventListener('end', () => {
-        console.log('OrbitControls: end');
-      });
-      controls.addEventListener('change', () => {
-        console.log('OrbitControls: change');
-      });
 
       // Create star fields
       const starFields = STAR_FIELD_CONFIGS.map(config => {
@@ -719,6 +710,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       const loader = new GLTFLoader();
       loader.load('/models/containment_ring.glb', (gltf) => {
         containmentRef.current = gltf.scene;
+        containmentRef.current.position.set(0, 0, 0);
 
         gltf.scene.traverse((child) => {
           console.log(child.name);
@@ -762,13 +754,12 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       const animate = (currentTime: number) => {
         animationId = requestAnimationFrame(animate);
 
-        if (controlsRef.current) {
-          controlsRef.current.update();
-        }
-
         const delta = clockRef.current.getDelta();
         if (mixerRef.current) {
           mixerRef.current.update(delta);
+        }
+        if (controlsRef.current) {
+          controlsRef.current.update(delta);
         }
 
         const deltaTime = (currentTime - lastTime) * 0.001; // Convert to seconds
@@ -1006,12 +997,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
         }
         
         if (containmentRef.current) {
-          containmentRef.current.rotation.z += 0.0005; // Gyroscopic effect
+          const chaos = 1 - sanityRef.current / 100;
+          const rotationSpeed = 0.0001 + chaos * 0.0049;
+          containmentRef.current.rotation.z += rotationSpeed; // Gyroscopic effect
+
+          const t = timeRef.current;
           containmentRef.current.traverse((child) => {
             if (child instanceof THREE.Mesh && child.visible) {
               const material = child.material as THREE.MeshStandardMaterial;
               if (material.emissive) {
-                material.emissive.lerp(targetColorRef.current, 0.05);
+                  material.emissive.copy(targetColorRef.current); // Direct copy for instant response
+                  // Pulse intensity
+                  material.emissiveIntensity = 1.5 + (Math.sin(t * 2.5) * 0.5 * chaos);
               }
             }
           });
