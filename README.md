@@ -38,7 +38,7 @@ The orb represents the internet's collective mental state, and through your inte
 
 ## Overview
 
-The Internet Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by an Interstellar-style volumetric Dyson sphere, a swarm of sophisticated mega drones, energy harvesting particle streams, particle systems, star fields, and dynamic lighting effects that respond to user input in real-time. Experience the internet's digital consciousness through this mesmerizing visualization with immersive audio soundscapes, screen shake effects during critical states, and humorous Minecraft-style pop-up messages during unstable periods.
+The Internet Sanity Orb is a WebGL-powered interactive experience that combines advanced 3D graphics with smooth user interactions. The application features a beautiful animated orb surrounded by an Interstellar-style volumetric Dyson sphere, rotating triplet Dyson Rings, energy harvesting particle streams, particle systems, star fields, and dynamic lighting effects that respond to user input in real-time. Experience the internet's digital consciousness through this mesmerizing visualization with immersive audio soundscapes, screen shake effects during critical states, and humorous Minecraft-style pop-up messages during unstable periods.
 
 ## Technologies Used
 
