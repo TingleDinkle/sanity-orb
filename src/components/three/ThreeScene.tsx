@@ -79,6 +79,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
     try {
       const mountElement = mountRef.current;
       const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#000005'); // FIX: Set dark background
       sceneRef.current = scene;
       
       const camera = new THREE.PerspectiveCamera(
@@ -213,7 +214,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
       particlesRef.current = particles;
 
       // Add lights
-      const ambientLight = new THREE.AmbientLight(0x222244, 0.4);
+      const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // FIX: Adjusted lighting
       scene.add(ambientLight);
 
       const keyLight = new THREE.PointLight(0x00ff00, 1.5, 20);
@@ -704,15 +705,21 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
           console.log(child.name);
           if (child instanceof THREE.Mesh) {
             const name = child.name.toLowerCase();
+            const material = child.material as THREE.MeshStandardMaterial;
+            
             if (name.includes('sun') || name.includes('sphere') || name.includes('core') || name.includes('center')) {
               child.visible = false;
             } else {
-              const material = child.material as THREE.MeshStandardMaterial;
-              material.emissive = getSanityColor(sanity);
-              material.emissiveIntensity = 1.0;
-              material.transparent = true;
-              material.metalness = 0.1;
+              // Preserve the original texture
+              const oldMap = material.map;
+              
+              // Apply new PBR settings
+              material.map = oldMap;
+              material.metalness = 0.0;
               material.roughness = 0.8;
+              material.emissive = getSanityColor(sanity);
+              material.emissiveIntensity = 1.5;
+              material.transparent = true;
             }
           }
         });
