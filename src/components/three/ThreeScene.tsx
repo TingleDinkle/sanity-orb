@@ -722,7 +722,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
               const oldMat = child.material as THREE.MeshStandardMaterial;
               const newMat = new THREE.MeshStandardMaterial({
                   map: oldMat.map, // Preserve the original texture
-                  color: 0xffffff, // Ensure base color is white (neutral)
+                  color: new THREE.Color(0x000000), // Ensure base color is white (neutral)
                   metalness: 0.1,  // Low metalness to show texture
                   roughness: 0.8,  // High roughness to avoid weird reflections
                   emissive: getSanityColor(sanity),
