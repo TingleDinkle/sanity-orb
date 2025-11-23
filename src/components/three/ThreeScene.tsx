@@ -80,6 +80,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
 
     try {
       const mountElement = mountRef.current;
+      mountElement.style.pointerEvents = 'auto';
       mountElement.style.background = '#000005'; // FIX: Force dark background
       const scene = new THREE.Scene();
       scene.background = new THREE.Color('#000005');
@@ -721,12 +722,13 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
             } else {
               const oldMat = child.material as THREE.MeshStandardMaterial;
               const newMat = new THREE.MeshStandardMaterial({
-                  map: oldMat.map, // Preserve the original texture
-                  color: new THREE.Color(0x000000), // Ensure base color is white (neutral)
-                  metalness: 0.1,  // Low metalness to show texture
-                  roughness: 0.8,  // High roughness to avoid weird reflections
+                  map: oldMat.map,
+                  emissiveMap: oldMat.map,
+                  color: new THREE.Color(0x000000),
+                  metalness: 0.5,
+                  roughness: 0.5,
                   emissive: getSanityColor(sanity),
-                  emissiveIntensity: 0.5, // Subtle glow, don't wash out texture
+                  emissiveIntensity: 2.0,
                   transparent: true,
                   opacity: 1.0
               });
