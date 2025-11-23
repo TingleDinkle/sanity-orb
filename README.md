@@ -18,6 +18,7 @@
 ![Pandas](https://img.shields.io/badge/Pandas-2.1.1-150458?style=for-the-badge&logo=pandas&logoColor=white)
 ![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3.1-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
+![Zustand](https://img.shields.io/badge/Zustand-5.0.8-0CA5E9?style=for-the-badge&logo=zustand&logoColor=white)
 
 A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb surrounded by an advanced civilization's energy harvesting megastructure. Watch as the orb's colors, particles, Dyson sphere, and orbiting drone swarm dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
@@ -46,6 +47,7 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **TypeScript 5.9.3** - Type-safe development with interfaces and type definitions
 - **Vite 7.1.7** - Fast build tool and development server with hot module replacement
 - **Recharts 3.3.0** - Composable charting library for React
+- **Zustand 5.0.8** - Lightweight state management for React
 
 ### 3D Graphics & WebGL
 - **Three.js 0.180.0** - 3D graphics library for WebGL rendering
@@ -75,6 +77,9 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Redis (ioredis ^5.4.1)** - In-memory data store for caching and rate limiting
 - **bcrypt 5.1.1** - Password hashing function
 - **dotenv 16.3.1** - Environment variable management
+- **express-slow-down 2.0.3** - Progressive rate limiting middleware
+- **express-validator 7.3.0** - Comprehensive input validation middleware
+- **node-fetch 3.3.2** - HTTP client for Node.js
 
 ### Machine Learning & AI
 - **Python 3.8+** - Programming language for ML infrastructure
@@ -103,7 +108,7 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 ### 3D Visual Effects
 - **Animated Orb** - Procedurally animated sphere with noise-based surface distortion
 - **Advanced Volumetric Dyson Sphere** - Multi-layered Interstellar-style energy harvesting megastructure with volumetric shaders, realistic energy streams, and cinematic rim lighting
-- **Mega Drone Swarm** - 16 sophisticated mechanical drones orbiting the Dyson sphere with detailed textures, thruster glows, sensor arrays, and dynamic orbital mechanics
+- **Containment Rings** - Massive megastructure containment rings encircling the Dyson sphere with detailed 3D models, energy conduits, and dynamic illumination based on sanity state
 - **Energy Harvesting System** - Realistic particle streams flowing from the sanity orb to the Dyson sphere, with coherent beam formations and dynamic intensity based on sanity state
 - **Particle System** - 120 orbiting particles with dynamic movement and color changes
 - **Star Field** - Multiple layers of animated background stars
@@ -212,7 +217,7 @@ ml-model/
 ### One-Command Setup (Recommended)
 ```bash
 # Clone and setup everything automatically
-git clone <repository-url>
+git clone https://github.com/TingleDinkle/sanity-orb.git
 cd sanity-orb
 
 # Install all dependencies
@@ -445,6 +450,10 @@ Please credit the original author, **Jesse Dao**, when redistributing or modifyi
 
 ## Acknowledgments
 
+### 3D Models
+- **"Dyson sphere of Techno-Technos civilization"** by SebastianSosnowski (available at https://skfb.ly/o7XGK) is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
+### Libraries and Frameworks
 - **Three.js Community** - For the excellent 3D graphics library
 - **React Team** - For the powerful frontend framework
 - **Tailwind CSS** - For the utility-first CSS framework
