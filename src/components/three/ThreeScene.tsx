@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { checkWebGLSupport, getSanityColor } from '../../utils/sanityUtils';
 import { STAR_FIELD_CONFIGS, CAMERA_DISTANCE } from '../../constants/sanityConstants';
 import { 
@@ -39,6 +40,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
   const sceneRef = useRef<THREE.Scene | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
   const orbRef = useRef<THREE.Mesh | null>(null);
   const glowRef = useRef<THREE.Mesh | null>(null);
   const particlesRef = useRef<THREE.Mesh[]>([]);
@@ -1188,21 +1190,8 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
     }
   }, [sanity, collectiveAverage, lodLevel]);
 
-  // Update camera position based on cameraAngles prop
-  useEffect(() => {
-    if (cameraRef.current && cameraAngles) {
-      const camera = cameraRef.current;
+  // REMOVED cameraAngles useEffect to allow OrbitControls to work
 
-      // Convert spherical coordinates to Cartesian (matching original camera.position.z = 6)
-      // azimuth: horizontal rotation, elevation: vertical angle from horizontal plane
-      const x = cameraAngles.distance * Math.sin(cameraAngles.azimuth) * Math.cos(cameraAngles.elevation);
-      const y = cameraAngles.distance * Math.sin(cameraAngles.elevation);
-      const z = cameraAngles.distance * Math.cos(cameraAngles.azimuth) * Math.cos(cameraAngles.elevation);
-
-      camera.position.set(x, y, z);
-      camera.lookAt(0, 0, 0);
-    }
-  }, [cameraAngles]);
 
   // Control panel visibility should NOT affect camera or orb - removed problematic effect
 
