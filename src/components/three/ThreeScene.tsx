@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { checkWebGLSupport, getSanityColor } from '../../utils/sanityUtils';
 import { STAR_FIELD_CONFIGS, CAMERA_DISTANCE } from '../../constants/sanityConstants';
 import { 
@@ -52,6 +53,12 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
   const sanityRef = useRef(sanity);
   const targetColorRef = useRef(getSanityColor(sanity));
   const [error, setError] = useState<string | null>(null);
+
+  // New refs for the containment ring
+  const containmentRef = useRef<THREE.Group | null>(null);
+  const mixerRef = useRef<THREE.AnimationMixer | null>(null);
+  const clockRef = useRef(new THREE.Clock()); // Use a dedicated clock for the mixer
+
 
   // LOD (Level of Detail) state
   const [lodLevel, setLodLevel] = useState<'macro' | 'transition' | 'micro'>('macro');
@@ -688,11 +695,50 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
         sphereAdded: true
       });
 
+      // Load Techno Containment Ring
+      const loader = new GLTFLoader();
+      loader.load('/models/containment_ring.glb', (gltf) => {
+        containmentRef.current = gltf.scene;
+
+        gltf.scene.traverse((child) => {
+          console.log(child.name);
+          if (child instanceof THREE.Mesh) {
+            const name = child.name.toLowerCase();
+            if (name.includes('sun') || name.includes('sphere') || name.includes('core') || name.includes('center')) {
+              child.visible = false;
+            } else {
+              const material = child.material as THREE.MeshStandardMaterial;
+              material.emissive = getSanityColor(sanity);
+              material.emissiveIntensity = 1.0;
+              material.transparent = true;
+              material.metalness = 0.1;
+              material.roughness = 0.8;
+            }
+          }
+        });
+
+        gltf.scene.scale.set(12, 12, 12);
+        scene.add(gltf.scene);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixerRef.current = new THREE.AnimationMixer(gltf.scene);
+          gltf.animations.forEach((clip) => {
+            mixerRef.current!.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity).play();
+          });
+        }
+      });
+
+
       // Animation loop - optimized for performance
       let animationId: number;
       let lastTime = 0;
       const animate = (currentTime: number) => {
         animationId = requestAnimationFrame(animate);
+
+        const delta = clockRef.current.getDelta();
+        if (mixerRef.current) {
+          mixerRef.current.update(delta);
+        }
 
         const deltaTime = (currentTime - lastTime) * 0.001; // Convert to seconds
         lastTime = currentTime;
@@ -927,6 +973,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
             }
           });
         }
+        
+        if (containmentRef.current) {
+          containmentRef.current.rotation.z += 0.0005; // Gyroscopic effect
+          containmentRef.current.traverse((child) => {
+            if (child instanceof THREE.Mesh && child.visible) {
+              const material = child.material as THREE.MeshStandardMaterial;
+              if (material.emissive) {
+                material.emissive.lerp(targetColorRef.current, 0.05);
+              }
+            }
+          });
+        }
 
         renderer.render(scene, camera);
       };
@@ -949,6 +1007,25 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, cameraAngles, collectiv
           mountElement.removeChild(renderer.domElement);
         }
         
+        // Cleanup containment ring
+        if (containmentRef.current && sceneRef.current) {
+          sceneRef.current.remove(containmentRef.current);
+          containmentRef.current.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              const material = child.material as THREE.Material | THREE.Material[];
+              if (Array.isArray(material)) {
+                material.forEach((mat) => mat.dispose());
+              } else {
+                material.dispose();
+              }
+            }
+          });
+        }
+        if (mixerRef.current) {
+          mixerRef.current.stopAllAction();
+        }
+
         orbGeometry.dispose();
         if (Array.isArray(orbMaterial)) {
           orbMaterial.forEach(m => m.dispose());
