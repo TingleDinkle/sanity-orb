@@ -12,6 +12,10 @@ import { testConnection } from './config/database.js';
 dotenv.config();
 
 const app = express();
+
+// Trust proxy for proper IP detection behind reverse proxy
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 3001;
 const ML_API_URL = process.env.ML_API_URL || 'http://localhost:5001/api';
 
@@ -96,6 +100,17 @@ const strictLimiter = rateLimit({
 import redisClient, { testRedisConnection } from './config/redis.js';
 
 // Request fingerprinting middleware (Redis-based)
+const whitelistedEndpoints = [
+  '/api/health',
+  '/api/mood/current',
+  '/api/collective/data',
+  '/api/v2/data/sync',
+  '/api/internal/metrics',
+  '/api/collective/average',
+  '/api/stats/global',
+  '/api/ml/health'
+];
+
 const requestFingerprinting = async (req, res, next) => {
   const clientIP = req.ip || req.connection.remoteAddress;
   const userAgent = req.get('User-Agent') || '';
@@ -152,33 +167,33 @@ const requestFingerprinting = async (req, res, next) => {
     return next(); // Fail open
   }
 
-  // Detect suspicious patterns
-  let isSuspicious = false;
-  let reason = '';
+  // Skip suspicious pattern detection for whitelisted endpoints (auto-polled by frontend or health checks)
+  if (!whitelistedEndpoints.includes(req.path)) {
+    // Detect suspicious patterns
+    let isSuspicious = false;
+    let reason = '';
 
-  if (recentRequestsCount > 45) { // Stricter limit
-    isSuspicious = true;
-    reason = 'Too many requests per minute';
-  }
-  
-  const uniqueUserAgents = clientData.userAgents ? JSON.parse(clientData.userAgents) : [];
-  if (!uniqueUserAgents.includes(userAgent)) {
-    uniqueUserAgents.push(userAgent);
-    await redisClient.hset(clientKey, 'userAgents', JSON.stringify(uniqueUserAgents.slice(-5)));
-  }
+    if (recentRequestsCount > 45) { // Stricter limit
+      isSuspicious = true;
+      reason = 'Too many requests per minute';
+    }
 
-  if (uniqueUserAgents.length > 3) {
-    isSuspicious = true;
-    reason = 'User-Agent switching detected';
-  }
+    const uniqueUserAgents = clientData.userAgents ? JSON.parse(clientData.userAgents) : [];
+    if (!uniqueUserAgents.includes(userAgent)) {
+      uniqueUserAgents.push(userAgent);
+      await redisClient.hset(clientKey, 'userAgents', JSON.stringify(uniqueUserAgents.slice(-5)));
+    }
 
-  // Mark as suspicious
-  if (isSuspicious && clientData.suspicious !== 'true') {
-    await redisClient.hset(clientKey, 'suspicious', 'true');
-    console.log(`🚨 Suspicious activity detected from ${clientIP}: ${reason}`);
-  }
+    if (uniqueUserAgents.length > 3) {
+      isSuspicious = true;
+      reason = 'User-Agent switching detected';
+    }
 
-  // Temporary blocking for highly suspicious clients
+    // Mark as suspicious
+    if (isSuspicious && clientData.suspicious !== 'true') {
+      await redisClient.hset(clientKey, 'suspicious', 'true');
+      console.log(`🚨 Suspicious activity detected from ${clientIP}: ${reason}`);
+    }
   if (clientData.suspicious === 'true' && fiveMinCount > 100) {
     const blockedUntil = now + 15 * 60 * 1000; // Block for 15 minutes
     await redisClient.hset(clientKey, 'blockedUntil', blockedUntil);
