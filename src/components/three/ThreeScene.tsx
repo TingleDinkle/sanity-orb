@@ -85,7 +85,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
         60,
         mountElement.clientWidth / mountElement.clientHeight,
         0.1,
-        1000
+        5000
       );
       camera.position.z = CAMERA_DISTANCE;
       cameraRef.current = camera;
@@ -109,7 +109,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.minDistance = 2.5;
-      controls.maxDistance = 100.0;
+      controls.maxDistance = 2000.0;
       controls.autoRotate = false;
       controls.enablePan = true;
       controls.screenSpacePanning = true;
@@ -194,7 +194,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
 
       // Create particles - optimized count and geometry
       const particles: THREE.Mesh[] = [];
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 200; i++) {
         const geometry = new THREE.SphereGeometry(0.02, 6, 6);
         const material = new THREE.MeshBasicMaterial({
           color: 0xffffff,
@@ -624,7 +624,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       
       // ADVANCED ENERGY HARVESTING SYSTEM - Realistic particle streams
       const connectionParticles: THREE.Mesh[] = [];
-      const connectionCount = 120; // More particles for realistic energy streams
+      const connectionCount = 200; // More particles for realistic energy streams
       
       // Create energy harvesting beams - major streams
       const beamCount = 12;
@@ -716,8 +716,13 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
           console.log(child.name);
           if (child instanceof THREE.Mesh) {
             const name = child.name.toLowerCase();
-            if (name.includes('sun') || name.includes('sphere') || name.includes('core') || name.includes('center')) {
+            if (name.includes('sphere') || name.includes('core') || name.includes('center')) {
               child.visible = false;
+            } else if (name.includes('sun')) {
+              const sun = child;
+              sun.visible = true; // Make sun visible
+              const sunLight = new THREE.PointLight(0xffffff, 2, 2000);
+              sun.add(sunLight);
             } else {
               const oldMat = child.material as THREE.MeshStandardMaterial;
               const newMat = new THREE.MeshStandardMaterial({
@@ -756,6 +761,19 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
 
         const delta = clockRef.current.getDelta();
         if (mixerRef.current) {
+          const sanityValue = sanityRef.current;
+          let timeScale;
+
+          if (sanityValue >= 100) {
+            timeScale = 0.1;
+          } else if (sanityValue >= 50) {
+            timeScale = 0.5;
+          } else if (sanityValue >= 25) {
+            timeScale = 1.0;
+          } else {
+            timeScale = 2.0;
+          }
+          mixerRef.current.timeScale = timeScale;
           mixerRef.current.update(delta);
         }
         if (controlsRef.current) {
@@ -997,9 +1015,18 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
         }
         
         if (containmentRef.current) {
-          const chaos = 1 - sanityRef.current / 100;
-          const rotationSpeed = 0.0001 + chaos * 0.0049;
-          containmentRef.current.rotation.z += rotationSpeed; // Gyroscopic effect
+          const sanityValue = sanityRef.current;
+          let rotationSpeed;
+
+          if (sanityValue >= 75) { // Stable
+            rotationSpeed = 0.1;
+          } else if (sanityValue >= 25) { // Warning
+            rotationSpeed = 0.5;
+          } else { // Critical
+            rotationSpeed = 1.0;
+          }
+          
+          containmentRef.current.rotation.z += rotationSpeed * deltaTime;
 
           const t = timeRef.current;
           containmentRef.current.traverse((child) => {
@@ -1008,7 +1035,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
               if (material.emissive) {
                   material.emissive.copy(targetColorRef.current); // Direct copy for instant response
                   // Pulse intensity
-                  material.emissiveIntensity = 1.5 + (Math.sin(t * 2.5) * 0.5 * chaos);
+                  material.emissiveIntensity = 1.5 + (Math.sin(t * 2.5) * 0.5 * (1 - sanityValue / 100));
               }
             }
           });

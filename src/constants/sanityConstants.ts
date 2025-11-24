@@ -29,9 +29,10 @@ export const SANITY_GRADIENTS: SanityGradients = {
 };
 
 export const STAR_FIELD_CONFIGS: StarFieldConfig[] = [
-  { count: 1500, size: 0.15, distance: 80, speed: 0.0001 },
-  { count: 800, size: 0.25, distance: 60, speed: 0.00015 },
-  { count: 400, size: 0.35, distance: 40, speed: 0.0002 }
+  { count: 10000, size: 0.15, distance: 2000, speed: 0.0001 },
+  { count: 8000, size: 0.25, distance: 1800, speed: 0.00015 },
+  { count: 6000, size: 0.35, distance: 1600, speed: 0.0002 },
+  { count: 12000, size: 0.1, distance: 2500, speed: 0.00005 }
 ];
 
 export const SANITY_PRESETS: SanityPreset[] = [
@@ -41,7 +42,7 @@ export const SANITY_PRESETS: SanityPreset[] = [
   { label: 'Critical', value: 10 }
 ];
 
-export const PARTICLE_COUNT = 120;
+export const PARTICLE_COUNT = 200;
 export const ORB_RADIUS = 1.8;
 export const GLOW_RADIUS = 2.2;
 export const CAMERA_DISTANCE = 6;
