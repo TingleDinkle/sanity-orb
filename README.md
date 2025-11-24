@@ -110,7 +110,7 @@ The Internet Sanity Orb is a WebGL-powered interactive experience that combines 
 - **Advanced Volumetric Dyson Sphere** - Multi-layered Interstellar-style energy harvesting megastructure with volumetric shaders, realistic energy streams, and cinematic rim lighting
 - **Containment Rings** - Massive megastructure containment rings encircling the Dyson sphere with detailed 3D models, energy conduits, and dynamic illumination based on sanity state
 - **Energy Harvesting System** - Realistic particle streams flowing from the sanity orb to the Dyson sphere, with coherent beam formations and dynamic intensity based on sanity state
-- **Particle System** - 120 orbiting particles with dynamic movement and color changes
+- **Particle System** - 200 orbiting particles with dynamic movement and color changes
 - **Star Field** - Multiple layers of animated background stars
 - **Glow Effects** - Additive blending glow spheres and rim lighting
 - **Dynamic Lighting** - Ambient, key, and rim lights for dramatic depth
@@ -173,6 +173,8 @@ src/
 │   │   ├── HelpOverlay.tsx         # Help system
 │   │   ├── FunnyMessages.tsx       # Minecraft-style popups
 │   │   ├── AudioControls.tsx       # Audio mute toggle
+│   │   ├── DataAnalyticsButton.tsx # Button to open data analytics panel
+│   │   ├── DataAnalyticsPanel.tsx  # Data analytics panel
 │   │   └── RestoreComponentsMenu.tsx # UI restoration
 │   ├── animations/
 │   │   └── OpeningAnimation.tsx    # Startup sequence
@@ -350,15 +352,15 @@ After deployment, update your environment variables:
 
 ### Keyboard Shortcuts
 - **H** or **Space**: Toggle control panel visibility
-- **1-4**: Quick digital consciousness presets (100%, 50%, 25%, 10%)
+- **1-5**: Quick digital consciousness presets (100%, 50%, 25%, 10%, 0%)
 - **Arrow Keys**: Fine adjust digital consciousness by 5% increments
 - **?**: Show/hide help overlay
 
 ### Visual States
-- **Digital Harmony (75-100%)**: Bright green orb with stable particles, gentle harmonic audio, and vibrant Dyson sphere energy harvesting with active drone swarm
-- **Network Stable (50-75%)**: Yellow-green orb with gentle movement, ambient pad tones, and moderate Dyson sphere activity with coordinated drone formations
-- **Data Fragmented (25-50%)**: Orange orb with increased turbulence, humorous Minecraft-style error messages, transitioning audio, and flickering Dyson sphere with erratic drone behavior
-- **Digital Chaos (0-25%)**: Red orb with screen shake, ominous dark overlay, chaotic particle behavior, deep drone audio, and unstable Dyson sphere with flickering energy streams and disoriented drone swarm
+- **Digital Harmony (75-100%)**: Bright green orb with stable particles, gentle harmonic audio, and vibrant Dyson sphere energy harvesting with active drone swarm. The containment rings spin at a slow, stable rate (0.1x).
+- **Network Stable (50-75%)**: Yellow-green orb with gentle movement, ambient pad tones, and moderate Dyson sphere activity with coordinated drone formations. The containment rings spin at a moderate rate (0.5x).
+- **Data Fragmented (25-50%)**: Orange orb with increased turbulence, humorous Minecraft-style error messages, transitioning audio, and flickering Dyson sphere with erratic drone behavior. The containment rings spin at a fast rate (1.0x).
+- **Digital Chaos (0-25%)**: Red orb with screen shake, ominous dark overlay, chaotic particle behavior, deep drone audio, and unstable Dyson sphere with flickering energy streams and disoriented drone swarm. The containment rings spin at a very-fast rate (2.0x).
 
 ## Video Demo
 
@@ -392,6 +394,13 @@ The Express.js backend provides RESTful endpoints for data persistence:
 - **GET /api/stats/global**: Get global sanity statistics
 - **POST /api/snapshots**: Save real-time sanity snapshots
 - **GET /api/mood/current**: Get current internet mood average
+
+### Machine Learning API
+The Flask ML API provides endpoints for predictions:
+- **POST /api/predict/session**: Predicts the next sanity level based on session data.
+- **POST /api/predict/trend**: Predicts the future trend of sanity based on historical data.
+- **POST /api/predict/classify**: Classifies the current sanity level into a category.
+- **POST /api/predict/advanced**: A comprehensive endpoint that combines all models to provide a holistic prediction and recommendations.
 
 ### Screen Shake Implementation
 Critical sanity levels (0-25%) trigger dynamic screen shake:
