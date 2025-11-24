@@ -20,7 +20,7 @@
 ![Tone.js](https://img.shields.io/badge/Tone.js-14.7.77-000000?style=for-the-badge)
 ![Zustand](https://img.shields.io/badge/Zustand-5.0.8-0CA5E9?style=for-the-badge&logo=zustand&logoColor=white)
 
-A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb surrounded by an advanced civilization's energy harvesting megastructure. Watch as the orb's colors, particles, Dyson sphere, and orbiting drone swarm dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
+A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb surrounded by an advanced civilization's energy harvesting megastructure. Watch as the orb's colors, particles, Dyson sphere, and 3D Dyson Rings dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
 
 ## The Origin Story
 
