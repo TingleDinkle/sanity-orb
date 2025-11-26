@@ -25,9 +25,6 @@ export const corsConfig = cors({
     // Allow requests with no origin (mobile apps, direct file access, etc.)
     if (!origin) return callback(null, true);
 
-    // Allow file:// protocol for local development
-    if (origin.startsWith('file://')) return callback(null, true);
-
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {

@@ -549,7 +549,7 @@ if __name__ == '__main__':
         print("  • GET  /api/health")
         print("\n" + "="*70 + "\n")
         
-        app.run(host='0.0.0.0', port=5001, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=False)
     else:
         print("\n❌ Failed to load models. Please train models first.")
         print("   Run: python data_generator.py")
