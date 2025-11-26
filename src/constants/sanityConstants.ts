@@ -1,10 +1,10 @@
 import { SanityColors, SanityLabels, SanityDescriptions, SanityGradients, StarFieldConfig, SanityPreset } from '../types/sanity';
 
 export const SANITY_COLORS: SanityColors = {
-  green: '#00ff88',
-  yellow: '#ffdd00',
-  orange: '#ff6600',
-  red: '#ff0033'
+  green: '#34A853', // Google Green
+  yellow: '#FBBC04', // Google Yellow
+  orange: '#FA7B17', // Crisp Orange
+  red: '#EA4335'     // Google Red
 };
 
 export const SANITY_LABELS: SanityLabels = {
@@ -22,10 +22,10 @@ export const SANITY_DESCRIPTIONS: SanityDescriptions = {
 };
 
 export const SANITY_GRADIENTS: SanityGradients = {
-  coherent: 'from-emerald-500/20 to-green-500/20',
-  stable: 'from-yellow-500/20 to-amber-500/20',
-  fractured: 'from-orange-500/20 to-amber-600/20',
-  chaotic: 'from-red-600/20 to-rose-700/20'
+  coherent: 'from-green-500/20 to-emerald-500/10',
+  stable: 'from-yellow-400/20 to-amber-400/10',
+  fractured: 'from-orange-500/20 to-red-400/10',
+  chaotic: 'from-red-600/20 to-red-900/20'
 };
 
 export const STAR_FIELD_CONFIGS: StarFieldConfig[] = [

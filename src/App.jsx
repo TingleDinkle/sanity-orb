@@ -25,7 +25,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950">
+    <div className="relative w-full h-screen overflow-hidden bg-gradient-to-b from-black via-zinc-900 to-black">
       {/* Main app - fades in smoothly */}
       <div 
         className="absolute inset-0"

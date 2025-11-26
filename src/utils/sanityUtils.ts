@@ -2,49 +2,27 @@ import * as THREE from 'three';
 import { SANITY_COLORS, SANITY_LABELS, SANITY_DESCRIPTIONS, SANITY_GRADIENTS } from '../constants/sanityConstants';
 
 export const getSanityColor = (value: number): THREE.Color => {
-  // Smooth color interpolation between thresholds
+  // Crisp Google-inspired Interpolation: Green -> Yellow -> Orange -> Red
+  const green = new THREE.Color(SANITY_COLORS.green);
+  const yellow = new THREE.Color(SANITY_COLORS.yellow);
+  const orange = new THREE.Color(SANITY_COLORS.orange);
+  const red = new THREE.Color(SANITY_COLORS.red);
+
   if (value >= 75) {
-    if (value >= 87.5) {
-      return new THREE.Color(SANITY_COLORS.green);
-    } else {
-      const t = (value - 75) / 12.5;
-      const green = new THREE.Color(SANITY_COLORS.green);
-      const yellowGreen = new THREE.Color('#88ff44');
-      return green.clone().lerp(yellowGreen, t);
-    }
+    // Blend Green -> Yellow (100 -> 75)
+    const t = (100 - value) / 25;
+    return green.clone().lerp(yellow, t);
   } else if (value >= 50) {
-    if (value >= 62.5) {
-      const t = (value - 50) / 12.5;
-      const yellowGreen = new THREE.Color('#88ff44');
-      const yellow = new THREE.Color(SANITY_COLORS.yellow);
-      return yellowGreen.clone().lerp(yellow, t);
-    } else {
-      const t = (value - 50) / 12.5;
-      const yellow = new THREE.Color(SANITY_COLORS.yellow);
-      const orangeYellow = new THREE.Color('#ffaa00');
-      return yellow.clone().lerp(orangeYellow, t);
-    }
+    // Blend Yellow -> Orange (75 -> 50)
+    const t = (75 - value) / 25;
+    return yellow.clone().lerp(orange, t);
   } else if (value >= 25) {
-    if (value >= 37.5) {
-      const t = (value - 25) / 12.5;
-      const orangeYellow = new THREE.Color('#ffaa00');
-      const orange = new THREE.Color(SANITY_COLORS.orange);
-      return orangeYellow.clone().lerp(orange, t);
-    } else {
-      const t = (value - 25) / 12.5;
-      const orange = new THREE.Color(SANITY_COLORS.orange);
-      const redOrange = new THREE.Color('#ff3300');
-      return orange.clone().lerp(redOrange, t);
-    }
+    // Blend Orange -> Red (50 -> 25)
+    const t = (50 - value) / 25;
+    return orange.clone().lerp(red, t);
   } else {
-    if (value >= 12.5) {
-      const t = value / 12.5;
-      const redOrange = new THREE.Color('#ff3300');
-      const red = new THREE.Color(SANITY_COLORS.red);
-      return redOrange.clone().lerp(red, t);
-    } else {
-      return new THREE.Color(SANITY_COLORS.red);
-    }
+    // Critical Red
+    return red;
   }
 };
 

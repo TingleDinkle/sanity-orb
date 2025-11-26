@@ -76,9 +76,9 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
     try {
       const mountElement = mountRef.current;
       mountElement.style.pointerEvents = 'auto';
-      mountElement.style.background = '#000005'; // FIX: Force dark background
+      mountElement.style.background = '#000000'; // Crisp black background
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#000005');
+      scene.background = new THREE.Color('#000000');
       sceneRef.current = scene;
       
       const camera = new THREE.PerspectiveCamera(
@@ -224,18 +224,22 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
       particlesRef.current = particles;
 
       // Add lights
-      const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // FIX: Adjusted lighting
+      // Neutral Ambient
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); 
       scene.add(ambientLight);
 
-      const keyLight = new THREE.PointLight(0x00ff00, 1.5, 20);
-      keyLight.position.set(0, 0, 0);
+      // Crisp White Key Light
+      const keyLight = new THREE.PointLight(0xffffff, 1.3, 0);
+      keyLight.position.set(5, 5, 5);
       scene.add(keyLight);
 
-      const rimLight1 = new THREE.PointLight(0x4466ff, 0.8, 15);
+      // Crisp Rim Light (White) - No Blue Tint
+      const rimLight1 = new THREE.PointLight(0xffffff, 1.0, 20);
       rimLight1.position.set(5, 3, -3);
       scene.add(rimLight1);
 
-      const rimLight2 = new THREE.PointLight(0x6644ff, 0.6, 15);
+      // Soft Fill Light (Neutral Grey)
+      const rimLight2 = new THREE.PointLight(0xeeeeee, 0.5, 20);
       rimLight2.position.set(-4, -2, -3);
       scene.add(rimLight2);
 

@@ -38,7 +38,7 @@ const ControlPanel: React.FC = () => {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex gap-2">
-              {[51, 26, 11, 0].map((threshold) => (
+              {[75, 50, 25, 1].map((threshold) => (
                 <div 
                   key={threshold}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
