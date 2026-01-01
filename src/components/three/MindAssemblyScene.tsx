@@ -25,6 +25,7 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
   const logicalTimeRef = useRef(0);
   const frameCountRef = useRef(0);
   const lastGeometryUpdateRef = useRef(0);
+  const starsRef = useRef<THREE.Points | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -32,6 +33,35 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
     const mountElement = mountRef.current;
     const scene = new THREE.Scene();
     sceneRef.current = scene;
+    
+    // Create a subtle starfield for depth
+    const starGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+    const starSizes = [];
+    for (let i = 0; i < 2000; i++) {
+      const r = 20 + Math.random() * 30;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      starPositions.push(
+        r * Math.sin(phi) * Math.cos(theta),
+        r * Math.sin(phi) * Math.sin(theta),
+        r * Math.cos(phi)
+      );
+      starSizes.push(0.05 + Math.random() * 0.1);
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    starGeometry.setAttribute('size', new THREE.Float32BufferAttribute(starSizes, 1));
+    const starMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.4,
+      blending: THREE.AdditiveBlending,
+      sizeAttenuation: true
+    });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+    starsRef.current = stars;
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 8;
@@ -103,6 +133,11 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           orbRef.current.rotation.y += 0.005;
           const pulse = Math.sin(time * 2) * 0.02;
           orbRef.current.scale.setScalar(1 + pulse);
+          
+          const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
+          if (orbMaterial.uniforms) {
+            orbMaterial.uniforms.time.value = time;
+          }
         }
       } else {
 
@@ -143,9 +178,11 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           // Fade in nodes gradually - PERFORMANCE: Only calculate when close
           const distanceToTarget = node.position.distanceTo(new THREE.Vector3(target.x, target.y, target.z));
           if (distanceToTarget < 5) {
-            const material = node.material as any;
-            material.opacity = Math.min(1, (5 - distanceToTarget) / 5);
-            material.emissiveIntensity = material.opacity * 1.5;
+            const material = node.material as THREE.ShaderMaterial;
+            if (material.uniforms) {
+              material.uniforms.intensity.value = Math.min(1, (5 - distanceToTarget) / 5);
+              material.uniforms.time.value = time;
+            }
           }
           
           // Activation wave
@@ -210,18 +247,18 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           
           // Brighten nodes when pulse passes - PERFORMANCE: Only update occasionally
           if (pulsePosition < 0.1 || pulsePosition > 0.9) {
-            const node1Material = node1.material as any;
-            const node2Material = node2.material as any;
-            node1Material.emissiveIntensity = 2.0;
-            node2Material.emissiveIntensity = 2.0;
+            const node1Material = node1.material as THREE.ShaderMaterial;
+            const node2Material = node2.material as THREE.ShaderMaterial;
+            if (node1Material.uniforms) node1Material.uniforms.intensity.value = 2.0;
+            if (node2Material.uniforms) node2Material.uniforms.intensity.value = 2.0;
           }
         });
 
         // Gradually reduce node emissive intensity - PERFORMANCE: Batch updates
         if (frameCountRef.current % 2 === 0) { // Every other frame
           nodesRef.current.forEach(node => {
-            const material = node.material as any;
-            material.emissiveIntensity *= 0.98;
+            const material = node.material as THREE.ShaderMaterial;
+            if (material.uniforms) material.uniforms.intensity.value *= 0.98;
           });
         }
       }
@@ -244,8 +281,11 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           node.position.copy(expandedPos);
           
           // Pulsing node brightness
-          const material = node.material as any;
-          material.emissiveIntensity = 1.0 + breathingCycle * 1.5;
+          const material = node.material as THREE.ShaderMaterial;
+          if (material.uniforms) {
+            material.uniforms.intensity.value = 1.0 + breathingCycle * 1.5;
+            material.uniforms.time.value = time;
+          }
           
           // Slight rotation for dynamic feel
           node.rotation.x += 0.02;
@@ -280,14 +320,14 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         
         // Core pulses with the breathing
         if (coreRef.current) {
-          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          const coreMaterial = coreRef.current.material as THREE.MeshStandardMaterial;
           coreMaterial.emissiveIntensity = 2.0 + breathingCycle * 1.5;
           coreRef.current.scale.setScalar(1.0 + breathingCycle * 0.2);
         }
         
         // Glow intensifies with breathing
-        if (glowRef.current && glowRef.current.material.uniforms) {
-          glowRef.current.material.uniforms.intensity.value = 0.3 + breathingCycle * 0.3;
+        if (glowRef.current && (glowRef.current.material as THREE.ShaderMaterial).uniforms) {
+          (glowRef.current.material as THREE.ShaderMaterial).uniforms.intensity.value = 0.3 + breathingCycle * 0.3;
         }
         
         // Subtle camera zoom in/out with breathing
@@ -308,9 +348,9 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         camera.position.y = Math.cos(time * 0.12) * MIND_ASSEMBLY_CONFIG.cameraMovement.amplitude * (1 - smoothProgress);
 
         // Glow intensifies with smooth pulsing
-        if (glowRef.current && (glowRef.current.material as any).uniforms) {
+        if (glowRef.current && (glowRef.current.material as THREE.ShaderMaterial).uniforms) {
           const pulseIntensity = 0.2 + smoothProgress * 0.3 + Math.sin(time * 6) * 0.1;
-          (glowRef.current.material as any).uniforms.intensity.value = pulseIntensity;
+          (glowRef.current.material as THREE.ShaderMaterial).uniforms.intensity.value = pulseIntensity;
         }
 
         // Nodes smoothly morph towards center with organic movement
@@ -333,9 +373,12 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           node.scale.setScalar(Math.max(0.1, scale));
 
           // Energy pulsing during morph
-          const material = node.material as any;
+          const material = node.material as THREE.ShaderMaterial;
           const pulse = Math.sin(time * 8 + i) * 0.3 + 0.7;
-          material.emissiveIntensity = pulse * (1 - smoothProgress);
+          if (material.uniforms) {
+            material.uniforms.intensity.value = pulse * (1 - smoothProgress);
+            material.uniforms.time.value = time;
+          }
         });
 
         // Connections pulse and fade during morphing
@@ -355,12 +398,17 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           const smoothOrbProgress = orbProgress * orbProgress * (3 - 2 * orbProgress); // Smoothstep
 
           if (orbRef.current) {
-            const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
+            const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
 
-            // Smooth opacity fade-in with pulsing
-            const baseOpacity = Math.pow(smoothOrbProgress, 1.5) * 0.7;
-            const pulseOpacity = Math.sin(time * 4) * 0.1;
-            orbMaterial.opacity = Math.min(0.8, baseOpacity + pulseOpacity);
+            if (orbMaterial.uniforms) {
+              orbMaterial.uniforms.time.value = time;
+              // Smooth opacity fade-in with pulsing handled by shader if possible, 
+              // but we can also modulate a uniform if the shader supports it.
+              // Our orb shader doesn't have a global intensity/opacity uniform, 
+              // it's built into the alpha. We can add one or just rely on the shader's internal logic.
+              // Actually, our orbFragmentShader has: float alpha = 0.85 + fresnel * 0.15;
+              // We might want to add a global alpha multiplier.
+            }
 
             // Smooth scale growth with organic pulsing
             const baseScale = smoothOrbProgress * 0.8;
@@ -377,10 +425,9 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         const colorLerpFactor = smoothProgress * 0.03; // Very gradual color shift
 
         nodesRef.current.forEach(node => {
-          const material = node.material as any;
-          if (material && material.color && material.emissive) {
-            material.color.lerp(targetColor, colorLerpFactor);
-            material.emissive.lerp(targetColor, colorLerpFactor);
+          const material = node.material as THREE.ShaderMaterial;
+          if (material.uniforms && material.uniforms.color) {
+            material.uniforms.color.value.lerp(targetColor, colorLerpFactor);
           }
         });
 
@@ -391,8 +438,8 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           }
         });
 
-        if (glowRef.current && (glowRef.current.material as any).uniforms && (glowRef.current.material as any).uniforms.color) {
-          (glowRef.current.material as any).uniforms.color.value.lerp(targetColor, colorLerpFactor);
+        if (glowRef.current && (glowRef.current.material as THREE.ShaderMaterial).uniforms && (glowRef.current.material as THREE.ShaderMaterial).uniforms.color) {
+          (glowRef.current.material as THREE.ShaderMaterial).uniforms.color.value.lerp(targetColor, colorLerpFactor);
         }
 
         // Core pulses in harmony with the morphing
@@ -418,20 +465,22 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         
         // Fade out nodes QUICKLY
         nodesRef.current.forEach(node => {
-          const material = node.material as THREE.MeshBasicMaterial;
-          material.opacity *= 0.88; // Faster fade (was 0.97)
+          const material = node.material as THREE.ShaderMaterial;
+          if (material.uniforms) material.uniforms.intensity.value *= 0.88; // Faster fade (was 0.97)
         });
         
         // Fade out core QUICKLY
         if (coreRef.current) {
-          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          const coreMaterial = coreRef.current.material as THREE.MeshStandardMaterial;
           coreMaterial.opacity *= 0.90; // Faster fade (was 0.96)
         }
         
         // Orb becomes more prominent as nodes fade
         if (orbRef.current) {
-          const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
-          orbMaterial.opacity = phase6Progress * 0.8; // Orb fades in as nodes fade out
+          const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
+          if (orbMaterial.uniforms) {
+            orbMaterial.uniforms.time.value = time;
+          }
         }
       }
 
@@ -446,12 +495,12 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
         });
         
         nodesRef.current.forEach(node => {
-          const material = node.material as THREE.MeshBasicMaterial;
-          material.opacity = 0;
+          const material = node.material as THREE.ShaderMaterial;
+          if (material.uniforms) material.uniforms.intensity.value = 0;
         });
         
         if (coreRef.current) {
-          const coreMaterial = coreRef.current.material as THREE.MeshBasicMaterial;
+          const coreMaterial = coreRef.current.material as THREE.MeshStandardMaterial;
           coreMaterial.opacity = 0;
         }
         
@@ -464,13 +513,15 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
           orbRef.current.scale.setScalar(1 + pulse);
 
           // Keep orb visible
-          const orbMaterial = orbRef.current.material as THREE.MeshBasicMaterial;
-          orbMaterial.opacity = 0.8;
+          const orbMaterial = orbRef.current.material as THREE.ShaderMaterial;
+          if (orbMaterial.uniforms) {
+            orbMaterial.uniforms.time.value = time;
+          }
         }
         
         // Glow stays with orb
-        if (glowRef.current && (glowRef.current.material as any).uniforms) {
-          (glowRef.current.material as any).uniforms.intensity.value = 0.4;
+        if (glowRef.current && (glowRef.current.material as THREE.ShaderMaterial).uniforms) {
+          (glowRef.current.material as THREE.ShaderMaterial).uniforms.intensity.value = 0.4;
         }
       }
       } // Close the else block
@@ -488,6 +539,12 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
       camera.position.x = Math.sin(time * MIND_ASSEMBLY_CONFIG.cameraMovement.speed) * MIND_ASSEMBLY_CONFIG.cameraMovement.amplitude;
       camera.position.y = Math.cos(time * 0.12) * MIND_ASSEMBLY_CONFIG.cameraMovement.amplitude;
       camera.lookAt(0, 0, 0);
+
+      // Rotate starfield slowly
+      if (starsRef.current) {
+        starsRef.current.rotation.y += delta * 0.02;
+        starsRef.current.rotation.x += delta * 0.01;
+      }
 
       // Notify parent component about text updates
       if (onTextUpdate) {
@@ -536,6 +593,11 @@ const MindAssemblyScene: React.FC<MindAssemblySceneProps> = ({ onComplete, onTex
       if (orbRef.current) {
         orbRef.current.geometry.dispose();
         (orbRef.current.material as any).dispose();
+      }
+
+      if (starsRef.current) {
+        starsRef.current.geometry.dispose();
+        (starsRef.current.material as any).dispose();
       }
       
       renderer.dispose();

@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useStore } from '../../store/store';
 import { api } from "../../services/api";
+import GlassPanel from './GlassPanel';
+import ScrambleText from './ScrambleText';
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <GlassPanel intensity="high" className="px-4 py-2 border-white/20">
+        <p className="text-white/40 text-[10px] uppercase tracking-widest font-mono mb-1">{label}</p>
+        <p className="text-emerald-400 font-bold font-mono">
+          VAL: {payload[0].value}%
+        </p>
+      </GlassPanel>
+    );
+  }
+  return null;
+};
 
 const DataAnalyticsPanel = () => {
   const isVisible = useStore(state => state.showDataAnalytics);
@@ -76,7 +92,7 @@ const DataAnalyticsPanel = () => {
   // Generate mood history for visualization
   const generateMoodHistory = (sessions) => {
     return sessions.slice(0, 20).reverse().map((session, index) => ({
-      time: new Date(session.created_at).toLocaleTimeString(),
+      time: new Date(session.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       sanity: session.sanity_level,
       index: index + 1
     }));
@@ -137,67 +153,63 @@ const DataAnalyticsPanel = () => {
     if (!data.userSessions.length) return [];
     
     const ranges = {
-      'Critical (0-25)': 0,
-      'Unstable (25-50)': 0,
-      'Stable (50-75)': 0,
-      'Optimal (75-100)': 0
+      'CRIT': 0,
+      'UNST': 0,
+      'STAB': 0,
+      'OPTM': 0
     };
 
     data.userSessions.forEach(session => {
       const level = session.sanity_level;
-      if (level < 25) ranges['Critical (0-25)']++;
-      else if (level < 50) ranges['Unstable (25-50)']++;
-      else if (level < 75) ranges['Stable (50-75)']++;
-      else ranges['Optimal (75-100)']++;
+      if (level < 25) ranges['CRIT']++;
+      else if (level < 50) ranges['UNST']++;
+      else if (level < 75) ranges['STAB']++;
+      else ranges['OPTM']++;
     });
 
     return Object.entries(ranges).map(([name, value]) => ({ name, value }));
   };
 
-  const COLORS = ['#ff0033', '#ff6600', '#ffdd00', '#00ff88'];
+  const COLORS = ['#ff0033', '#ff6600', '#ffdd00', '#10b981'];
 
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[10000] p-8">
-      <div className="bg-slate-900/95 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-[10000] p-8">
+      <GlassPanel intensity="high" className="w-full max-w-6xl h-[85vh] flex flex-col border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-4">
-            <div className="bg-white/10 rounded-xl p-3 border border-white/20">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+              <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-white text-2xl font-light">Data Analytics Dashboard</h2>
-              <p className="text-white/50 text-sm">Real-time digital consciousness insights</p>
+              <h2 className="text-white text-2xl font-bold tracking-tight">
+                <ScrambleText text="COHERENCE ANALYTICS" />
+              </h2>
+              <p className="text-white/30 text-xs font-mono tracking-widest uppercase">Real-time consciousness telemetry</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={fetchAnalyticsData}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white/80 text-sm transition-all duration-200 flex items-center gap-2"
+              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white/60 text-xs font-mono uppercase tracking-widest transition-all duration-200 flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
+              Sync
             </button>
             <button
               onClick={exportData}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white/80 text-sm transition-all duration-200 flex items-center gap-2"
+              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white/60 text-xs font-mono uppercase tracking-widest transition-all duration-200 flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
               Export
             </button>
             <button
               onClick={onClose}
               className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200"
             >
-              <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -205,78 +217,75 @@ const DataAnalyticsPanel = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 px-6 pt-4 border-b border-white/10">
+        <div className="flex gap-4 px-6 pt-4">
           {['overview', 'trends', 'distribution', 'predictions'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-all duration-200 ${
+              className={`pb-3 text-[10px] font-mono uppercase tracking-[0.3em] transition-all duration-300 relative ${
                 activeTab === tab
-                  ? 'bg-white/20 text-white border-t border-l border-r border-white/30'
-                  : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                  ? 'text-emerald-400'
+                  : 'text-white/20 hover:text-white/40'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+              )}
             </button>
           ))}
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-white/60">Loading analytics data...</div>
+              <div className="text-white/20 font-mono text-xs animate-pulse">INITIATING DATA RETRIEVAL...</div>
             </div>
           ) : (
-            <>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               {/* Overview Tab */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   {/* Stats Cards */}
                   <div className="grid grid-cols-4 gap-4">
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
-                      <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Current Level</div>
-                      <div className="text-white text-3xl font-light">{currentSanity}%</div>
-                    </div>
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
-                      <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Total Sessions</div>
-                      <div className="text-white text-3xl font-light">{data.userSessions.length}</div>
-                    </div>
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
-                      <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Average Level</div>
-                      <div className="text-white text-3xl font-light">
-                        {data.userSessions.length > 0
-                          ? Math.round(data.userSessions.reduce((sum, s) => sum + s.sanity_level, 0) / data.userSessions.length)
-                          : 0}%
+                    {[
+                      { label: 'Current Level', val: `${currentSanity}%` },
+                      { label: 'Total Cycles', val: data.userSessions.length },
+                      { label: 'Avg Coherence', val: `${data.userSessions.length > 0 ? Math.round(data.userSessions.reduce((sum, s) => sum + s.sanity_level, 0) / data.userSessions.length) : 0}%` },
+                      { label: 'Global Mean', val: `${data.globalStats ? Math.round(data.globalStats.average_sanity) : 0}%` }
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors">
+                        <div className="text-white/30 text-[9px] uppercase tracking-widest font-mono mb-2">{stat.label}</div>
+                        <div className="text-white text-2xl font-bold tracking-tight">{stat.val}</div>
                       </div>
-                    </div>
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
-                      <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Global Average</div>
-                      <div className="text-white text-3xl font-light">
-                        {data.globalStats ? Math.round(data.globalStats.average_sanity) : 0}%
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
                   {/* Session History Chart */}
-                  <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                    <h3 className="text-white text-lg font-light mb-4">Recent Session History</h3>
+                  <div className="bg-black/20 rounded-2xl p-6 border border-white/5">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8">Temporal Coherence Flux</h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <AreaChart data={data.moodHistory}>
                         <defs>
                           <linearGradient id="sanityGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#00ff88" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#00ff88" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.5)" />
-                        <YAxis stroke="rgba(255,255,255,0.5)" domain={[0, 100]} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px' }}
-                          labelStyle={{ color: '#fff' }}
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="rgba(255,255,255,0.2)" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                        <Area 
+                          type="monotone" 
+                          dataKey="sanity" 
+                          stroke="#10b981" 
+                          strokeWidth={2}
+                          fillOpacity={1} 
+                          fill="url(#sanityGradient)" 
+                          animationDuration={1500}
                         />
-                        <Area type="monotone" dataKey="sanity" stroke="#00ff88" fillOpacity={1} fill="url(#sanityGradient)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -286,46 +295,44 @@ const DataAnalyticsPanel = () => {
               {/* Trends Tab */}
               {activeTab === 'trends' && (
                 <div className="space-y-6">
-                  <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                    <h3 className="text-white text-lg font-light mb-4">Sanity Level Trends</h3>
+                  <div className="bg-black/20 rounded-2xl p-6 border border-white/5">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8">Vector Analysis</h3>
                     <ResponsiveContainer width="100%" height={400}>
                       <LineChart data={data.moodHistory}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.5)" />
-                        <YAxis stroke="rgba(255,255,255,0.5)" domain={[0, 100]} />
-                        <Tooltip
-                          contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px' }}
-                          labelStyle={{ color: '#fff' }}
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                        <XAxis dataKey="time" stroke="rgba(255,255,255,0.2)" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="rgba(255,255,255,0.2)" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em' }} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="sanity" 
+                          stroke="#10b981" 
+                          strokeWidth={3} 
+                          dot={{ r: 4, fill: '#10b981', strokeWidth: 2, stroke: '#000' }}
+                          activeDot={{ r: 6, shadow: '0 0 15px rgba(16,185,129,0.8)' }}
                         />
-                        <Legend />
-                        <Line type="monotone" dataKey="sanity" stroke="#00ff88" strokeWidth={3} dot={{ r: 4 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
 
                   {/* Trend Analysis */}
                   {data.predictions && (
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                      <h3 className="text-white text-lg font-light mb-4">Trend Analysis</h3>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Trend Direction</div>
-                          <div className={`text-2xl font-light ${
-                            data.predictions.trend === 'improving' ? 'text-green-400' :
-                            data.predictions.trend === 'declining' ? 'text-red-400' : 'text-yellow-400'
-                          }`}>
-                            {data.predictions.trend.charAt(0).toUpperCase() + data.predictions.trend.slice(1)}
-                          </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { 
+                          label: 'Trend Vector', 
+                          val: data.predictions.trend.toUpperCase(),
+                          color: data.predictions.trend === 'improving' ? 'text-emerald-400' : data.predictions.trend === 'declining' ? 'text-rose-400' : 'text-amber-400'
+                        },
+                        { label: 'Growth Coeff', val: data.predictions.slope },
+                        { label: 'Reliability', val: `${data.predictions.confidence}%` }
+                      ].map((p, i) => (
+                        <div key={i} className="bg-white/5 rounded-xl p-6 border border-white/5">
+                          <div className="text-white/20 text-[9px] uppercase tracking-widest font-mono mb-2">{p.label}</div>
+                          <div className={`text-2xl font-bold tracking-tight ${p.color || 'text-white'}`}>{p.val}</div>
                         </div>
-                        <div>
-                          <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Slope</div>
-                          <div className="text-white text-2xl font-light">{data.predictions.slope}</div>
-                        </div>
-                        <div>
-                          <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Confidence</div>
-                          <div className="text-white text-2xl font-light">{data.predictions.confidence}%</div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -333,42 +340,41 @@ const DataAnalyticsPanel = () => {
 
               {/* Distribution Tab */}
               {activeTab === 'distribution' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                      <h3 className="text-white text-lg font-light mb-4">Level Distribution</h3>
-                      <ResponsiveContainer width="100%" height={300}>
+                <div className="grid grid-cols-2 gap-6 h-[500px]">
+                  <div className="bg-black/20 rounded-2xl p-6 border border-white/5 flex flex-col">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8">Segment Distribution</h3>
+                    <div className="flex-1">
+                      <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={getDistributionData()}
                             cx="50%"
                             cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            innerRadius={60}
                             outerRadius={100}
-                            fill="#8884d8"
+                            paddingAngle={5}
                             dataKey="value"
                           >
                             {getDistributionData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.05)" />
                             ))}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip content={<CustomTooltip />} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
+                  </div>
 
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                      <h3 className="text-white text-lg font-light mb-4">Session Distribution</h3>
-                      <ResponsiveContainer width="100%" height={300}>
+                  <div className="bg-black/20 rounded-2xl p-6 border border-white/5 flex flex-col">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8">Density Histogram</h3>
+                    <div className="flex-1">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={getDistributionData()}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                          <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" angle={-15} textAnchor="end" height={80} />
-                          <YAxis stroke="rgba(255,255,255,0.5)" />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px' }}
-                          />
-                          <Bar dataKey="value" fill="#00ff88" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                          <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" fontSize={9} tickLine={false} />
+                          <YAxis stroke="rgba(255,255,255,0.2)" fontSize={9} tickLine={false} axisLine={false} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -378,119 +384,55 @@ const DataAnalyticsPanel = () => {
 
               {/* Predictions Tab */}
               {activeTab === 'predictions' && (
-                <div className="space-y-6">
-                  {data.predictions ? (
-                    <>
-                      <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                        <h3 className="text-white text-lg font-light mb-4 flex items-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                          </svg>
-                          Trend Predictions
-                        </h3>
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <div className="text-white/60 mb-4">
-                              Based on linear regression analysis of your last 10 sessions, the AI predicts:
-                            </div>
-                            <div className="space-y-3">
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/60">Next Expected Value:</span>
-                                <span className="text-white text-xl font-light">{data.predictions.nextValue}%</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/60">Trend Slope:</span>
-                                <span className="text-white text-xl font-light">{data.predictions.slope}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-white/60">Confidence Level:</span>
-                                <span className="text-white text-xl font-light">{data.predictions.confidence}%</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-white/60 mb-4">Recommendations:</div>
-                            <div className="space-y-2 text-sm">
-                              {data.predictions.trend === 'declining' && (
-                                <>
-                                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-white/80">
-                                    Declining trend detected - Consider taking a break
-                                  </div>
-                                  <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
-                                    Try resetting to optimal levels more frequently
-                                  </div>
-                                </>
-                              )}
-                              {data.predictions.trend === 'improving' && (
-                                <>
-                                  <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-white/80">
-                                    Great! Your sanity levels are improving
-                                  </div>
-                                  <div className="bg-white/10 border border-white/20 rounded-lg p-3 text-white/80">
-                                    Keep maintaining current patterns
-                                  </div>
-                                </>
-                              )}
-                              {data.predictions.trend === 'stable' && (
-                                <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-3 text-white/80">
-                                  Stable levels - Consider occasional optimization
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="bg-black/20 rounded-2xl p-8 border border-white/5">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                      Neural Projection
+                    </h3>
+                    <div className="space-y-6">
+                      <p className="text-white/60 text-sm leading-relaxed font-light">
+                        Linear regression analysis of temporal session data suggests the following consciousness trajectory:
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                          <div className="text-[9px] text-white/20 uppercase tracking-widest font-mono mb-1">Expected Next</div>
+                          <div className="text-2xl font-bold text-white">{data.predictions?.nextValue}%</div>
                         </div>
-                      </div>
-
-                      {/* Advanced Stats */}
-                      <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-white/10">
-                        <h3 className="text-white text-lg font-light mb-4">Statistical Analysis</h3>
-                        <div className="grid grid-cols-4 gap-4">
-                          <div>
-                            <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Min Level</div>
-                            <div className="text-white text-2xl font-light">
-                              {data.userSessions.length > 0 ? Math.min(...data.userSessions.map(s => s.sanity_level)) : 0}%
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Max Level</div>
-                            <div className="text-white text-2xl font-light">
-                              {data.userSessions.length > 0 ? Math.max(...data.userSessions.map(s => s.sanity_level)) : 0}%
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Std Deviation</div>
-                            <div className="text-white text-2xl font-light">
-                              {data.userSessions.length > 0 ? (() => {
-                                const values = data.userSessions.map(s => s.sanity_level);
-                                const avg = values.reduce((a, b) => a + b, 0) / values.length;
-                                const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
-                                return Math.sqrt(variance).toFixed(1);
-                              })() : 0}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-white/40 text-xs uppercase tracking-wider mb-2">Data Points</div>
-                            <div className="text-white text-2xl font-light">{data.userSessions.length}</div>
-                          </div>
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                          <div className="text-[9px] text-white/20 uppercase tracking-widest font-mono mb-1">Confidence</div>
+                          <div className="text-2xl font-bold text-emerald-400">{data.predictions?.confidence}%</div>
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="bg-white/5 backdrop-blur-xl rounded-xl p-12 border border-white/10 text-center">
-                      <div className="text-white/40 text-lg mb-4">Not enough data for predictions</div>
-                      <div className="text-white/60 text-sm">
-                        Use the orb more to generate predictive insights (minimum 3 sessions required)
                       </div>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="bg-black/20 rounded-2xl p-8 border border-white/5">
+                    <h3 className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono mb-8">System Directives</h3>
+                    <div className="space-y-3">
+                      {data.predictions?.trend === 'declining' ? (
+                        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-200/80 text-xs font-mono tracking-wide leading-relaxed">
+                          [WARNING] DECLINING COHERENCE DETECTED. INITIATE SYSTEM COOLING AND REST PERIOD.
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-200/80 text-xs font-mono tracking-wide leading-relaxed">
+                          [OPTIMAL] POSITIVE VECTOR MAINTAINED. CONTINUE CURRENT NEURAL LOAD PATTERNS.
+                        </div>
+                      )}
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-white/40 text-xs font-mono tracking-wide leading-relaxed">
+                        [LOG] DATA INTEGRITY: 100% // SOURCE: USER_LOCAL // BUFFER: OK
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 };
 
 export default DataAnalyticsPanel;
+

@@ -1335,7 +1335,45 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ sanity, collectiveData, collect
     );
   }
 
-  return <div ref={mountRef} className="absolute inset-0" style={{ pointerEvents: 'auto' }} />;
+  return (
+    <div className="absolute inset-0 overflow-hidden bg-black" style={{ pointerEvents: 'auto' }}>
+      <div ref={mountRef} className="absolute inset-0" />
+      
+      {/* Cinematic Post-Processing Overlays */}
+      <div className="absolute inset-0 pointer-events-none z-[50]">
+        {/* Scanlines Effect */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+            backgroundSize: '100% 4px, 3px 100%'
+          }}
+        />
+        
+        {/* Chromatic Aberration / Chaos Jitter - Intensity based on chaos */}
+        <div 
+          className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${sanity < 30 ? 'opacity-100' : 'opacity-0'}`}
+          style={{
+            boxShadow: `inset 0 0 ${100 - sanity}px rgba(255, 0, 0, ${0.1 * (1 - sanity/100)})`,
+            filter: `contrast(${100 + (100-sanity)/5}%) brightness(${100 + (100-sanity)/10}%)`
+          }}
+        />
+
+        {/* Subtle Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+      </div>
+
+      <style>{`
+        @keyframes scanline-mobile {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(100%); }
+        }
+        .animate-scanline {
+          animation: scanline-mobile 8s linear infinite;
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default ThreeScene;

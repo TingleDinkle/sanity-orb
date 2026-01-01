@@ -1,5 +1,11 @@
 import * as THREE from 'three';
 import { SANITY_COLORS, SANITY_LABELS, SANITY_DESCRIPTIONS, SANITY_GRADIENTS } from '../constants/sanityConstants';
+import { 
+  mindGlowVertexShader, 
+  mindGlowFragmentShader,
+  vertexShader as orbVertexShader,
+  fragmentShader as orbFragmentShader
+} from '../shaders/orbShaders';
 
 export const getSanityColor = (value: number): THREE.Color => {
   // Crisp Google-inspired Interpolation: Green -> Yellow -> Orange -> Red
@@ -59,12 +65,39 @@ export const createNeuralNodes = (count: number, scene: THREE.Scene): THREE.Mesh
 
   for (let i = 0; i < count; i++) {
     const geometry = new THREE.SphereGeometry(0.04, 16, 16);
-    const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1.0),
+    
+    // Use a more advanced material with fresnel-like glow
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        color: { value: new THREE.Color(0.5 + Math.random() * 0.5, 0.7 + Math.random() * 0.3, 1.0) },
+        intensity: { value: 0.0 },
+        time: { value: 0.0 }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 color;
+        uniform float intensity;
+        uniform float time;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        
+        void main() {
+          float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+          float pulse = sin(time * 5.0) * 0.2 + 0.8;
+          gl_FragColor = vec4(color, fresnel * intensity * pulse);
+        }
+      `,
       transparent: true,
-      opacity: 0,
-      emissive: new THREE.Color(0.3, 0.5, 0.8),
-      emissiveIntensity: 0
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
     });
     
     const node = new THREE.Mesh(geometry, material);
@@ -147,26 +180,12 @@ export const createMindGlow = (scene: THREE.Scene): THREE.Mesh => {
       color: { value: new THREE.Color(0.3, 0.6, 1.0) },
       intensity: { value: 0.0 }
     },
-    vertexShader: `
-      varying vec3 vNormal;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 color;
-      uniform float intensity;
-      varying vec3 vNormal;
-      
-      void main() {
-        float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 3.0);
-        gl_FragColor = vec4(color, fresnel * intensity);
-      }
-    `,
+    vertexShader: mindGlowVertexShader,
+    fragmentShader: mindGlowFragmentShader,
     transparent: true,
     blending: THREE.AdditiveBlending,
-    side: THREE.BackSide
+    side: THREE.BackSide,
+    depthWrite: false
   });
   const glow = new THREE.Mesh(glowGeometry, glowMaterial);
   scene.add(glow);
@@ -175,13 +194,23 @@ export const createMindGlow = (scene: THREE.Scene): THREE.Mesh => {
 
 export const createMindOrb = (scene: THREE.Scene): THREE.Mesh => {
   const orbGeometry = new THREE.SphereGeometry(1.8, 64, 64);
-  const orbMaterial = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(0.0, 1.0, 0.53),
+  
+  // Use the actual orb shaders for visual consistency
+  const orbMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      color: { value: new THREE.Color(0.0, 1.0, 0.53) },
+      time: { value: 0.0 },
+      pulseSpeed: { value: 2.0 },
+      turbulence: { value: 0.2 }
+    },
+    vertexShader: orbVertexShader,
+    fragmentShader: orbFragmentShader,
     transparent: true,
-    opacity: 0,
     blending: THREE.AdditiveBlending
   });
+  
   const orb = new THREE.Mesh(orbGeometry, orbMaterial);
   scene.add(orb);
   return orb;
 };
+

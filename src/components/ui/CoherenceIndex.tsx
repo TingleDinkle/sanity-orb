@@ -1,5 +1,7 @@
 import React, { memo } from 'react';
 import { useStore } from '../../store/store';
+import GlassPanel from './GlassPanel';
+import ScrambleText from './ScrambleText';
 
 const CoherenceIndex: React.FC = () => {
   const sanity = useStore(state => state.sanity);
@@ -15,33 +17,42 @@ const CoherenceIndex: React.FC = () => {
       }}
       data-ui-element="true"
     >
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl px-7 py-4 border border-white/10 shadow-2xl select-none relative group">
-        <button
-          onClick={() => setShowCoherenceIndex(false)}
-          className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full p-1.5 transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
-          title="Hide Coherence Index"
-        >
-          <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        
-        <div className="text-white/40 text-xs uppercase tracking-widest mb-2 font-light">
-          Digital Coherence Index
-        </div>
-        <div className="flex items-baseline gap-2">
-          <div className="text-white text-4xl font-extralight tabular-nums transition-all duration-300">
-            {sanity}
+      <GlassPanel intensity="low" className="group">
+        <div className="px-7 py-4 relative">
+          <button
+            onClick={() => setShowCoherenceIndex(false)}
+            className="absolute top-2 right-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-1.5 transition-all duration-200 opacity-0 group-hover:opacity-100"
+            title="Hide Coherence Index"
+          >
+            <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          <div className="text-white/30 text-[9px] uppercase tracking-[0.3em] mb-2 font-mono">
+            COH_INDEX.EXE
           </div>
-          <span className="text-white/30 text-xl font-light">%</span>
+          <div className="flex items-baseline gap-2">
+            <div className="text-white text-4xl font-bold tabular-nums tracking-tighter">
+              <ScrambleText text={sanity.toString().padStart(3, '0')} trigger={sanity} scrambleCount={1} />
+            </div>
+            <span className="text-emerald-500/60 text-lg font-mono">%</span>
+          </div>
+          
+          <div className="mt-3 flex gap-1">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div 
+                key={i}
+                className={`h-1.5 w-2.5 rounded-sm transition-all duration-500 ${
+                  sanity >= (i + 1) * 10 
+                    ? 'bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]' 
+                    : 'bg-white/5'
+                }`}
+              />
+            ))}
+          </div>
         </div>
-        <div className="mt-2 h-1 bg-white/10 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-white/60 to-white/80 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${sanity}%` }}
-          />
-        </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 };

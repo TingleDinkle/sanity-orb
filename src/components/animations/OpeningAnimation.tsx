@@ -46,7 +46,33 @@ const OpeningAnimation: React.FC<OpeningAnimationProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 will-change-opacity z-50">
+    <div className="fixed inset-0 bg-[#02040a] will-change-opacity z-50 overflow-hidden">
+      {/* Texture Layer - Grain/Noise */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-[1]">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+        </svg>
+      </div>
+
+      {/* Grid Layer - Subtle Tech Pattern */}
+      <div 
+        className="absolute inset-0 z-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
+        }}
+      />
+
+      {/* Vignette Layer */}
+      <div className="absolute inset-0 z-[2] pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
+
       <MindAssemblyScene onComplete={onComplete} onTextUpdate={handleAnimationUpdate} />
       <MindAssemblyText visible={textVisible} opacity={textOpacity} />
     </div>

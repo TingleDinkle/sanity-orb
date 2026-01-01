@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
 import { useStore } from '../../store/store';
 import { SANITY_PRESETS } from '../../constants/sanityConstants';
+import GlassPanel from './GlassPanel';
+import ScrambleText from './ScrambleText';
 
 const ControlPanel: React.FC = () => {
   const sanity = useStore(state => state.sanity);
@@ -13,12 +15,15 @@ const ControlPanel: React.FC = () => {
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
         <button
           onClick={toggleVisibility}
-          className="bg-white/10 backdrop-blur-xl rounded-full p-4 border border-white/20 shadow-2xl transition-all duration-300 hover:bg-white/20 hover:scale-110 active:scale-95"
+          className="group relative"
           title="Show Controls"
         >
-          <svg className="w-6 h-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-          </svg>
+          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <GlassPanel intensity="low" className="rounded-full p-4 hover:bg-white/10 transition-all duration-300">
+            <svg className="w-6 h-6 text-white/60 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+            </svg>
+          </GlassPanel>
         </button>
       </div>
     );
@@ -26,138 +31,128 @@ const ControlPanel: React.FC = () => {
 
   return (
     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-3xl px-8 pointer-events-auto">
-      <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl transition-all duration-300 hover:bg-white/[0.07]">
+      <GlassPanel intensity="medium" className="p-8 group">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <span className="text-white/60 text-sm tracking-wide font-light">
-              Internet Sanity Orb Control Interface
-            </span>
-            <div className="text-white/40 text-xs mt-1 tracking-wider">
-              Modulate digital consciousness coherence levels
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-mono">
+                Neural Interface v2.0
+              </span>
             </div>
+            <h2 className="text-white text-xl font-bold tracking-tight">
+              COHERENCE <span className="text-emerald-400">CONTROL</span>
+            </h2>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex gap-2">
+          
+          <div className="flex items-center gap-4">
+            <div className="flex gap-1.5 px-3 py-1.5 bg-black/20 rounded-full border border-white/5">
               {[75, 50, 25, 1].map((threshold) => (
                 <div 
                   key={threshold}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
                     sanity >= threshold 
-                      ? 'bg-white/80 scale-100' 
-                      : 'bg-white/20 scale-75'
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' 
+                      : 'bg-white/10'
                   }`}
                 />
               ))}
             </div>
             <button
               onClick={toggleVisibility}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200 hover:scale-110 active:scale-95"
-              title="Hide Controls"
+              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-full p-2 transition-all duration-200"
             >
-              <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
           </div>
         </div>
         
-        <div className="relative mb-6">
+        <div className="relative mb-6 px-1">
           <input
             type="range"
             min="0"
             max="100"
             value={sanity}
             onChange={(e) => setSanity(Number(e.target.value))}
-            className="w-full h-4 bg-transparent appearance-none cursor-pointer rounded-full slider-thumb-white"
+            className="w-full h-1.5 bg-white/5 appearance-none cursor-pointer rounded-full slider-thumb-custom overflow-hidden"
             style={{
-              background: 'linear-gradient(to right, rgb(220, 38, 38) 0%, rgb(249, 115, 22) 25%, rgb(234, 179, 8) 50%, rgb(132, 204, 22) 75%, rgb(34, 197, 94) 100%)'
+              background: `linear-gradient(to right, rgb(16, 185, 129) ${sanity}%, rgba(255,255,255,0.05) ${sanity}%)`
             }}
           />
         </div>
 
         <style dangerouslySetInnerHTML={{
           __html: `
-            .slider-thumb-white::-webkit-slider-thumb {
+            .slider-thumb-custom::-webkit-slider-thumb {
               appearance: none;
-              height: 24px;
-              width: 24px;
+              height: 16px;
+              width: 16px;
               border-radius: 50%;
               background: white;
-              border: 2px solid rgba(255, 255, 255, 0.5);
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
+              box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
               cursor: pointer;
-              transition: all 0.2s ease;
+              border: 4px solid #064e3b;
             }
-            .slider-thumb-white::-webkit-slider-thumb:hover {
-              transform: scale(1.05);
-            }
-            .slider-thumb-white::-moz-range-thumb {
-              height: 24px;
-              width: 24px;
+            .slider-thumb-custom::-moz-range-thumb {
+              height: 16px;
+              width: 16px;
               border-radius: 50%;
               background: white;
-              border: 2px solid rgba(255, 255, 255, 0.5);
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
+              box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
               cursor: pointer;
-              transition: all 0.2s ease;
-            }
-            .slider-thumb-white::-ms-thumb {
-              height: 24px;
-              width: 24px;
-              border-radius: 50%;
-              background: white;
-              border: 2px solid rgba(255, 255, 255, 0.5);
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.4);
-              cursor: pointer;
-              transition: all 0.2s ease;
+              border: 4px solid #064e3b;
             }
           `
         }} />
         
-        <div className="flex justify-between text-xs text-white/40 tracking-wider">
-          <div className="flex flex-col items-start">
-            <span className="font-light">Digital Chaos</span>
-            <span className="text-xs text-white/30 mt-0.5">0-25%</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="font-light">Network Instability</span>
-            <span className="text-xs text-white/30 mt-0.5">25-50%</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="font-light">Stable Connection</span>
-            <span className="text-xs text-white/30 mt-0.5">50-75%</span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="font-light">Optimal Flow</span>
-            <span className="text-xs text-white/30 mt-0.5">75-100%</span>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-6 pt-6 border-t border-white/10">
+        <div className="grid grid-cols-4 gap-4 mb-6">
           {SANITY_PRESETS.map(preset => {
             const isActive = sanity === preset.value;
-            const isNearby = Math.abs(sanity - preset.value) <= 5;
-            
             return (
               <button
                 key={preset.value}
                 onClick={() => setSanity(preset.value)}
-                className={`flex-1 py-2 px-4 rounded-xl text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95 ${
+                className={`group relative py-3 px-2 rounded-xl transition-all duration-300 ${
                   isActive 
-                    ? 'bg-white/20 text-white border border-white/30 shadow-lg' 
-                    : isNearby
-                    ? 'bg-white/10 text-white/80 border border-white/20 hover:bg-white/15'
-                    : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white/80'
-                }`}
+                    ? 'bg-emerald-500/10 border-emerald-500/30' 
+                    : 'bg-white/5 border-white/5 hover:bg-white/10'
+                } border`}
               >
-                {preset.label}
+                <div className={`text-[9px] uppercase tracking-widest mb-1 ${isActive ? 'text-emerald-400' : 'text-white/30'}`}>
+                  Preset
+                </div>
+                <div className={`text-xs font-bold ${isActive ? 'text-white' : 'text-white/60'}`}>
+                  {preset.label}
+                </div>
+                {isActive && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-emerald-400 rounded-full" />
+                )}
               </button>
             );
           })}
         </div>
-      </div>
+
+        <div className="flex justify-between items-center px-2 py-3 bg-black/20 rounded-lg border border-white/5">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-white/20 uppercase tracking-widest font-mono">Current Logic</span>
+            <span className="text-xs text-white/60 font-mono">
+              <ScrambleText text={sanity.toString().padStart(3, '0')} trigger={sanity} scrambleCount={2} />.00_INDEX
+            </span>
+          </div>
+          <div className="h-4 w-px bg-white/10" />
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] text-white/20 uppercase tracking-widest font-mono">Stability Status</span>
+            <span className={`text-xs font-mono ${sanity > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
+              {sanity > 50 ? 'NOMINAL' : 'COMPROMISED'}
+            </span>
+          </div>
+        </div>
+      </GlassPanel>
     </div>
   );
 };
 
 export default memo(ControlPanel);
+

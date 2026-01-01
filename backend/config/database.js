@@ -15,7 +15,7 @@ const buildDatabaseUrl = () => {
 
   // Check if database URL is set
   if (!baseUrl) {
-    throw new Error('Database URL not found. Please set RAILWAY_DATABASE_URL (Railway) or DATABASE_URL (local) environment variable.');
+    throw new Error('DATABASE_URL is not set in environment variables.');
   }
 
   // Replace encrypted placeholders with actual decrypted values
@@ -107,6 +107,7 @@ const testConnection = async () => {
   } catch (error) {
     console.error('❌ Unable to connect to the database:', error.message);
     console.log('💡 Make sure PostgreSQL is running and DATABASE_URL is configured in .env');
+    console.log('💡 For local development, ensure PostgreSQL is running on localhost:5432 with user "postgres" and password "Traumerei362"');
     return false;
   }
 };
