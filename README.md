@@ -366,7 +366,7 @@ After deployment, update your environment variables:
 
 https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype Demo)
 
-[ULTRA POLISHED PRODUCT YOUTUBE DEMO TEMPLATE] (not done)
+https://www.youtube.com/watch?v=Ri-c3ktvfB4 (FINAL DEMO)
 
 ## Technical Details
 
