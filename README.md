@@ -364,9 +364,7 @@ After deployment, update your environment variables:
 
 ## Video Demo
 
-https://www.youtube.com/watch?v=77-n_cblU28 (First Prototype Demo)
-
-https://www.youtube.com/watch?v=Ri-c3ktvfB4 (FINAL DEMO)
+https://www.youtube.com/watch?v=YVZUMRXl7W8
 
 ## Technical Details
 
