@@ -1,7 +1,5 @@
 # The Internet Sanity Orb
 
-![InnovArt 2026 3rd Place Award](./3rd%20Place%20Award.png)
-
 ![React](https://img.shields.io/badge/React-19.1.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-0.180.0-000000?style=for-the-badge&logo=three.js&logoColor=white)
@@ -23,6 +21,10 @@
 ![Zustand](https://img.shields.io/badge/Zustand-5.0.8-0CA5E9?style=for-the-badge&logo=zustand&logoColor=white)
 
 A mesmerizing 3D visualization that represents the collective digital consciousness through an interactive, animated orb surrounded by an advanced civilization's energy harvesting megastructure. Watch as the orb's colors, particles, Dyson sphere, and 3D Dyson Rings dynamically change based on your "sanity level", a metaphor for the internet's mental clarity and stability. This project represents my exploration of cutting-edge frontend technologies and the creation of something genuinely wholesome in our often chaotic digital landscape.
+
+## Awards
+
+![InnovArt 2026 3rd Place Award](./3rd%20Place%20Award.png)
 
 ## The Origin Story
 
