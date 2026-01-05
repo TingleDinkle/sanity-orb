@@ -24,7 +24,7 @@ A mesmerizing 3D visualization that represents the collective digital consciousn
 
 ## Awards
 
-![InnovArt 2026 3rd Place Award](./3rd%20Place%20Award.png)
+[![InnovArt 2026 3rd Place Award](./3rd%20Place%20Award.png)](https://devpost.com/software/the-internet-sanity-orb)
 
 ## The Origin Story
 
